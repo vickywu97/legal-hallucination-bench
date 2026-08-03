@@ -1,6 +1,6 @@
 [![CI](https://github.com/vickywu97/legal-hallucination-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/vickywu97/legal-hallucination-bench/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.8%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.8%20%7C%203.11%20%7C%203.12-brightgreen.svg)](https://www.python.org)
 # legal-hallucination-bench · 中文法律引注幻觉基准
 
 > **Chinese Legal Citation Hallucination Benchmark** — an offline, expert-verified
