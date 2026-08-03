@@ -1,3 +1,4 @@
+[![CI](https://github.com/vickywu97/legal-hallucination-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/vickywu97/legal-hallucination-bench/actions/workflows/ci.yml)
 # legal-hallucination-bench · 中文法律引注幻觉基准
 
 > **Chinese Legal Citation Hallucination Benchmark** — an offline, expert-verified
