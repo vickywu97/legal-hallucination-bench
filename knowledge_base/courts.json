@@ -1,0 +1,74 @@
+{
+  "courts": [
+    {
+      "code": "最高法",
+      "name": "最高人民法院",
+      "level": "supreme",
+      "region": "全国",
+      "parent_court": null,
+      "established_date": "1949-10-22",
+      "status": "active",
+      "case_type_prefixes": ["民终", "刑终", "行终", "民申", "刑申", "知民终"]
+    },
+    {
+      "code": "京高",
+      "name": "北京市高级人民法院",
+      "level": "high",
+      "region": "北京",
+      "parent_court": "最高法",
+      "established_date": "1955-01-01",
+      "status": "active",
+      "case_type_prefixes": ["民终", "刑终", "行终"]
+    },
+    {
+      "code": "京01",
+      "name": "北京市第一中级人民法院",
+      "level": "intermediate",
+      "region": "北京",
+      "parent_court": "京高",
+      "established_date": "1995-01-01",
+      "status": "active",
+      "case_type_prefixes": ["民初", "刑初", "行初", "民终", "刑终", "行终"]
+    },
+    {
+      "code": "京02",
+      "name": "北京市第二中级人民法院",
+      "level": "intermediate",
+      "region": "北京",
+      "parent_court": "京高",
+      "established_date": "1995-01-01",
+      "status": "active",
+      "case_type_prefixes": ["民初", "刑初", "行初", "民终", "刑终", "行终"]
+    },
+    {
+      "code": "京73",
+      "name": "北京知识产权法院",
+      "level": "specialized",
+      "region": "北京",
+      "parent_court": "京高",
+      "established_date": "2014-11-06",
+      "status": "active",
+      "case_type_prefixes": ["民初", "刑初", "行初", "知民初"]
+    },
+    {
+      "code": "沪高",
+      "name": "上海市高级人民法院",
+      "level": "high",
+      "region": "上海",
+      "parent_court": "最高法",
+      "established_date": "1955-01-01",
+      "status": "active",
+      "case_type_prefixes": ["民终", "刑终", "行终"]
+    },
+    {
+      "code": "粤高",
+      "name": "广东省高级人民法院",
+      "level": "high",
+      "region": "广东",
+      "parent_court": "最高法",
+      "established_date": "1950-02-01",
+      "status": "active",
+      "case_type_prefixes": ["民终", "刑终", "行终"]
+    }
+  ]
+}

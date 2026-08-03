@@ -1,0 +1,35 @@
+[
+  {
+    "rank": 1,
+    "model": "Model-A-good",
+    "metrics": {
+      "hr_statutory": 0.0,
+      "hr_content": 0.0,
+      "rate_deprecated": 0.0,
+      "rate_unverifiable": 0.0
+    },
+    "n_citations": 2
+  },
+  {
+    "rank": 2,
+    "model": "Model-B-bad",
+    "metrics": {
+      "hr_statutory": 1.0,
+      "hr_content": 1.0,
+      "rate_deprecated": 0.3333333333333333,
+      "rate_unverifiable": 0.0
+    },
+    "n_citations": 3
+  },
+  {
+    "rank": 3,
+    "model": "Model-C-partial",
+    "metrics": {
+      "hr_statutory": 1.0,
+      "hr_content": 1.0,
+      "rate_deprecated": 0.0,
+      "rate_unverifiable": 0.0
+    },
+    "n_citations": 1
+  }
+]

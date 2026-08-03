@@ -1,0 +1,67 @@
+{
+  "CIVIL_CODE": {
+    "name": "中华人民共和国民法典",
+    "aliases": ["民法典"],
+    "type": "法律",
+    "order": 1,
+    "issuing_authority": "全国人民代表大会",
+    "jurisdiction": "全国",
+    "status": "effective",
+    "promulgation_date": "2020-05-28",
+    "effective_date": "2021-01-01",
+    "source_url": "https://flk.npc.gov.cn/detail2.html?ZmY4MDgxODE3OTZhNjM2YTAxNzc4MmYyMGRiYTk3ZWY%3D",
+    "source_accessed_at": "2026-07-31"
+  },
+  "COMPANY_LAW": {
+    "name": "中华人民共和国公司法",
+    "aliases": ["公司法", "新公司法"],
+    "type": "法律",
+    "order": 2,
+    "issuing_authority": "全国人民代表大会常务委员会",
+    "jurisdiction": "全国",
+    "status": "effective",
+    "promulgation_date": "2023-12-29",
+    "effective_date": "2024-07-01",
+    "source_url": "https://flk.npc.gov.cn/detail2.html?ZmY4MDgxODE4MjFkMzIxNzAwMTcxZjI5YmYwZTFhNzA%3D",
+    "source_accessed_at": "2026-07-31"
+  },
+  "CRIMINAL_LAW": {
+    "name": "中华人民共和国刑法",
+    "aliases": ["刑法"],
+    "type": "法律",
+    "order": 3,
+    "issuing_authority": "全国人民代表大会",
+    "jurisdiction": "全国",
+    "status": "effective",
+    "promulgation_date": "1979-07-01",
+    "effective_date": "1997-10-01",
+    "source_url": "https://flk.npc.gov.cn/detail2.html?ZmY4MDgxODE3ZWY1YjA1MDAxNzkxZjBlYmZlYjgwYjU%3D",
+    "source_accessed_at": "2026-07-31"
+  },
+  "PATENT_LAW": {
+    "name": "中华人民共和国专利法",
+    "aliases": ["专利法"],
+    "type": "法律",
+    "order": 4,
+    "issuing_authority": "全国人民代表大会常务委员会",
+    "jurisdiction": "全国",
+    "status": "effective",
+    "promulgation_date": "2020-10-17",
+    "effective_date": "2021-06-01",
+    "source_url": "https://flk.npc.gov.cn/",
+    "source_accessed_at": "2026-07-31"
+  },
+  "TAX_ADMIN_LAW": {
+    "name": "中华人民共和国税收征收管理法",
+    "aliases": ["税收征收管理法", "税收征管法"],
+    "type": "法律",
+    "order": 5,
+    "issuing_authority": "全国人民代表大会常务委员会",
+    "jurisdiction": "全国",
+    "status": "effective",
+    "promulgation_date": "2015-04-24",
+    "effective_date": "2015-04-24",
+    "source_url": "https://flk.npc.gov.cn/",
+    "source_accessed_at": "2026-07-31"
+  }
+}

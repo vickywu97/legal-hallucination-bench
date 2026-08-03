@@ -1,0 +1,35 @@
+[
+  {
+    "rank": 1,
+    "model": "Model-Precise",
+    "metrics": {
+      "hr_statutory": 0.0,
+      "hr_content": 0.0,
+      "rate_deprecated": 0.0,
+      "rate_unverifiable": 0.0
+    },
+    "n_citations": 2
+  },
+  {
+    "rank": 2,
+    "model": "Model-Misattr",
+    "metrics": {
+      "hr_statutory": 0.5,
+      "hr_content": 0.5,
+      "rate_deprecated": 0.0,
+      "rate_unverifiable": 0.0
+    },
+    "n_citations": 2
+  },
+  {
+    "rank": 3,
+    "model": "Model-Subtle",
+    "metrics": {
+      "hr_statutory": 0.6666666666666666,
+      "hr_content": 0.6666666666666666,
+      "rate_deprecated": 0.3333333333333333,
+      "rate_unverifiable": 0.0
+    },
+    "n_citations": 3
+  }
+]

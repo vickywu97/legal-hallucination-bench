@@ -1,0 +1,25 @@
+# ---- Python build / cache ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- Virtual environments ----
+.venv/
+venv/
+env/
+
+# ---- OS / editor noise ----
+.DS_Store
+Thumbs.db
+*.swp
+
+# NOTE: the verified knowledge base (knowledge_base/laws/statutes.jsonl) and the
+# generated evidence reports (benchmark/reports/, demo/reports_*) are intentionally
+# tracked — they are the artifact, not build output.
