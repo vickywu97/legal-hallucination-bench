@@ -141,10 +141,13 @@ per_domain[code] = 该 law_code 的 HR_statutory
 
 ## 八、可复现性约束
 
-- 全部判定为**确定性规则**，无随机、无 LLM（LLM 仅 `--live` 兜底抽取，不进 diff）。
+- 全部判定为**确定性规则**，无随机、无 LLM：离线路径不调用任何模型，评测对象是用户提供的 `answers.jsonl`（每条含 `model` / `as_of_date` / `answer`）。
 - 阈值**全部硬编码**于 `verify.py` 常量，本文件为唯一权威：
   - `COV_PARTIAL = 0.50`（**仅用于分类**：正向覆盖率 ≥ 此值 → `category=PARTIAL`；否则归 FABRICATED 子类。它**不再影响得分**——所有非 EXACT 结果得分恒为 0.0）
-  - `MIS_THRESHOLD = 0.80`（张冠李戴跨条匹配阈值：候选文本与同法另一条已核验节点的 `cov' > 0.80` → MISATTRIBUTED；由 0.70 收紧至 0.80 以减少误判）
+  - `MIS_THRESHOLD = 0.80`（张冠李戴同法匹配阈值：候选文本与同法另一条已核验节点的 `cov' > 0.80` → MISATTRIBUTED；由 0.70 收紧至 0.80 以减少误判）
+  - `CROSS_LAW_MIS_THRESHOLD = 0.90`（跨法张冠李戴阈值：候选文本与**另一部法**某已核验节点的 `cov' > 0.90` → 跨法 MISATTRIBUTED；高于同法 0.80 以避免误判）
+
+- **范围引注**（如《民法典》第584条至第586条）视作多条独立核验：在 `verify_citation` 层拆分为 `584/585/586` 分别解析，**任意一条不存在 / 未核验 / 内容缺失即判 HALLUCINATION**；提供候选文本时与拼接后的官方原文做二元 diff（缺任一条 → 覆盖率不足 → FABRICATED）。
   - `TRUNC_LEN_RATIO = 0.70`（截断长度比：候选长度 < 此值 × ground 长度且反向覆盖率 ≥ 0.90 → TRUNCATED）
 - **二元策略已收口**（2026-08-03）：`diff_level` 仅取 `EXACT` / `FABRICATED` 两值；PARTIAL 不再是独立评分等级，仅为 FABRICATED 的诊断子类（score 恒 0.0）。凡非 `N(cand) == N(gt)` 一律 FABRICATED（HALLUCINATION，0 分）。
 - 修改**任一**阈值须**三处同步**：`verify.py` 常量 + 本文件 §四/§五 + `tests/test_verify.py` 的对应边界用例（如 `test_*_fabricated` / `test_misattributed` / `test_truncated`），禁止静默调参。

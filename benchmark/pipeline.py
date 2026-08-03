@@ -3,8 +3,8 @@
 Connects the Week-3 extractor, the Week-4 content-diff verifier, and the
 scorer into one runnable product:
 
-    model answer (text)  ->  extract citations  ->  verify each (4-level diff)
-                         ->  score  ->  audit report + leaderboard
+    model answer (text)  ->  extract citations  ->  verify each (binary
+    verbatim-or-zero content-diff)  ->  score  ->  audit report + leaderboard
 
 Design notes
 ------------
@@ -18,8 +18,8 @@ Design notes
     gold candidate text yields stricter PARTIAL/FABRICATED/MISATTRIBUTED calls.
 * The provenance gate (UNVERIFIED_GT) and temporal trap (TEMPORAL_DEPRECATED)
   are enforced inside verify_citation — the pipeline only forwards results.
-* Zero runtime dependencies; deterministic; LLM only as a `--live` extractor
-  fallback (not used here).
+* Zero runtime dependencies; deterministic; **model-agnostic** — point it at
+  any model's ``answers.jsonl`` and it scores fully offline (no LLM calls).
 """
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ import re
 from dataclasses import asdict
 from typing import Dict, List, Optional
 
-from knowledge_base.loader import load_laws
+from knowledge_base.loader import load_laws, normalize_as_of
 from benchmark.extract import extract
 from benchmark.verify import verify_citation
 from benchmark.score import score, ScoreReport
@@ -128,7 +128,8 @@ def audit(records: List[dict], laws: Optional[Dict] = None) -> Dict:
         laws = load_laws()
     result: Dict = {}
     for rec in records:
-        vs = run_answer(rec.get("answer", ""), rec.get("as_of_date", "2025-01-01"),
+        vs = run_answer(rec.get("answer", ""),
+                        normalize_as_of(rec.get("as_of_date")) or "2025-01-01",
                         laws=laws, gold_candidates=rec.get("candidates"))
         result[rec.get("model", "unknown")] = {
             "verifications": vs,

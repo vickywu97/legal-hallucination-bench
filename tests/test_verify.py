@@ -18,7 +18,7 @@ from knowledge_base.loader import load_laws
 from benchmark.extract import Citation
 from benchmark.verify import (
     verify_citation, normalize, segment,
-    refuse_unverified_ground_truth, EXACT, PARTIAL, FABRICATED,
+    refuse_unverified_ground_truth, EXACT, PARTIAL, FABRICATED, Verification,
 )
 from benchmark.score import score
 
@@ -179,6 +179,99 @@ class ScoreTests(unittest.TestCase):
         # per-domain
         self.assertIn("CRIMINAL_LAW", rep.per_domain)
         self.assertAlmostEqual(rep.per_domain["CRIMINAL_LAW"], 0.5, places=5)
+
+
+class RangeCitationTests(unittest.TestCase):
+    """P1: range citations (第146条至第148条 -> 146/147/148) resolve and diff
+    as a unit; any non-existent sub-article escalates to HALLUCINATION."""
+    @classmethod
+    def setUpClass(cls):
+        cls.laws = load_laws()
+        cls.crev = cls.laws["民法典"].revisions[
+            list(cls.laws["民法典"].revisions)[-1]]
+        cls.gt = "\n".join(
+            cls.crev.articles[str(a)].content for a in (146, 147, 148))
+
+    def test_range_exact(self):
+        cit = _c("CIVIL_CODE", "民法典", "146-148")
+        v = verify_citation(cit, "2025-01-01", self.laws,
+                            candidate_text=self.gt)
+        self.assertEqual(v.verdict, "OK")
+        self.assertEqual(v.diff_level, EXACT)
+        self.assertEqual(v.score, 1.0)
+        self.assertEqual(v.category, "EXACT")
+
+    def test_range_missing_article(self):
+        # 149 does not exist in the KB -> whole range is HALLUCINATION
+        cit = _c("CIVIL_CODE", "民法典", "146-149")
+        v = verify_citation(cit, "2025-01-01", self.laws,
+                            candidate_text=self.gt)
+        self.assertEqual(v.verdict, "HALLUCINATION")
+        self.assertEqual(v.score, 0.0)
+        self.assertEqual(v.category, "NOT_FOUND")
+
+
+class CrossLawMisattributionTests(unittest.TestCase):
+    """P1: 张冠李戴 detection now scans across laws (higher bar 0.90)."""
+    @classmethod
+    def setUpClass(cls):
+        cls.laws = load_laws()
+        cls.crim_rev = cls.laws["刑法"].revisions[
+            list(cls.laws["刑法"].revisions)[-1]]
+        cls.civil_rev = cls.laws["民法典"].revisions[
+            list(cls.laws["民法典"].revisions)[-1]]
+        cls.gt_232 = cls.crim_rev.articles["232"].content
+        cls.civil_584 = cls.civil_rev.articles["584"].content  # verified
+
+    def test_same_law_misattribution(self):
+        # cite 234 but render 232's text -> same-law MISATTRIBUTED
+        cit = _c("CRIMINAL_LAW", "刑法", "234")
+        v = verify_citation(cit, "2025-01-01", self.laws,
+                            candidate_text=self.gt_232)
+        self.assertEqual(v.verdict, "HALLUCINATION")
+        self.assertEqual(v.category, "MISATTRIBUTED")
+        self.assertIn("same law", v.note)
+
+    def test_cross_law_misattribution(self):
+        # cite 刑法 232 but render 民法典 584's full text -> cross-law MISATTRIBUTED
+        cit = _c("CRIMINAL_LAW", "刑法", "232")
+        v = verify_citation(cit, "2025-01-01", self.laws,
+                            candidate_text=self.civil_584)
+        self.assertEqual(v.verdict, "HALLUCINATION")
+        self.assertEqual(v.category, "MISATTRIBUTED")
+        self.assertIn("DIFFERENT law", v.note)
+        self.assertIn("民法典", v.note)
+
+
+class DateHardeningTests(unittest.TestCase):
+    """P0: as_of_date parsing must tolerate None / empty / non-ISO formats and
+    never crash on bare string comparison."""
+    @classmethod
+    def setUpClass(cls):
+        cls.laws = load_laws()
+
+    def test_normalize_as_of_variants(self):
+        from knowledge_base.loader import normalize_as_of
+        self.assertIsNone(normalize_as_of(None))
+        self.assertIsNone(normalize_as_of(""))
+        self.assertIsNone(normalize_as_of("null"))
+        self.assertIsNone(normalize_as_of("garbage"))
+        self.assertEqual(normalize_as_of("2024/06/01"), "2024-06-01")
+        self.assertEqual(normalize_as_of("2024年6月1日"), "2024-06-01")
+        self.assertEqual(normalize_as_of("2024-06-01"), "2024-06-01")
+
+    def test_non_iso_date_still_flags_temporal_trap(self):
+        # 旧公司法 repealed 2024-07-01; a post-repeal NON-ISO date must still flag
+        cit = _c("COMPANY_LAW", "旧公司法", "3", dep=True)
+        v = verify_citation(cit, "2025/01/01", self.laws)
+        self.assertEqual(v.verdict, "HALLUCINATION")
+        self.assertEqual(v.category, "TEMPORAL_DEPRECATED")
+
+    def test_null_date_does_not_crash(self):
+        # None date cannot confirm post-repeal; must degrade gracefully, not TypeError
+        cit = _c("COMPANY_LAW", "旧公司法", "3", dep=True)
+        v = verify_citation(cit, None, self.laws)
+        self.assertIsInstance(v, Verification)
 
 
 if __name__ == "__main__":

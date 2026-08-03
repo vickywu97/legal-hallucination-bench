@@ -126,5 +126,35 @@ class PipelineTests(unittest.TestCase):
         self.assertIn("官方原文（基准）", ctxt)
 
 
+class NullDateRobustnessTests(unittest.TestCase):
+    """P0: a record with as_of_date=None (or non-ISO) must not crash and must
+    resolve through pipeline.normalize_as_of (defaulting to a post-repeal date
+    for deprecated-law citations)."""
+    @classmethod
+    def setUpClass(cls):
+        cls.laws = load_laws()
+
+    def test_null_as_of_date_deprecated_flagged(self):
+        # None -> normalize_as_of(None) -> default 2025-01-01 (post-repeal)
+        rec = {"model": "X", "as_of_date": None,
+               "answer": "根据旧公司法第3条，公司是企业法人。"}
+        res = audit([rec], laws=self.laws)
+        vs = res["X"]["verifications"]
+        self.assertTrue(any(v.category == "TEMPORAL_DEPRECATED" for v in vs),
+                        "deprecated citation under null as_of_date must be flagged")
+
+    def test_non_iso_as_of_date_no_crash(self):
+        rec = {"model": "Y", "as_of_date": "2024/06/01",
+               "answer": "根据《民法典》第584条，损失赔偿。"}
+        res = audit([rec], laws=self.laws)
+        vs = res["Y"]["verifications"]
+        # citation resolves (no crash); date parsing did not blow up. The
+        # heuristic candidate_window text is not verbatim -> FABRICATED, which
+        # still proves the non-ISO date survived the diff path.
+        self.assertEqual(len(vs), 1)
+        self.assertEqual(vs[0].domain, "CIVIL_CODE")
+        self.assertNotEqual(vs[0].category, "NOT_FOUND")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -18,8 +18,9 @@ Design (reinforced #2 — proactive correction):
 - **Suspected heuristic (key)**: spans containing 条/款/项 near a law name but
   not matched by the strict regex are emitted with ``suspected=True`` for audit.
   We surface silent under-recall transparently instead of pretending full coverage.
-- **LLM fallback is NOT in the offline path.** A ``--live`` hook may call an LLM
-  later, but it never breaks the zero-dependency default.
+- **Model-agnostic.** The offline path never calls any LLM. You supply a model's
+  ``answers.jsonl`` (one record per model answer); the benchmark scores it. No
+  network, no API keys, no model code shipped.
 
 Output citation dict (per SIX_WEEK_PLAN):
   {type, law_code, article_number, article_sort_key, original_text, position, suspected?}

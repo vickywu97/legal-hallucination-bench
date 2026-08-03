@@ -105,7 +105,7 @@ python -S -m benchmark.run --demo          # 新格式下时序解析仍正确
   - 正则识别：法条 `《XX法》第X条`、司法解释号 `法释〔2020〕17号`、指导案例号 `指导案例18号`、案号 `(2021)最高法民终123号`、法规
   - 中文数字归一化：`第五百八十四条`→`584`、`第一百一十三条`→`113`
   - **疑点启发式（关键）**：对正则未命中的文本段，若含"条/款/项"邻近法律名/法释/案号-like 令牌，标记为 `suspected_citation` 供审计——**用透明漏抽统计替代沉默低估**，而非假装全覆盖
-- **LLM 兜底 = 仅 `--live` 模式可选**（如 GPT-4o-mini，成本极低），**不进 offline 默认路径、不破坏零依赖**。
+- ~~**LLM 兜底 = 仅 `--live` 模式可选**~~（历史设计；当前版本未实现 `--live`，改为"你跑任意模型产出 `answers.jsonl`，本工具离线评分"）
   - ⚠️ **不采用 BERT 序列标注**：依赖 torch（数百 MB、非纯 Python），比 python-docx 更违背离线零依赖原则，与本项目硬约束冲突。
 - 输出标准化 citation：`{type, law_code, article_number, article_sort_key, original_text, position, suspected?}`
 
@@ -200,7 +200,7 @@ python -S -m unittest discover        # CI 绿
 2. **KB 录入错误是可信度命门**（Week 2）：一条录错 = 错扣模型帽子。用 `build_statute.py` 复制粘贴流水线 + `test_kb_integrity.py` 全量硬门（content 非空/revision_of 有效/时间窗无重叠）兜底，抽样 10 条人工比对作最终防线。
 3. **内容 diff 不可复现**（Week 4）：先写 `DIFF_POLICY.md` 量化四级边界，否则不同评测者判级不一致 → 基准失效。
 4. **Arm B 防作弊**（Week 5）：隐藏子集加密入库、CI 解密跑分不公开原题；社区贡献探针可公开"类型"不公开"实例"。
-5. **live 成本/限流**（Week 6）：可选、默认离线；真实榜单靠用户/厂商自己跑 `--live`。
+5. **live 成本/限流**（Week 6，历史设计）：当前版本未实现 `--live`；真实榜单靠用户/厂商自己跑模型产出 `answers.jsonl`，本工具离线评分。
 
 ## 验证纪律（每周必做）
 

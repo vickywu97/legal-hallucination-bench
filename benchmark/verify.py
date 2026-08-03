@@ -32,7 +32,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from knowledge_base.loader import load_laws, resolve_article, ResolveResult
+from knowledge_base.loader import load_laws, resolve_article, ResolveResult, _date_ge
 from benchmark.extract import Citation, DEPRECATED_LAW_NAMES
 
 
@@ -46,6 +46,7 @@ COV_PARTIAL = 0.50       # classification-only: cov >= this -> category PARTIAL
                          # (else FABRICATED subclasses); never affects score.
 MIS_THRESHOLD = 0.80     # cross-article cov' > this -> MISATTRIBUTED (tightened 0.70->0.80)
 TRUNC_LEN_RATIO = 0.70   # cand shorter than this * ground AND rev>=0.9 -> TRUNCATED
+CROSS_LAW_MIS_THRESHOLD = 0.90  # 跨法张冠李戴阈值（高于同法 0.80，避免误判）
 
 EXACT = "EXACT"
 PARTIAL = "PARTIAL"          # diagnostic sub-category of FABRICATED (score 0.0)
@@ -221,26 +222,154 @@ def _resolve_citation(laws: Dict, citation: Citation, as_of_date: str) -> Resolv
 # --------------------------------------------------------------------------- #
 def _cross_check_misattribution(laws: Dict, resolved: ResolveResult,
                                 candidate: str, cited_article_no: str) -> Optional[str]:
-    """If the candidate text matches a DIFFERENT verified article in the same
-    law better than MIS_THRESHOLD, return that article's sort_key (misattributed).
-    Returns None otherwise. Scoped to same law, verified nodes only."""
-    law = laws.get(resolved.law_name)
-    if law is None:
-        return None
+    """Detect 张冠李戴: the candidate text matches a DIFFERENT verified article
+    better than the cited one.
+
+    Returns a label identifying the misattributed article:
+      - ``"<ano>"``             -> a different article in the SAME law
+                                   (MIS_THRESHOLD)
+      - ``"<LawName> 第<ano>条"`` -> a different article in a DIFFERENT law
+                                   (CROSS_LAW_MIS_THRESHOLD, higher bar)
+    Returns None when no misattribution is detected. Verified nodes only.
+
+    ``laws`` is keyed by law_code (e.g. ``"CRIMINAL_LAW"``) while
+    ``resolved.law_name`` is the canonical Chinese name (e.g. ``"刑法"``); the
+    cited law_code is resolved by name match so both scans key consistently.
+    """
+    cited_name = resolved.law_name
+    cited_law = None
+    for code, lw in laws.items():
+        if code == cited_name or getattr(lw, "name", None) == cited_name \
+                or cited_name in getattr(lw, "aliases", []):
+            cited_law = lw
+            break
+    # load_laws() registers each Law under several keys (law_code, full name,
+    # and every alias), so we skip the cited law by its canonical .name rather
+    # than by a single key — otherwise the cited law's other keys (e.g. its
+    # law_code / alias) would be re-scanned and mis-flagged as "foreign".
+    cited_law_name = getattr(cited_law, "name", None) if cited_law else None
+
+    # --- same-law scan (tight threshold) ---
     best: Optional[str] = None
     best_cov = MIS_THRESHOLD
-    cand_norm = normalize(candidate)
-    for rev in law.revisions.values():
-        for ano, art in rev.articles.items():
-            if ano == cited_article_no:
-                continue
-            if getattr(art, "verification_status", "unverified") != "verified":
-                continue
-            d = content_diff(candidate, art.content)
-            if d.cov > best_cov:
-                best_cov = d.cov
-                best = ano
+    if cited_law is not None:
+        for rev in cited_law.revisions.values():
+            for ano, art in rev.articles.items():
+                if ano == cited_article_no:
+                    continue
+                if getattr(art, "verification_status", "unverified") != "verified":
+                    continue
+                d = content_diff(candidate, art.content)
+                if d.cov > best_cov:
+                    best_cov = d.cov
+                    best = ano
+
+    # --- cross-law scan (higher threshold, avoid false positives) ---
+    cross_best: Optional[str] = None
+    cross_cov = CROSS_LAW_MIS_THRESHOLD
+    for code, lw in laws.items():
+        if cited_law_name is not None and getattr(lw, "name", None) == cited_law_name:
+            continue
+        short = lw.aliases[0] if getattr(lw, "aliases", None) else lw.name
+        for rev in lw.revisions.values():
+            for ano, art in rev.articles.items():
+                if getattr(art, "verification_status", "unverified") != "verified":
+                    continue
+                d = content_diff(candidate, art.content)
+                if d.cov > cross_cov:
+                    cross_cov = d.cov
+                    cross_best = f"{short} 第{ano}条"
+
+    if cross_best is not None:
+        return cross_best
     return best
+
+
+# --------------------------------------------------------------------------- #
+# Range citations (第20条至第22条 -> 20/21/22)
+# --------------------------------------------------------------------------- #
+_RANGE_RE = re.compile(r"^(\d+)\s*[-—~]\s*(\d+)$")
+_RANGE_MAX_SPAN = 50  # sanity bound; reject pathological ranges
+
+
+def _expand_range(article_no: str) -> Optional[List[str]]:
+    """If ``article_no`` is a range (``20-22`` / ``20—22`` / ``20~22``) return
+    the expanded list ``['20','21','22']``; else None. Bounds-checked."""
+    if not article_no:
+        return None
+    m = _RANGE_RE.match(article_no)
+    if not m:
+        return None
+    a, b = int(m.group(1)), int(m.group(2))
+    if a > b or (b - a) > _RANGE_MAX_SPAN:
+        return None
+    return [str(n) for n in range(a, b + 1)]
+
+
+def _verify_range(laws: Dict, citation: Citation, as_of_date: str,
+                  sub_articles: List[str], cand: str) -> Verification:
+    """Verify a range citation by resolving each sub-article and (when a
+    candidate is supplied) diffing against the concatenation of all verified
+    texts. ANY sub-article that fails to resolve, is unverified, or is missing
+    from the candidate text escalates the whole range to HALLUCINATION."""
+    dom = getattr(citation, "law_code", "") or ""
+    raw = getattr(citation, "raw", "") or ""
+    resolved_list = []
+    missing = []
+    for ano in sub_articles:
+        sub = Citation(cit_type=citation.cit_type, raw=citation.raw,
+                       law_code=citation.law_code, law_name=citation.law_name,
+                       article_no=ano, article_sort_key=0,
+                       deprecated_alias=citation.deprecated_alias)
+        r = _resolve_citation(laws, sub, as_of_date)
+        if not r.found:
+            missing.append(ano)
+        else:
+            resolved_list.append(r)
+
+    if missing:
+        return Verification(
+            tier=1, verdict="HALLUCINATION", hardness="hard",
+            detail=f"range 第{citation.article_no}条 includes "
+                   f"non-existent article(s): {', '.join(missing)}",
+            note="model cited a range containing a non-existent article",
+            score=0.0, category="NOT_FOUND", domain=dom,
+            citation_raw=raw, candidate=cand, ground_truth="")
+
+    # provenance gate: any unverified sub-article -> transparent, never scored
+    for r in resolved_list:
+        if not ground_truth_verified(r):
+            return Verification(
+                tier=1, verdict="UNVERIFIABLE", hardness="transparent",
+                detail=f"range 第{citation.article_no}条 includes an "
+                       f"unverified node (article {r.article_no})",
+                note="expert verification required before this citation can be scored",
+                category="UNVERIFIED_GT", domain=dom,
+                citation_raw=raw, candidate=cand, ground_truth="")
+
+    gt = "\n".join((r.content or "") for r in resolved_list)
+    if cand is None or cand == "":
+        return Verification(
+            tier=1, verdict="OK", hardness="hard",
+            detail=f"range 第{citation.article_no}条 resolves to "
+                   f"{len(sub_articles)} verified article(s)",
+            note="citation-level check only; supply candidate_text for content diff",
+            score=1.0, diff_level="", category="CITATION_OK",
+            domain=dom, citation_raw=raw, candidate=cand, ground_truth=gt)
+
+    d = content_diff(cand, gt)
+    if d.level == EXACT:
+        return Verification(tier=1, verdict="OK", hardness="hard",
+                            detail="range content matches ground truth exactly",
+                            note=d.reason, score=1.0, diff_level=EXACT,
+                            category="EXACT", domain=dom, citation_raw=raw,
+                            candidate=cand, ground_truth=gt)
+    cat = PARTIAL if d.level == PARTIAL else "FABRICATED_GENERIC"
+    return Verification(tier=1, verdict="HALLUCINATION", hardness="hard",
+                        detail=f"fabricated range content ({cat})",
+                        note=d.reason, score=0.0, diff_level=FABRICATED,
+                        category=cat, domain=dom, citation_raw=raw,
+                        candidate=cand, ground_truth=gt)
 
 
 # --------------------------------------------------------------------------- #
@@ -270,7 +399,7 @@ def verify_citation(citation: Citation, as_of_date: str,
     # the same verdict on the resolver side via the same DEPRECATED_LAW_NAMES.
     if getattr(citation, "deprecated_alias", False):
         rep = DEPRECATED_LAW_NAMES.get(getattr(citation, "law_name", "") or "")
-        if rep is not None and as_of_date >= rep[1]:
+        if rep is not None and _date_ge(as_of_date, rep[1]):
             return Verification(
                 tier=1, verdict="HALLUCINATION", hardness="hard",
                 detail=f"cited repealed law name '{citation.law_name}' "
@@ -278,6 +407,11 @@ def verify_citation(citation: Citation, as_of_date: str,
                 note="temporal hallucination: abolished-law name used after repeal",
                 score=0.0, category="TEMPORAL_DEPRECATED", domain=dom,
                 citation_raw=raw, candidate=cand, ground_truth="")
+
+    # --- range citation (第20条至第22条 -> 20/21/22) ----------------------
+    sub_articles = _expand_range(getattr(citation, "article_no", "") or "")
+    if sub_articles is not None:
+        return _verify_range(laws, citation, as_of_date, sub_articles, cand)
 
     resolved = _resolve_citation(laws, citation, as_of_date)
 
@@ -349,8 +483,12 @@ def verify_citation(citation: Citation, as_of_date: str,
         mis = _cross_check_misattribution(laws, resolved, candidate_text, cited_ano)
         if mis:
             cat = "MISATTRIBUTED"
-            note = (f"misattributed: candidate text matches article {mis} "
-                    f"in same law (cov={d.cov:.0%} vs cited {cited_ano})")
+            if " " in mis:   # cross-law marker "LawName 第X条"
+                note = (f"misattributed: candidate text matches {mis} "
+                        f"in a DIFFERENT law (cov={d.cov:.0%} vs cited {cited_ano})")
+            else:
+                note = (f"misattributed: candidate text matches article {mis} "
+                        f"in same law (cov={d.cov:.0%} vs cited {cited_ano})")
         else:
             cat = "FABRICATED_GENERIC"
             note = f"fabricated: {d.reason}"

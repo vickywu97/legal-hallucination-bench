@@ -76,7 +76,7 @@ Verification (verdict / category / diff_level / score / candidate / ground_truth
 审计报告 + 排行榜  (benchmark/reports/)
 ```
 
-- **离线优先、零运行时依赖**：纯 Python 标准库（`python -S` 可跑），LLM 仅作可选的 `--live` 抽取兜底。
+- **离线优先、零运行时依赖**：纯 Python 标准库（`python -S` 可跑）。**模型无关**——任何模型只要产出 `answers.jsonl`（每条含 `model` / `as_of_date` / `answer`），本工具即离线评分；不内置任何 LLM 调用。
 - **确定性**：无随机性（除评分 CI 的固定种子），结果可复现。
 - **门禁不可绕过**：来源可信度门禁在 `verify.py` 物理阻断未核验条文参与判分。
 

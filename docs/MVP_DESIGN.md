@@ -232,14 +232,13 @@ legal-hallucination-bench/
 # 离线默认：canned 输出 + 内置 KB → 出排行榜与审计报告
 python -m benchmark.run --offline
 
-# 接真实模型（需 API key，可选）
-python -m benchmark.run --live --models glm-4,qwen-max,deepseek-chat
+# 接真实模型（需 API key，可选）— 注：当前版本未实现 --live / benchmark.report；
+# 请先用你的模型产出 answers.jsonl，再离线评分：
+python -m benchmark.run --offline            # 内置 SAMPLE 演示
+# 或：将模型输出整理为 answers.jsonl 后由本工具评分（见 README）
 
 # 对单条模型回答做核验（律师粘贴文本即可）
 python -m benchmark.verify --text "依据《民法典》第584条..."
-
-# 渲染某模型的审计报告
-python -m benchmark.report --model glm-4 --out results/audit_glm-4.md
 ```
 
 ---

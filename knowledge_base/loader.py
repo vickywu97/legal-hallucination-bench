@@ -19,7 +19,9 @@ right-open, gap-free. The latest revision in force at ``as_of_date`` wins.
 from __future__ import annotations
 
 import os
+import re
 import json
+import datetime
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
@@ -264,13 +266,72 @@ def load_courts(kb_root: Optional[str] = None) -> Dict[str, dict]:
 # --------------------------------------------------------------------------- #
 # Temporal resolution  (unchanged engine)
 # --------------------------------------------------------------------------- #
-def _date_le(a: Optional[str], b: Optional[str]) -> bool:
-    """ISO date string <= comparison (lexicographic works for ISO dates)."""
-    if a is None:
+def _parse_iso_date(s) -> Optional[tuple]:
+    """Parse a date-ish value into a comparable ``(Y, M, D)`` tuple, or None.
+
+    Accepts ISO ``YYYY-MM-DD``, common separators (``/`` ``.``), and the Chinese
+    ``YYYY年M月D日`` form. ``None``/empty/unparseable -> None so temporal checks
+    never crash on messy input.
+    """
+    if not s:
+        return None
+    if isinstance(s, datetime.date):
+        return (s.year, s.month, s.day)
+    t = str(s).strip()
+    m = re.match(r"^(\d{4})-(\d{2})-(\d{2})$", t)
+    if m:
+        return tuple(int(x) for x in m.groups())
+    m = re.match(r"^(\d{4})[/.](\d{1,2})[/.](\d{1,2})$", t)
+    if m:
+        return tuple(int(x) for x in m.groups())
+    m = re.match(r"^(\d{4})年(\d{1,2})月(\d{1,2})日$", t)
+    if m:
+        return tuple(int(x) for x in m.groups())
+    return None
+
+
+def _date_le(a, b) -> bool:
+    """Date <= comparison tolerant of None and non-ISO formats."""
+    pa, pb = _parse_iso_date(a), _parse_iso_date(b)
+    if pa is None or pb is None:
         return True
-    if b is None:
-        return True
-    return a <= b
+    return pa <= pb
+
+
+def _date_ge(a, b) -> bool:
+    """Date >= comparison tolerant of None and non-ISO formats.
+
+    A missing/unknown date can never *confirm* an on/after relationship, so
+    either side being None yields False.
+    """
+    pa, pb = _parse_iso_date(a), _parse_iso_date(b)
+    if pa is None or pb is None:
+        return False
+    return pa >= pb
+
+
+def normalize_as_of(as_of) -> Optional[str]:
+    """Normalize ``as_of_date`` to a strict ISO ``YYYY-MM-DD`` string, or None.
+
+    Pipeline entry point: collapses ``None``, empty string, the literals
+    ``"null"``/``"none"``, non-ISO separators (``2024/06/01``) and the Chinese
+    ``2024年6月1日`` form into a canonical date. Unparseable input falls back to
+    None so downstream logic degrades gracefully instead of crashing.
+    """
+    if as_of is None:
+        return None
+    if isinstance(as_of, datetime.date):
+        return as_of.isoformat()
+    s = str(as_of).strip()
+    if s == "" or s.lower() in ("null", "none"):
+        return None
+    parts = _parse_iso_date(s)
+    if parts is None:
+        return None
+    try:
+        return datetime.date(*parts).isoformat()
+    except ValueError:
+        return None
 
 
 def resolve_article(
