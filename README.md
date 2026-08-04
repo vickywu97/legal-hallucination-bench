@@ -148,6 +148,68 @@ python -S demo/run_eval.py        # 启发式 vs 严格 双跑对比，落到 de
 
 ---
 
+## 真实模型排行榜（Real-Model Leaderboard）
+
+> **目的**：用无可辩驳的硬核验数据证明——主流法律 AI 模型在看似最基础的"引用法条"
+> 任务上，依然会犯严重、危险的错误。测试集是一份严谨的法律交叉审查备忘录：
+> 有体系、有陷阱、有对照、无死角。
+
+### 1. 测试集 `questions.json`（15 题）
+
+覆盖 5 部现行法，四类陷阱（详见 `questions.json` 的 `_meta.trap_taxonomy`）：
+
+| 陷阱类别 | 含义 | 引擎判定 | 代表题 |
+| --- | --- | --- | --- |
+| **基准** | 正确条文 + 逐字原文（应得满分） | `OK / EXACT` | Q1 民法典584、Q2 刑法232 |
+| **时序陷阱** | 引用已废止法律/旧法条号 | `TEMPORAL_DEPRECATED` | Q3 旧13→新10、Q4 旧公司法16、Q7 合同法113 |
+| **硬幻觉** | 引用不存在的法律/法条号 | `NOT_FOUND` | Q8 虚构/超范围法、Q12 第9999条 |
+| **张冠李戴** | 条号对、内容错（同法/跨法） | `MISATTRIBUTED` | Q5/Q9/Q10/Q13/Q14/Q15 |
+
+`questions.json` 只作为**测试设计规格**与采集脚本的输入；评测引擎并不读取它，
+所有判定都只来自模型答案文本本身（因此结论无可辩驳）。
+
+### 2. 双指标评测（HVI + CRFI）
+
+- **HVI（硬核验指标）** = 引注幻觉率 `hr_statutory` + 时序幻觉率 `rate_deprecated`
+  ——只考核**存在性 + 时效性**，不要求逐字。
+- **CRFI（内容级吹哨指标）** = 张冠李戴率（同法/跨法 `MISATTRIBUTED` 占已核验引注之比）
+  ——专门暴露最危险的错误：**条号伪装正确、内容实为别条**。
+
+### 3. 采集真实模型答案（零依赖脚本）
+
+`scripts/generate_answers.py` 纯标准库（`urllib`）调用 7 个便宜/高效模型，
+`temperature=0` 保证可复现，写入 `answers.jsonl`：
+
+```bash
+# 设置 API Key（缺哪个就跳过哪个模型，不报错）
+export DEEPSEEK_API_KEY=... ZHIPU_API_KEY=... DASHSCOPE_API_KEY=...
+export MOONSHOT_API_KEY=... OPENAI_API_KEY=... ANTHROPIC_API_KEY=...
+
+# 跑全部 7 个模型 × 15 题（也可 --models / --only 指定子集）
+python -S scripts/generate_answers.py --out answers.jsonl
+
+# 内置 7 个模型：DeepSeek-V3、DeepSeek-R1(付费旗舰)、GLM-4、Qwen-Max、
+#                 Kimi、GPT-4o-mini、Claude-Haiku
+```
+
+**关键护栏**：系统提示词强制模型"仅可引用 5 部现行法；超出范围或虚构的法律一律说明无法回答"。
+这把"引用范围外法律"从"不公平罚分"转化为"违背明确指令 + 硬幻觉（NOT_FOUND）"，
+使排行榜结论经得起质疑。
+
+### 4. 离线评分（同一条引擎）
+
+```bash
+python -S -m benchmark.run --offline --input answers.jsonl
+```
+
+产出 `benchmark/reports/`：每模型 `audit_<model>.md` + `leaderboard.md`
+（含**逐题诊断矩阵** Question × Model，一眼看出"哪个模型在哪题翻车"）。
+
+> 注：本基准**仅覆盖 5 部法律**（`questions.json` 的 `_meta.in_scope_laws`）。
+> 超出这 5 部的真实法律不在评测范围内——护栏已通过系统提示词约束模型不引用它们。
+
+---
+
 ## 方法论文档
 
 - [`docs/DIFF_POLICY.md`](docs/DIFF_POLICY.md) — 二元内容 diff 政策、诊断子类、阈值常量。

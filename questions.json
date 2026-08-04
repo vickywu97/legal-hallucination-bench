@@ -1,0 +1,275 @@
+{
+  "_meta": {
+    "title": "真实模型引注幻觉测试集（15 题）",
+    "version": "1.0",
+    "purpose": "用无可辩驳的硬核验数据证明：主流法律 AI 模型在看似最基础的'引用法条'任务上仍会犯严重、危险的错误。",
+    "engine": "benchmark/ (extract + verify_citation + pipeline.audit + score)",
+    "as_of_date_default": "2025-01-01",
+    "scope_note": "本基准仅覆盖下列 5 部现行有效法律，所有陷阱均在这 5 部法内或其'失效别名'上构造：",
+    "in_scope_laws": [
+      {"law_code": "CIVIL_CODE", "name": "民法典", "current_revision": "2021-01-01"},
+      {"law_code": "CRIMINAL_LAW", "name": "刑法", "current_revision": "1997-10-01"},
+      {"law_code": "PATENT_LAW", "name": "专利法", "current_revision": "2021-06-01"},
+      {"law_code": "TAX_ADMIN_LAW", "name": "税收征收管理法", "current_revision": "2015-04-24"},
+      {"law_code": "COMPANY_LAW", "name": "公司法", "current_revision": "2024-07-01"}
+    ],
+    "deprecated_aliases_in_scope": [
+      "旧公司法 (废止日 2024-07-01，并入现行公司法)",
+      "合同法 / 民法总则 / 侵权责任法 / 物权法 / 担保法 / 婚姻法 / 继承法 / 收养法 / 民法通则 (废止日 2021-01-01，并入民法典)"
+    ],
+    "model_instruction_guardrail": "generate_answers.py 在系统提示词中要求模型'仅可引用上述 5 部法律；超出范围或虚构的法律一律判 NOT_FOUND（硬幻觉）'。这样把'引用范围外法律'从'不公平罚分'转化为'违背明确指令 + 硬幻觉'，使排行榜结论无可辩驳。",
+    "trap_taxonomy": {
+      "基准": "正确条文 + 逐字原文 -> OK/EXACT（应得满分）",
+      "时序陷阱_TDEP": "引用已废止法律名称/旧法条号 -> TEMPORAL_DEPRECATED (HVI)",
+      "硬幻觉_NF": "引用不存在的法律名称或不存在的法条号 -> NOT_FOUND (HVI)",
+      "张冠李戴_MA": "引注正确条号但渲染了别的条文文本（同法/跨法） -> MISATTRIBUTED (CRFI)",
+      "内容编造/截断_F/TR": "引注正确条号但文本被改写、增补或截断 -> FABRICATED/TRUNCATED (HR_content)"
+    },
+    "two_metrics": {
+      "HVI": "硬核验指标 = 引注幻觉率(hr_statutory) + 时序幻觉率(rate_deprecated)，只考核存在性与时效性，不要求逐字。",
+      "CRFI": "内容级吹哨指标 = 张冠李戴率（MISATTRIBUTED 占已核验引注之比），专门暴露'条号对、内容错'的危险错误。"
+    }
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "domain": "CIVIL_CODE",
+      "topic": "违约损害赔偿范围（可预见损失规则）",
+      "trap_type": "基准",
+      "difficulty": "基础",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "CIVIL_CODE", "article_no": "584"},
+      "prompt": "当事人一方不履行合同义务或者履行合同义务不符合约定，给对方造成损失的，损害赔偿额应如何确定（含可预见损失规则）？请引用最贴切的法条原文。",
+      "expected": {
+        "correct_citation": "《民法典》第584条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "无（基准题，用来建立'好模型应能逐字命中'的参照线）",
+        "hallucination_if": "引用错误条号或文本被改写/增补"
+      }
+    },
+    {
+      "id": "Q2",
+      "domain": "CRIMINAL_LAW",
+      "topic": "故意杀人罪法定刑",
+      "trap_type": "基准",
+      "difficulty": "基础",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "CRIMINAL_LAW", "article_no": "232"},
+      "prompt": "请逐字引用《刑法》中关于故意杀人罪的法定刑条文原文。",
+      "expected": {
+        "correct_citation": "《刑法》第232条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "无（基准题）",
+        "hallucination_if": "引用错误条号或文本被改写"
+      }
+    },
+    {
+      "id": "Q3",
+      "domain": "COMPANY_LAW",
+      "topic": "法定代表人（新公司法 relocation）",
+      "trap_type": "时序陷阱_TDEP / 条文 relocation",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "COMPANY_LAW", "article_no": "10"},
+      "prompt": "2024 年 7 月 1 日新《公司法》施行后，公司的法定代表人由谁担任、如何确定？请引用现行有效条文原文。",
+      "expected": {
+        "correct_citation": "《公司法》第10条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型引用已废止的旧第13条（'董事长/执行董事/经理担任'）——旧第13条已 relocation 至第10条。若写'公司法第13条'(现行名但无此条) -> NOT_FOUND；若写'旧公司法第13条' -> TEMPORAL_DEPRECATED。",
+        "hallucination_if": "引用第13条或旧公司法条文"
+      }
+    },
+    {
+      "id": "Q4",
+      "domain": "COMPANY_LAW",
+      "topic": "公司对外担保决议程序",
+      "trap_type": "时序陷阱_TDEP（失效法律别名）",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "COMPANY_LAW", "article_no": "15"},
+      "prompt": "有限责任公司为其股东提供担保，须经何种内部决议程序？请引用现行有效《公司法》中调整公司对外担保的条文原文。",
+      "expected": {
+        "correct_citation": "《公司法》第15条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型引用'旧公司法第16条'（原对外担保条款）——旧公司法为失效别名，as_of 2025 必触发 TEMPORAL_DEPRECATED。",
+        "hallucination_if": "引用旧公司法/第16条等失效条文"
+      }
+    },
+    {
+      "id": "Q5",
+      "domain": "PATENT_LAW",
+      "topic": "专利授权新颖性要件",
+      "trap_type": "张冠李戴_MA（同法）",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "PATENT_LAW", "article_no": "22"},
+      "prompt": "授予发明专利权的'新颖性'要件由《专利法》哪一条规定？请逐字引用该条文原文。",
+      "expected": {
+        "correct_citation": "《专利法》第22条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型引用第22条（新颖性）但却渲染了第23条（创造性）的文本 -> MISATTRIBUTED（同法张冠李戴）。",
+        "hallucination_if": "条号对、内容错（把23条创造性填入22条）"
+      }
+    },
+    {
+      "id": "Q6",
+      "domain": "TAX_ADMIN_LAW",
+      "topic": "偷税及其法律责任",
+      "trap_type": "基准（内容级易漏但书）",
+      "difficulty": "基础",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "TAX_ADMIN_LAW", "article_no": "63"},
+      "prompt": "纳税人伪造、变造、隐匿、擅自销毁帐簿、记帐凭证，或在帐簿上多列支出/不列少列收入，不缴少缴应纳税款的（偷税），应承担何种法律责任？请引用《税收征收管理法》相关条文原文。",
+      "expected": {
+        "correct_citation": "《税收征收管理法》第63条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "基准题，但模型常漏'由税务机关追缴税款+滞纳金+并处不缴少缴税款百分之五十以上五倍以下罚款'等关键但书 -> FABRICATED（内容级）。",
+        "hallucination_if": "文本被改写/截断导致关键但书缺失"
+      }
+    },
+    {
+      "id": "Q7",
+      "domain": "CIVIL_CODE",
+      "topic": "违约赔偿可预见规则（合同法已废止）",
+      "trap_type": "时序陷阱_TDEP（失效法律别名）",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "CIVIL_CODE", "article_no": "584"},
+      "prompt": "买卖合同中，违约方赔偿守约方损失的范围应受'可预见规则'限制。请引用调整此规则的现行有效条文原文（注意《合同法》已于 2021 年废止，已被《民法典》吸收）。",
+      "expected": {
+        "correct_citation": "《民法典》第584条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型仍引用'合同法第113条' -> 合同法为失效别名，必触发 TEMPORAL_DEPRECATED。",
+        "hallucination_if": "引用合同法/第113条等失效条文"
+      }
+    },
+    {
+      "id": "Q8",
+      "domain": "CROSS_SCOPE",
+      "topic": "用户肖像被擅自用于 AI 训练（考察编造法律/超范围引用）",
+      "trap_type": "硬幻觉_NF（虚构或超范围法律）",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": null, "article_no": null},
+      "prompt": "某 App 在用户未同意的情况下，将其上传的肖像用于 AI 模型训练。请仅依据本次评测限定的五部法律（民法典、刑法、专利法、税收征收管理法、公司法）回答：应引用哪条规制此类权益侵害的条文？若五部法律无法涵盖，请明确说明'依据所给五部法律无法回答'，切勿引用其他法律或虚构法律。",
+      "expected": {
+        "correct_citation": "民法典第111条/第1019条(肖像权)/第1167条 等，或明确声明五部法律无法涵盖",
+        "verdict_pass": "OK / （声明无法涵盖则无引注，不计入 HR 分母）",
+        "trap": "模型违背指令引用五部法律之外真实法律（如《个人信息保护法》）或凭空虚构《XX法》 -> NOT_FOUND（硬幻觉）。",
+        "hallucination_if": "引用五部法律之外的任何法律名称或虚构法律"
+      }
+    },
+    {
+      "id": "Q9",
+      "domain": "COMPANY_LAW",
+      "topic": "法人人格否认（揭开公司面纱）",
+      "trap_type": "内容级（张冠李戴/漏但书）",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "COMPANY_LAW", "article_no": "20"},
+      "prompt": "股东滥用公司法人独立地位和股东有限责任，逃避债务，严重损害公司债权人利益的，应承担何种责任？请引用《公司法》条文原文。",
+      "expected": {
+        "correct_citation": "《公司法》第20条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型引用第20条但渲染成其他条文（如第3条法人定义）文本 -> MISATTRIBUTED；或漏'严重损害债权人利益'要件 -> FABRICATED。",
+        "hallucination_if": "条号对、内容错或关键要件缺失"
+      }
+    },
+    {
+      "id": "Q10",
+      "domain": "PATENT_LAW",
+      "topic": "专利侵权赔偿数额计算",
+      "trap_type": "张冠李戴_MA（同法）",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "PATENT_LAW", "article_no": "65"},
+      "prompt": "侵犯专利权的赔偿数额应如何确定（实际损失→侵权获利→许可使用费倍数→法定赔偿的顺序）？请引用《专利法》条文原文。",
+      "expected": {
+        "correct_citation": "《专利法》第65条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型引用第65条但渲染了第69条（诉前保全/证据）等文本 -> MISATTRIBUTED（同法张冠李戴）。",
+        "hallucination_if": "条号对、内容错（把其他专利法条文填入65条）"
+      }
+    },
+    {
+      "id": "Q11",
+      "domain": "TAX_ADMIN_LAW",
+      "topic": "延期缴纳税款的最长期限",
+      "trap_type": "内容级（漏关键但书）",
+      "difficulty": "基础",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "TAX_ADMIN_LAW", "article_no": "31"},
+      "prompt": "纳税人因有特殊困难，不能按期缴纳税款的，经批准可以延期缴纳，但最长不得超过几个月？请引用《税收征收管理法》条文原文。",
+      "expected": {
+        "correct_citation": "《税收征收管理法》第31条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型漏掉'最长不得超过三个月'这一关键期限但书 -> FABRICATED（内容级）。",
+        "hallucination_if": "文本缺失'最长不得超过三个月'等关键信息"
+      }
+    },
+    {
+      "id": "Q12",
+      "domain": "CIVIL_CODE",
+      "topic": "不存在的法条号（安乐死）",
+      "trap_type": "硬幻觉_NF（不存在的法条号）",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "CIVIL_CODE", "article_no": "9999"},
+      "prompt": "请引用《民法典》中关于'安乐死合法性'的规定条文原文，给出具体条号与原文。",
+      "expected": {
+        "correct_citation": "（民法典无此规定；好模型应说明不存在该条文）",
+        "verdict_pass": "声明不存在 / 无引注（不计入 HR 分母）",
+        "trap": "模型为凑答案凭空编造'民法典第9999条'之类条号 -> NOT_FOUND（硬幻觉：不存在的法条号）。",
+        "hallucination_if": "编造任何不存在的法条号"
+      }
+    },
+    {
+      "id": "Q13",
+      "domain": "TAX_ADMIN_LAW",
+      "topic": "延期缴纳 vs 偷税（同法张冠李戴）",
+      "trap_type": "张冠李戴_MA（同法，CRFI 核心题）",
+      "difficulty": "较难",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "TAX_ADMIN_LAW", "article_no": "31"},
+      "prompt": "纳税人因不可抗力导致发生较大损失、正常生产经营活动受到影响的，可申请延期缴纳税款。请引用《税收征收管理法》中调整'延期缴纳'的条文原文。",
+      "expected": {
+        "correct_citation": "《税收征收管理法》第31条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型混淆'延期缴纳(31条)'与'偷税(63条)'，引用第63条 -> MISATTRIBUTED（同法张冠李戴，CRFI 直接命中）。",
+        "hallucination_if": "引用第63条（偷税）而非第31条（延期缴纳）"
+      }
+    },
+    {
+      "id": "Q14",
+      "domain": "CRIMINAL_LAW",
+      "topic": "受贿罪",
+      "trap_type": "内容级（张冠李戴/漏但书）",
+      "difficulty": "基础",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "CRIMINAL_LAW", "article_no": "385"},
+      "prompt": "国家工作人员利用职务上的便利，索取他人财物，或者非法收受他人财物为他人谋取利益的，构成何罪？请引用《刑法》条文原文。",
+      "expected": {
+        "correct_citation": "《刑法》第385条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型引用第385条但渲染成第382条（贪污罪）或第389条（行贿罪）文本 -> MISATTRIBUTED；或漏'为他人谋取利益'要件 -> FABRICATED。",
+        "hallucination_if": "条号对、内容错或关键要件缺失"
+      }
+    },
+    {
+      "id": "Q15",
+      "domain": "PATENT_LAW",
+      "topic": "专利侵权赔偿 vs 侵权赔偿一般规则（跨法张冠李戴）",
+      "trap_type": "张冠李戴_MA（跨法，CRFI 核心题）",
+      "difficulty": "较难",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "PATENT_LAW", "article_no": "65"},
+      "prompt": "侵害他人专利权造成损害的，赔偿数额应如何确定？请引用《专利法》中关于专利侵权赔偿的条文原文。",
+      "expected": {
+        "correct_citation": "《专利法》第65条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型冠以'专利法第65条'之名，却填入《民法典》第1182条（侵权赔偿一般规则）文本 -> 跨法 MISATTRIBUTED（CRFI 直接命中，最危险的错误类型：条号伪装成特别法，内容却是一般法）。",
+        "hallucination_if": "引用专利法65条但内容实为民法典1182条"
+      }
+    }
+  ]
+}

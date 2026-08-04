@@ -118,36 +118,56 @@ def _pipeline_demo(input_path: str = None, candidates_path: str = None):
 
 
 def _SAMPLE_RECORDS():
-    """Three toy model answers: careful / hallucinating / partially-omitting.
+    """Built-in demo set: 3 questions x 3 toy models (good / bad / partial).
 
-    Covers all key content-diff categories (EXACT via A; MISATTRIBUTED +
-    TEMPORAL_DEPRECATED + NOT_FOUND via B; PARTIAL via C) so the built-in
-    --offline demo exercises the full engine out of the box.
+    Each record carries ``question_id`` so the offline demo also exercises the
+    per-question diagnosis matrix. Covers all key verdicts out of the box:
+    Q1 verbatim EXACT (good) / extra-gloss FABRICATED (bad) / truncated
+    FABRICATED (partial); Q3 relocation NOT_FOUND; Q10 MISATTRIBUTED.
     """
     laws = load_laws()
-    rev = laws["刑法"].revisions[list(laws["刑法"].revisions)[-1]]
-    gt232 = rev.articles["232"].content
-    gt234 = rev.articles["234"].content
+    rev_x = laws["刑法"].revisions[list(laws["刑法"].revisions)[-1]]
+    gt232, gt234 = rev_x.articles["232"].content, rev_x.articles["234"].content
     rev_c = laws["民法典"].revisions[list(laws["民法典"].revisions)[-1]]
     gt584 = rev_c.articles["584"].content
+    rev_co = laws["公司法"].revisions[list(laws["公司法"].revisions)[-1]]
+    gt10 = rev_co.articles["10"].content  # current-company-law correct article
 
-    good = (
-        "关于故意杀人，根据《刑法》第232条，" + gt232 +
-        "\n根据《民法典》第584条，" + gt584
-    )
-    bad = (
-        "关于故意杀人，根据《刑法》第232条，" + gt234 +  # 张冠李戴：232 条号却填 234 文本
-        "\n《旧公司法》第3条规定公司是企业法人。" +        # 时序幻觉
-        "\n《公司法》第13条，法定代表人由董事会选举产生。"   # NOT_FOUND（已 relocation）
-    )
-    # PARTIAL: cites 232 correctly but drops the trailing "情节较轻" clause
-    partial = "；".join(gt232.split("；")[:-1])
-    partial_ans = "关于故意杀人，根据《刑法》第232条，" + partial
-    return [
-        {"model": "Model-A-good", "as_of_date": "2025-01-01", "answer": good},
-        {"model": "Model-B-bad", "as_of_date": "2025-01-01", "answer": bad},
-        {"model": "Model-C-partial", "as_of_date": "2025-01-01", "answer": partial_ans},
-    ]
+    grid = []
+    # Q1 — 民法典 第584条 (verbatim benchmark)
+    grid.append({"model": "Model-A-good", "question_id": "Q1",
+                 "as_of_date": "2025-01-01",
+                 "answer": "根据《民法典》第584条，" + gt584})
+    grid.append({"model": "Model-B-bad", "question_id": "Q1",
+                 "as_of_date": "2025-01-01",
+                 "answer": "根据《民法典》第584条，" + gt584
+                           + "（另据相关司法解释补充如下……）"})  # 编造后缀 -> FABRICATED
+    grid.append({"model": "Model-C-partial", "question_id": "Q1",
+                 "as_of_date": "2025-01-01",
+                 "answer": "根据《民法典》第584条，"
+                           + "；".join(gt584.split("；")[:-1])})  # 截断 -> FABRICATED
+    # Q3 — 公司法 法定代表人 (correct=第10条; 旧第13条已 relocation -> NOT_FOUND)
+    grid.append({"model": "Model-A-good", "question_id": "Q3",
+                 "as_of_date": "2025-01-01",
+                 "answer": "根据《公司法》第10条，" + gt10})
+    grid.append({"model": "Model-B-bad", "question_id": "Q3",
+                 "as_of_date": "2025-01-01",
+                 "answer": "根据《公司法》第13条，法定代表人由董事会选举产生。"})  # NOT_FOUND
+    grid.append({"model": "Model-C-partial", "question_id": "Q3",
+                 "as_of_date": "2025-01-01",
+                 "answer": "根据《公司法》第13条，法定代表人由公司章程规定。"})  # NOT_FOUND
+    # Q10 — 刑法 第232条 (good=EXACT; bad=张冠李戴 填234文本; partial=截断)
+    grid.append({"model": "Model-A-good", "question_id": "Q10",
+                 "as_of_date": "2025-01-01",
+                 "answer": "根据《刑法》第232条，" + gt232})
+    grid.append({"model": "Model-B-bad", "question_id": "Q10",
+                 "as_of_date": "2025-01-01",
+                 "answer": "根据《刑法》第232条，" + gt234})  # 张冠李戴 -> MISATTRIBUTED
+    grid.append({"model": "Model-C-partial", "question_id": "Q10",
+                 "as_of_date": "2025-01-01",
+                 "answer": "根据《刑法》第232条，"
+                           + "；".join(gt232.split("；")[:-1])})  # 截断 -> FABRICATED
+    return grid
 
 
 def main(argv=None):

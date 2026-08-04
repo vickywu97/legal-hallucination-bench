@@ -22,6 +22,26 @@
 
 ---
 
+## 2026-08-04
+
+### 新增（真实模型排行榜工作流）
+- **测试集规格 `questions.json`（15 题）**：覆盖 5 部现行法的四类陷阱——基准 / 时序陷阱 / 硬幻觉 / 张冠李戴（同法 + 跨法）。
+  每条含 `domain`、`trap_type`、`difficulty`、`as_of_date`、`target{law_code,article_no}`、`prompt`、`expected`，
+  并附 `_meta`（评测范围、失效别名、5 法护栏、陷阱分类、双指标定义）。所有 `target` 条文号均经 KB 核验存在（除 Q8=虚构/超范围、Q12=第9999条两条故意的 `NOT_FOUND` 陷阱）。
+- **零依赖采集脚本 `scripts/generate_answers.py`**：纯标准库 `urllib` 调用 7 个便宜/高效模型
+  （DeepSeek-V3、DeepSeek-R1 付费旗舰、GLM-4、Qwen-Max、Kimi、GPT-4o-mini、Claude-Haiku），
+  `temperature=0` 可复现，从环境变量读 API Key（缺键跳过不报错），写出引擎可直接消费的 `answers.jsonl`
+  （`{question_id, model, as_of_date, answer}`）。内置 5 法护栏系统提示词，把"超范围/虚构引用"转化为干净的硬幻觉判定。
+- **README 新增「真实模型排行榜」章节**：目标、15 题陷阱表、双指标 HVI（引注幻觉率+时序幻觉率）与 CRFI（张冠李戴率）、采集与 `--input` 评分命令、逐题诊断矩阵说明。
+- **`.gitignore`**：新增 `answers.jsonl`（个人 API 产物，不入库）。
+
+### 引擎支撑（此前已实现，本版串接）
+- `verify.Verification` 新增 `question_id` 字段；`pipeline.audit` 按模型**累加**引注（修复同模型多题被覆盖的 bug）；
+  `pipeline.build_report` 新增**逐题诊断矩阵**（Question × Model，✓/✗子类/?/·）。
+- 内置 `--offline` SAMPLE 重构为 3 题（Q1/Q3/Q10）× 3 玩具模型，开箱即演示逐题矩阵。
+
+---
+
 ## 2026-08-03
 
 ### 新增

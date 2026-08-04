@@ -73,6 +73,7 @@ class Verification:
     citation_raw: str = ""   # original cited text
     candidate: str = ""      # model's rendered statute text (content-level)
     ground_truth: str = ""   # verified official text compared against (if any)
+    question_id: str = ""    # source question id (for per-question diagnosis)
 
 
 def ground_truth_verified(resolved: ResolveResult) -> bool:

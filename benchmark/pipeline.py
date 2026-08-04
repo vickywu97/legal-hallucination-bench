@@ -26,6 +26,7 @@ from __future__ import annotations
 import json
 import os
 import re
+from collections import defaultdict
 from dataclasses import asdict
 from typing import Dict, List, Optional
 
@@ -93,12 +94,14 @@ def candidate_window(text: str, span: tuple, max_chars: int = 500) -> str:
 # --------------------------------------------------------------------------- #
 def run_answer(answer: str, as_of_date: str,
                laws: Optional[Dict] = None,
-               gold_candidates: Optional[Dict] = None) -> List:
+               gold_candidates: Optional[Dict] = None,
+               question_id: str = "") -> List:
     """Extract citations from one model answer and verify each.
 
     ``gold_candidates`` maps citation index (int or str) -> the model's rendered
     statute text for strict content-diff. When absent, a post-citation window is
     used as an approximate candidate; empty result falls back to citation-level.
+    ``question_id`` is threaded onto every Verification for per-question diagnosis.
     """
     if laws is None:
         laws = load_laws()
@@ -109,8 +112,10 @@ def run_answer(answer: str, as_of_date: str,
         cand = gc.get(str(i)) or gc.get(i)
         if cand is None and c.span:
             cand = candidate_window(answer, c.span)
-        out.append(verify_citation(c, as_of_date, laws=laws,
-                                   candidate_text=cand or None))
+        v = verify_citation(c, as_of_date, laws=laws,
+                            candidate_text=cand or None)
+        v.question_id = question_id
+        out.append(v)
     return out
 
 
@@ -121,21 +126,31 @@ def audit(records: List[dict], laws: Optional[Dict] = None) -> Dict:
     """Run the full pipeline over a list of model-answer records.
 
     Each record: ``{"model": str, "as_of_date": str, "answer": str,
-    "candidates": {idx: str} (optional)}``.
+    "question_id": str (optional), "candidates": {idx: str} (optional)}``.
+
+    A model may appear in many records (one per question); verifications are
+    **accumulated** per model (not overwritten), so the leaderboard aggregates
+    every citation the model produced across all questions. Per-citation
+    ``question_id`` is preserved for the per-question diagnosis matrix.
+
     Returns ``{model: {"verifications", "report": ScoreReport, "n_citations"}}``.
     """
     if laws is None:
         laws = load_laws()
     result: Dict = {}
     for rec in records:
+        model = rec.get("model", "unknown")
+        qid = rec.get("question_id", "")
         vs = run_answer(rec.get("answer", ""),
                         normalize_as_of(rec.get("as_of_date")) or "2025-01-01",
-                        laws=laws, gold_candidates=rec.get("candidates"))
-        result[rec.get("model", "unknown")] = {
-            "verifications": vs,
-            "report": score(vs),
-            "n_citations": len(vs),
-        }
+                        laws=laws, gold_candidates=rec.get("candidates"),
+                        question_id=qid)
+        if model not in result:
+            result[model] = {"verifications": [], "n_citations": 0}
+        result[model]["verifications"].extend(vs)
+        result[model]["n_citations"] += len(vs)
+    for model, d in result.items():
+        d["report"] = score(d["verifications"])
     return result
 
 
@@ -165,12 +180,12 @@ def _write_model_md(model: str, data: dict, out_dir: str) -> str:
     lines.append("")
     lines.append("## 逐条核验")
     lines.append("")
-    lines.append("| 引注 | 判定 | 子类 | 级别 | 得分 | 说明 |")
-    lines.append("| --- | --- | --- | --- | --- | --- |")
+    lines.append("| 题号 | 引注 | 判定 | 子类 | 级别 | 得分 | 说明 |")
+    lines.append("| --- | --- | --- | --- | --- | --- | --- |")
     for v in data["verifications"]:
         lines.append(
-            f"| {v.citation_raw} | {v.verdict} | {v.category} | "
-            f"{v.diff_level or '-'} | {v.score:.2f} | {v.note} |")
+            f"| {v.question_id or '-'} | {v.citation_raw} | {v.verdict} | "
+            f"{v.category} | {v.diff_level or '-'} | {v.score:.2f} | {v.note} |")
     lines.append("")
     lines.append("## 逐条对照（模型输出 vs 已核验基准）")
     lines.append("")
@@ -214,6 +229,65 @@ def _write_leaderboard(per_model: dict, out_dir: str) -> str:
     return md_path
 
 
+_CAT_ABBR = {
+    "TEMPORAL_DEPRECATED": "T", "NOT_FOUND": "NF", "MISATTRIBUTED": "MA",
+    "FABRICATED_GENERIC": "F", "TRUNCATED": "TR", "UNVERIFIED_GT": "UG",
+}
+
+
+def _write_question_matrix(flat: List[dict], per_model: dict, out_dir: str) -> str:
+    """Append a question x model diagnosis matrix to leaderboard.md.
+
+    Each cell summarises how a model fared on a specific question:
+    ✓ OK ｜ ✗ HALLUCINATION (with category abbrevs) ｜ ? UNVERIFIABLE ｜ · none.
+    This is the "name-and-shame" view: which model failed which question.
+    """
+    cells = defaultdict(list)
+    for r in flat:
+        q = r.get("question_id") or "-"
+        cells[(q, r.get("model"))].append((r.get("verdict"), r.get("category")))
+
+    def _qkey(x):
+        # natural order: Q1..Q9 before Q10..Q15
+        return (len(x), x)
+    questions = sorted({r.get("question_id") or "-" for r in flat}, key=_qkey)
+    # order models by HR_statutory ascending (best -> worst), consistent w/ board
+    models = sorted(per_model.keys(),
+                    key=lambda m: per_model[m]["metrics"].get("hr_statutory", 1.0))
+
+    lines = ["", "## 逐题诊断矩阵 (Question × Model)", ""]
+    lines.append("图例：✓ 通过(OK) ｜ ✗ 幻觉(HALLUCINATION) ｜ ? 不可验(UNVERIFIABLE) "
+                 "｜ · 该题无引注")
+    lines.append("")
+    lines.append("| 题号 | " + " | ".join(models) + " |")
+    lines.append("| --- | " + " | ".join(["---"] * len(models)) + " |")
+    for q in questions:
+        row = [q]
+        for m in models:
+            vs = cells.get((q, m), [])
+            if not vs:
+                row.append("·")
+                continue
+            if any(v == "HALLUCINATION" for v, _ in vs):
+                cats = {c for v, c in vs if v == "HALLUCINATION" and c}
+                ab = "/".join(_CAT_ABBR.get(c, c) for c in sorted(cats))
+                row.append("✗" + ab)
+            elif any(v == "UNVERIFIABLE" for v, _ in vs):
+                row.append("?")
+            elif all(v == "OK" for v, _ in vs):
+                row.append("✓")
+            else:
+                row.append("·")
+        lines.append("| " + " | ".join(row) + " |")
+    lines.append("")
+    lines.append("子类缩写：T=时序幻觉 NF=条文不存在 MA=张冠李戴 "
+                 "F=内容编造 TR=截断 UG=未核验基准")
+    md_path = os.path.join(out_dir, "leaderboard.md")
+    with open(md_path, "a", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+    return md_path
+
+
 def build_report(audit_result: Dict, out_dir: str) -> str:
     """Write the audit report, per-model markdown, leaderboard, and a flat
     verifications.jsonl. Returns the output directory."""
@@ -235,4 +309,5 @@ def build_report(audit_result: Dict, out_dir: str) -> str:
     for model, data in audit_result.items():
         _write_model_md(model, data, out_dir)
     _write_leaderboard(per_model, out_dir)
+    _write_question_matrix(flat, per_model, out_dir)
     return out_dir
