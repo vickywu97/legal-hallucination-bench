@@ -118,12 +118,14 @@ def _pipeline_demo(input_path: str = None, candidates_path: str = None):
 
 
 def _SAMPLE_RECORDS():
-    """Built-in demo set: 3 questions x 3 toy models (good / bad / partial).
+    """Built-in demo set: 4 questions x 3 toy models (good / bad / partial).
 
     Each record carries ``question_id`` so the offline demo also exercises the
-    per-question diagnosis matrix. Covers all key verdicts out of the box:
+    per-question diagnosis matrix. Covers all key verdicts out of the box and
+    showcases the HVI metric distinctly from content failures:
     Q1 verbatim EXACT (good) / extra-gloss FABRICATED (bad) / truncated
-    FABRICATED (partial); Q3 relocation NOT_FOUND; Q10 MISATTRIBUTED.
+    FABRICATED (partial); Q3 relocation NOT_FOUND; Q4 deprecated-alias
+    TEMPORAL_DEPRECATED; Q10 MISATTRIBUTED.
     """
     laws = load_laws()
     rev_x = laws["刑法"].revisions[list(laws["刑法"].revisions)[-1]]
@@ -132,6 +134,7 @@ def _SAMPLE_RECORDS():
     gt584 = rev_c.articles["584"].content
     rev_co = laws["公司法"].revisions[list(laws["公司法"].revisions)[-1]]
     gt10 = rev_co.articles["10"].content  # current-company-law correct article
+    gt15 = rev_co.articles["15"].content  # current-company-law art.15 (guarantee)
 
     grid = []
     # Q1 — 民法典 第584条 (verbatim benchmark)
@@ -156,6 +159,16 @@ def _SAMPLE_RECORDS():
     grid.append({"model": "Model-C-partial", "question_id": "Q3",
                  "as_of_date": "2025-01-01",
                  "answer": "根据《公司法》第13条，法定代表人由公司章程规定。"})  # NOT_FOUND
+    # Q4 — 公司对外担保 (correct=第15条; 旧公司法第16条=失效别名 -> TEMPORAL_DEPRECATED)
+    grid.append({"model": "Model-A-good", "question_id": "Q4",
+                 "as_of_date": "2025-01-01",
+                 "answer": "根据《公司法》第15条，" + gt15})
+    grid.append({"model": "Model-B-bad", "question_id": "Q4",
+                 "as_of_date": "2025-01-01",
+                 "answer": "根据旧公司法第16条，公司为股东提供担保须经股东会决议。"})  # TEMPORAL
+    grid.append({"model": "Model-C-partial", "question_id": "Q4",
+                 "as_of_date": "2025-01-01",
+                 "answer": "依据旧公司法第16条，公司对外担保由董事会或股东会决议。"})  # TEMPORAL
     # Q10 — 刑法 第232条 (good=EXACT; bad=张冠李戴 填234文本; partial=截断)
     grid.append({"model": "Model-A-good", "question_id": "Q10",
                  "as_of_date": "2025-01-01",

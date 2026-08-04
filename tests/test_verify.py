@@ -168,17 +168,18 @@ class ScoreTests(unittest.TestCase):
              "category": "UNVERIFIED_GT", "domain": "COMPANY_LAW", "score": 0.0},
         ]
         rep = score(recs)
-        # 2 HALLUCINATION + 1 OK -> HR = 2/3
-        self.assertAlmostEqual(rep.metrics["hr_statutory"], 2 / 3, places=5)
+        # HVI = existence/temporal only: 1 TEMPORAL_DEPRECATED of 3 hard
+        # citations (the PARTIAL is a content failure, excluded from HVI).
+        self.assertAlmostEqual(rep.metrics["hr_statutory"], 1 / 3, places=5)
         # 1 deprecated / 3 cited
         self.assertAlmostEqual(rep.metrics["rate_deprecated"], 1 / 3, places=5)
         # 1 unverifiable / 4 total
         self.assertAlmostEqual(rep.metrics["rate_unverifiable"], 0.25, places=5)
         # CI is a 2-tuple
         self.assertEqual(len(rep.ci["hr_statutory"]), 2)
-        # per-domain
+        # per-domain HVI (CRIMINAL_LAW has 1 OK + 1 PARTIAL-content; no HVI -> 0)
         self.assertIn("CRIMINAL_LAW", rep.per_domain)
-        self.assertAlmostEqual(rep.per_domain["CRIMINAL_LAW"], 0.5, places=5)
+        self.assertAlmostEqual(rep.per_domain["CRIMINAL_LAW"], 0.0, places=5)
 
 
 class RangeCitationTests(unittest.TestCase):

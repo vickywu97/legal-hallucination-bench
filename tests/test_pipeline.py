@@ -108,8 +108,12 @@ class PipelineTests(unittest.TestCase):
         ]
         res = audit(records, laws=self.laws)
         self.assertEqual(res["A"]["report"].metrics["hr_statutory"], 0.0)
-        self.assertEqual(res["B"]["report"].metrics["hr_statutory"], 1.0)
-        self.assertEqual(res["C"]["report"].metrics["hr_statutory"], 1.0)
+        # B cites 旧公司法第3条 (TEMPORAL_DEPRECATED) + 刑法232 w/ wrong text
+        # (MISATTRIBUTED, content-only) -> HVI = 1/2 = 0.5
+        self.assertEqual(res["B"]["report"].metrics["hr_statutory"], 0.5)
+        # C's only citation is a content truncation (no existence/temporal error)
+        # -> HVI = 0.0
+        self.assertEqual(res["C"]["report"].metrics["hr_statutory"], 0.0)
         self.assertEqual(res["C"]["report"].metrics["hr_content"], 1.0)
         # build_report writes the artifacts
         build_report(res, self._tmp)

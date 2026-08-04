@@ -20,6 +20,10 @@
   `verify_kb.REPORT_FILE` 指向 `archive/`，避免运行工具时在 `knowledge_base/` 重新生成游离报告。
 - 全量测试由 74 增至 **83 用例**（新增区间引注、跨法条、日期容错、空日期鲁棒性测试）。
 
+### 修复（HVI 与内容级指标分离，2026-08-04）
+- **指标修正（关键）**：`score.py` 的 `hr_statutory` 原把内容级失败（FABRICATED/PARTIAL/TRUNCATED/MISATTRIBUTED）一并计入引注幻觉率，与文档"HVI 只考核存在性与时效性"自相矛盾，且使 paraphrase 模型的 HVI 齐刷刷 100%、零区分度。现收紧为仅统计 `NOT_FOUND`+`TEMPORAL_DEPRECATED`（分母=全部 hard 引注）；内容失败单列 `hr_content`；内容子集改用 `diff_level` 非空过滤（顺手修掉 `NOT_FOUND` 被误算进 `hr_content` 的旁支 bug）。`_attrs` 补取 `diff_level`。
+- SAMPLE 增 Q4 时序陷阱样本（旧公司法第16条→TEMPORAL_DEPRECATED）演示 HVI；同步更新 `test_verify.py`/`test_pipeline.py` 断言。审计/排行榜标签明确标注 HVI。`docs/METHODOLOGY.md` 同步澄清 `hr_statutory`=HVI（不含内容改写）。全量 83 用例绿。
+
 ### 新增（真实模型排行榜工作流）
 - **测试集规格 `questions.json`（15 题）**：覆盖 5 部现行法的四类陷阱——基准 / 时序陷阱 / 硬幻觉 / 张冠李戴（同法 + 跨法）。
   每条含 `domain`、`trap_type`、`difficulty`、`as_of_date`、`target{law_code,article_no}`、`prompt`、`expected`，

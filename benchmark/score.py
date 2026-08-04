@@ -38,6 +38,7 @@ def _attrs(v) -> dict:
             "category": v.get("category", ""),
             "domain": v.get("domain", ""),
             "score": v.get("score", 0.0),
+            "diff_level": v.get("diff_level", ""),
         }
     return {
         "verdict": getattr(v, "verdict", ""),
@@ -45,6 +46,7 @@ def _attrs(v) -> dict:
         "category": getattr(v, "category", ""),
         "domain": getattr(v, "domain", ""),
         "score": getattr(v, "score", 0.0),
+        "diff_level": getattr(v, "diff_level", ""),
     }
 
 
@@ -73,44 +75,70 @@ def _bootstrap_ci(flags: List[int], n: int = 1000, seed: int = 42) -> tuple:
     return (vals[lo_i], vals[hi_i])
 
 
+# HVI = citation existence + temporal traps ONLY (the airtight, paraphrase-proof
+# headline metric). Content mismatches (FABRICATED / PARTIAL / TRUNCATED /
+# MISATTRIBUTED) are deliberately excluded from HVI and reported separately as
+# hr_content / CRFI — a model that cites the right article but merely
+# paraphrases it must NOT inflate the existence/temporal hallucination rate.
+_HVI_CATEGORIES = frozenset({"NOT_FOUND", "TEMPORAL_DEPRECATED"})
+
+
 def score(verifications: List) -> ScoreReport:
-    """Aggregate a list of Verification records into HR metrics."""
+    """Aggregate a list of Verification records into HR metrics.
+
+    Metric semantics (see docs/DIFF_POLICY.md §七 and questions.json ``_meta``):
+      * ``hr_statutory`` (HVI) — the airtight, paraphrase-proof headline
+        metric. Fraction of *hard* citations that are existence/temporal
+        hallucinations (``NOT_FOUND`` or ``TEMPORAL_DEPRECATED``). Content
+        mismatches are excluded by design.
+      * ``hr_content`` — fraction of *content-diffed* citations (those that
+        supplied candidate text and went through the binary diff) that are
+        HALLUCINATION. Encompasses FABRICATED_GENERIC / PARTIAL / TRUNCATED /
+        MISATTRIBUTED. This is the "verbatim compliance" signal.
+      * ``rate_deprecated`` — ``TEMPORAL_DEPRECATED`` / cited (subset of HVI).
+      * ``rate_unverifiable`` — ``UNVERIFIABLE`` / total (transparent, never
+        scored).
+    """
     vs = [_attrs(v) for v in verifications]
     total = len(vs)
     statutory = [v for v in vs if v["hardness"] == "hard"]
-    cited = [v for v in statutory if v["verdict"] in ("HALLUCINATION", "OK")]
 
-    # content-diff subset (citations that supplied candidate_text -> diff_level set)
-    content_subset = [v for v in statutory if v["category"] not in ("CITATION_OK", "")
-                      and v["verdict"] in ("HALLUCINATION", "OK")]
-
+    # --- HVI: existence / temporal traps only ---------------------------------
+    n_stat = len(statutory)
+    n_hvi = sum(1 for v in statutory if v["category"] in _HVI_CATEGORIES)
+    hr_stat = (n_hvi / n_stat) if n_stat else 0.0
     metrics: Dict[str, float] = {}
     ci: Dict[str, tuple] = {}
-
-    hr_stat = _hr(statutory)
     metrics["hr_statutory"] = hr_stat
-    ci["hr_statutory"] = _bootstrap_ci([0 if v["verdict"] == "HALLUCINATION" else 1
-                                        for v in cited])
+    ci["hr_statutory"] = _bootstrap_ci(
+        [0 if v["category"] in _HVI_CATEGORIES else 1 for v in statutory])
 
+    # --- content subset: only citations that actually went through the binary
+    #     content diff (diff_level is set to EXACT or FABRICATED there). This
+    #     excludes NOT_FOUND / TEMPORAL_DEPRECATED / UNVERIFIABLE / CITATION_OK,
+    #     which never carry a diff_level — fixing the prior bug where a
+    #     non-existent article was miscounted toward hr_content. ---
+    content_subset = [v for v in statutory
+                      if v["diff_level"] in ("EXACT", "FABRICATED")]
     hr_content = _hr(content_subset)
     metrics["hr_content"] = hr_content
-    ci["hr_content"] = _bootstrap_ci([0 if v["verdict"] == "HALLUCINATION" else 1
-                                      for v in content_subset])
+    ci["hr_content"] = _bootstrap_ci(
+        [0 if v["verdict"] == "HALLUCINATION" else 1 for v in content_subset])
 
-    n_cited = len(cited)
+    n_cited = sum(1 for v in statutory if v["verdict"] in ("HALLUCINATION", "OK"))
     n_dep = sum(1 for v in statutory if v["category"] == "TEMPORAL_DEPRECATED")
     metrics["rate_deprecated"] = (n_dep / n_cited) if n_cited else 0.0
 
     n_unver = sum(1 for v in vs if v["verdict"] == "UNVERIFIABLE")
     metrics["rate_unverifiable"] = (n_unver / total) if total else 0.0
 
-    # per-domain HR
+    # per-domain HVI (consistent with hr_statutory)
     per_domain: Dict[str, float] = {}
     domains = sorted({v["domain"] for v in statutory})
     for dom in domains:
-        dom_vs = [v for v in statutory if v["domain"] == dom
-                  and v["verdict"] in ("HALLUCINATION", "OK")]
-        if dom_vs:
-            per_domain[dom] = _hr(dom_vs)
+        dom_stat = [v for v in statutory if v["domain"] == dom]
+        dom_hvi = sum(1 for v in dom_stat if v["category"] in _HVI_CATEGORIES)
+        if dom_stat:
+            per_domain[dom] = dom_hvi / len(dom_stat)
 
     return ScoreReport(metrics=metrics, ci=ci, per_domain=per_domain)

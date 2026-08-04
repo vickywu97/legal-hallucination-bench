@@ -79,8 +79,8 @@ FABRICATED 细分为诊断子类 `PARTIAL`（覆盖率≥50%）/ `TRUNCATED`（�
 `verify_citation()` 在 diff 之前优先判定；来源门禁 `UNVERIFIED_GT` 由
 `refuse_unverified_ground_truth()` 落 `UNVERIFIABLE`、不计入 HR 分母。
 
-配套 `benchmark/score.py` 聚合头条跑分：`hr_statutory`（法条级幻觉率）、
-`hr_content`（仅含 candidate_text 的内容级子集）、`rate_deprecated`（时序幻觉率）、
+配套 `benchmark/score.py` 聚合头条跑分：`hr_statutory`（**HVI：引注存在性/时序性幻觉率，即 `NOT_FOUND`+`TEMPORAL_DEPRECATED` 占比，不含内容级改写**）、
+`hr_content`（仅含 candidate_text 且经二元 diff 的内容级子集，反映是否逐字照抄）、`rate_deprecated`（时序幻觉率）、
 `rate_unverifiable`（透明不可验率）、`per_domain`（分法域 HR），并给出 bootstrap
 95% 置信区间（固定 seed）。`python -m benchmark.run --verify-demo` 可端到端演示
 抽取→核验→二元 diff 全流程。
