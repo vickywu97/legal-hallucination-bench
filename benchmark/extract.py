@@ -22,7 +22,7 @@ Design (reinforced #2 — proactive correction):
   ``answers.jsonl`` (one record per model answer); the benchmark scores it. No
   network, no API keys, no model code shipped.
 
-Output citation dict (per SIX_WEEK_PLAN):
+Output citation dict (per archive/SIX_WEEK_PLAN.md):
   {type, law_code, article_number, article_sort_key, original_text, position, suspected?}
 """
 from __future__ import annotations
@@ -182,7 +182,13 @@ def _name_pattern(law_map: dict) -> str:
     return r'(?:《)?(?P<ln>' + '|'.join(esc) + r')(?:》)?'
 
 
-_LAW_RE = None
+# Cache the compiled regex per distinct law_map. The pattern depends on the
+# law_map (its names feed the alternation), so it MUST be rebuilt for each
+# distinct map — a single global would keep the regex from the *first* map
+# seen (e.g. the real KB) and silently misfire for a later map (e.g. a test
+# fixture), causing under-recall. Keyed by id() so the cache is cheap and correct.
+_LAW_RE_CACHE: Dict[int, re.Pattern] = {}
+
 _INTERP_RE = re.compile(r'法释〔?(\d{4})〕?\s*(\d+)\s*号')
 _GUIDING_RE = re.compile(r'指导?性?案例\s*第?\s*(\d+)\s*号')
 _CASE_RE = re.compile(r'\((\d{4})\)([^()]{2,20}?)(?:民|刑|行|赔|执|再|终|初)\w*?\d+号')
@@ -190,15 +196,17 @@ _SUSPECT_TOKEN = re.compile(r'[条款项]')
 
 
 def _law_regex(law_map: dict) -> re.Pattern:
-    global _LAW_RE
-    if _LAW_RE is None:
+    key = id(law_map)
+    cached = _LAW_RE_CACHE.get(key)
+    if cached is None:
         pat = (
             r'(?:' + _name_pattern(law_map) + r'\s*)?'          # optional law name
             r'第\s*(' + _NUM + r')\s*条'                         # 第X条
             r'(?:\s*[至\-—~]\s*第?\s*(' + _NUM + r')\s*条)?'    # optional -第Y条 range
         )
-        _LAW_RE = re.compile(pat)
-    return _LAW_RE
+        cached = re.compile(pat)
+        _LAW_RE_CACHE[key] = cached
+    return cached
 
 
 # ---------------------------------------------------------------------------

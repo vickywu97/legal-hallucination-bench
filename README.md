@@ -42,7 +42,8 @@
 ### 1. 专家核验知识库（Expert-Verified KB）
 - 条文**只从官方法律法规数据库 `flk.npc.gov.cn` 粘贴**，绝不停靠模型生成。
 - `SEED`（LLM 草稿脚手架，默认 `unverified`）与 `verifications.json`（人类签名台账）**物理分离**：
-  只有专家签名能把节点翻转为 `verified`。
+  每条文均由作者本人（**Vicky Wu，律师 / 税务师 / 专利代理师**）逐条对照官方源具名核验，
+  `verified_by` 字段记为具名签名，只有该签名能把节点翻转为 `verified`。
 - `verify_kb.py` 走查工具 + `test_kb_integrity` 双重守卫，保证 **零 `unverified` 节点进入判分面**。
 - KB 纯现行法：失效法名**不进 KB**，只在代码级 `DEPRECATED_LAW_NAMES` 单一真相源登记（见 §4）。
 
@@ -86,7 +87,7 @@ Verification (verdict / category / diff_level / score / candidate / ground_truth
 
 ```bash
 # 0) 仓库零依赖，直接用受管 Python 跑（-S 关闭 site-packages，纯标准库）
-python -S -m unittest discover -s tests        # 全量测试（当前 74 用例绿灯）
+python -S -m unittest discover -s tests        # 全量测试（当前 83 用例绿灯）
 
 # 1) 开箱即用的离线评测（内置 good/bad/partial 三个玩具模型）
 python -S -m benchmark.run --offline

@@ -3,7 +3,7 @@
 Pure-python (stdlib only). No network, no C extensions, zero third-party
 runtime dependencies — runs fully offline in a `python -S` clean environment.
 
-Serialization format (schema locked in SIX_WEEK_PLAN.md):
+Serialization format (schema locked in archive/SIX_WEEK_PLAN.md):
   * ``laws/laws_index.json``  — law-level metadata, one entry per law_code.
   * ``laws/statutes.jsonl``   — one article-version node per line. A node
     carries ``effective_date`` and an optional ``revision_of`` back-pointer to
@@ -54,7 +54,6 @@ class Article:
     content: str
     effective_from: Optional[str]
     effective_until: Optional[str]
-    amended_by: Optional[str]  # "revision_id::article_no"
     # Provenance gate. "verified" means an expert confirmed the text against an
     # official source. "unverified" (default) means the text is scaffold/candidate
     # and MUST NOT be used as ground truth for scoring. An LLM-authored KB is, by
@@ -190,7 +189,6 @@ def _build_law_from_index_and_nodes(meta: dict, nodes: List[dict]) -> Law:
                 content=n["content"],
                 effective_from=n["effective_date"],
                 effective_until=succ_eff,
-                amended_by=None,
                 verification_status=n.get("verification_status", "unverified"),
             )
         repealed_date = eff_dates[idx + 1] if idx + 1 < len(eff_dates) else None
@@ -339,8 +337,8 @@ def resolve_article(
 ) -> ResolveResult:
     """Resolve the article content valid at ``as_of_date``.
 
-    Walks revisions at the requested time, then follows the ``amended_by``
-    chain if the matched article expired and was relocated.
+    Walks revisions at the requested time and returns the article text in
+    force at ``as_of_date`` (the latest revision whose window covers the date).
     """
     law = laws.get(law_name)
     # Temporal-hallucination trap — single source of truth is
@@ -393,25 +391,6 @@ def resolve_article(
             used_deprecated_alias=used_dep,
             deprecated_repealed_date=dep_repealed,
         )
-
-    # Follow amended_by if the article itself expired and was relocated.
-    if art.effective_until and _date_le(art.effective_until, as_of_date) and art.amended_by:
-        rid, ano = art.amended_by.split("::")
-        target_rev = law.revisions.get(rid)
-        if target_rev and ano in target_rev.articles:
-            tgt = target_rev.articles[ano]
-            return ResolveResult(
-                found=True,
-                content=tgt.content,
-                law_name=law.name,
-                revision_id=rid,
-                article_no=ano,
-                as_of=as_of_date,
-                note=f"RELOCATED from {valid_rev.revision_id}::{article_no}",
-                used_deprecated_alias=used_dep,
-                deprecated_repealed_date=dep_repealed,
-                verification_status=tgt.verification_status,
-            )
 
     return ResolveResult(
         found=True,

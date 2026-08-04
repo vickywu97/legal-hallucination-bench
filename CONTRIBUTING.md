@@ -13,7 +13,7 @@
 
 - 每条探针是 YAML：`{probe_id, type, prompt, ground_truth, expected_verdict, domain}`。
 - `ground_truth` 必须由构造可知，**不依赖人工标注**。
-- 探针类型（见 MVP_DESIGN.md §3）：B1 废止条文 / B2 虚构法释号 / B3 虚构指导案例号 / B4 内容错引 / B5 时间错位 / B6 虚构法院。
+- 探针类型（见 archive/MVP_DESIGN.md §3）：B1 废止条文 / B2 虚构法释号 / B3 虚构指导案例号 / B4 内容错引 / B5 时间错位 / B6 虚构法院。
 - 请附带"为什么这是幻觉"的简短说明，便于审核。
 
 ## 3. 贡献开放题标注（benchmark/probes/arm_a_open）

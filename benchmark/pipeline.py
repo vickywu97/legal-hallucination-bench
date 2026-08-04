@@ -152,7 +152,9 @@ def _write_model_md(model: str, data: dict, out_dir: str) -> str:
     path = os.path.join(out_dir, f"audit_{model}.md")
     lines = [f"# 审计报告：{model}", ""]
     lines.append(f"- 引注数：{data['n_citations']}")
-    lines.append(f"- 法条幻觉率 HR_statutory：{m.get('hr_statutory', 0):.1%}")
+    ci_stat = rep.ci.get("hr_statutory", (0.0, 0.0))
+    lines.append(f"- 法条幻觉率 HR_statutory：{m.get('hr_statutory', 0):.1%} "
+                 f"（bootstrap 95% CI {ci_stat[0]:.1%}–{ci_stat[1]:.1%}）")
     lines.append(f"- 内容级幻觉率 HR_content：{m.get('hr_content', 0):.1%}")
     lines.append(f"- 时序幻觉率 rate_deprecated：{m.get('rate_deprecated', 0):.1%}")
     lines.append(f"- 不可验率 rate_unverifiable：{m.get('rate_unverifiable', 0):.1%}")

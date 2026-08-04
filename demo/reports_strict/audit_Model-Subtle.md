@@ -1,7 +1,7 @@
 # 审计报告：Model-Subtle
 
 - 引注数：3
-- 法条幻觉率 HR_statutory：66.7%
+- 法条幻觉率 HR_statutory：66.7% （bootstrap 95% CI 0.0%–100.0%）
 - 内容级幻觉率 HR_content：66.7%
 - 时序幻觉率 rate_deprecated：33.3%
 - 不可验率 rate_unverifiable：0.0%

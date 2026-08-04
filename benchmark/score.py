@@ -1,6 +1,6 @@
 """Scoring (Week 4).
 
-Computes the hallucination-rate metrics defined in MVP_DESIGN.md §5 and
+Computes the hallucination-rate metrics defined in archive/MVP_DESIGN.md §5 and
 docs/DIFF_POLICY.md §七:
   - statutory citation HR (hard)            -> headline 跑分
   - statutory content HR (hard, headline)   -> only citations with candidate_text
@@ -73,12 +73,8 @@ def _bootstrap_ci(flags: List[int], n: int = 1000, seed: int = 42) -> tuple:
     return (vals[lo_i], vals[hi_i])
 
 
-def score(verifications: List, content_only: bool = False) -> ScoreReport:
-    """Aggregate a list of Verification records into HR metrics.
-
-    ``content_only=True`` restricts the headline statutory HR to citations that
-    carried a candidate_text (the true content-diff subset).
-    """
+def score(verifications: List) -> ScoreReport:
+    """Aggregate a list of Verification records into HR metrics."""
     vs = [_attrs(v) for v in verifications]
     total = len(vs)
     statutory = [v for v in vs if v["hardness"] == "hard"]
