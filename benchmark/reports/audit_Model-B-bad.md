@@ -1,14 +1,14 @@
 # 审计报告：Model-B-bad
 
-- 引注数：3
-- 法条幻觉率 HR_statutory：100.0% （bootstrap 95% CI 0.0%–0.0%）
-- 内容级幻觉率 HR_content：100.0%
-- 时序幻觉率 rate_deprecated：0.0%
+- 引注数：4
+- 引注幻觉率 HVI(hr_statutory)：50.0% （bootstrap 95% CI 0.0%–100.0%；仅统计存在性/时序性幻觉）
+- 内容级幻觉率 HR_content：100.0%（仅逐字 diff 子集；反映是否照抄法条）
+- 时序幻觉率 rate_deprecated：25.0%
 - 不可验率 rate_unverifiable：0.0%
 - 分域 HR：
-  - CIVIL_CODE：100.0%
+  - CIVIL_CODE：0.0%
   - COMPANY_LAW：100.0%
-  - CRIMINAL_LAW：100.0%
+  - CRIMINAL_LAW：0.0%
 
 ## 逐条核验
 
@@ -16,6 +16,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | Q1 | 《民法典》第584条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
 | Q3 | 《公司法》第13条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q4 | 旧公司法第16条 | HALLUCINATION | TEMPORAL_DEPRECATED | - | 0.00 | temporal hallucination: abolished-law name used after repeal |
 | Q10 | 《刑法》第232条 | HALLUCINATION | MISATTRIBUTED | FABRICATED | 0.00 | misattributed: candidate text matches article 234 in same law (cov=0% vs cited 232) |
 
 ## 逐条对照（模型输出 vs 已核验基准）
@@ -28,6 +29,11 @@
 ### 《公司法》第13条
 - 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
 - 模型输出（候选）：法定代表人由董事会选举产生。
+- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+
+### 旧公司法第16条
+- 判定：HALLUCINATION ｜ 子类：TEMPORAL_DEPRECATED ｜ 级别：- ｜ 得分：0.00
+- 模型输出（候选）：公司为股东提供担保须经股东会决议。
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
 ### 《刑法》第232条
