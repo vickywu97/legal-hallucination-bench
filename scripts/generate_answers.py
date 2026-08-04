@@ -65,7 +65,7 @@ MODELS = [
      "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
      "model": "qwen-max"},
     {"label": "Kimi", "key": "MOONSHOT_API_KEY", "kind": "openai",
-     "url": "https://api.moonshot.cn/v1/chat/completions", "model": "moonshot-v1-8k"},
+     "url": "https://api.moonshot.cn/v1/chat/completions", "model": "kimi-k2.6"},
 ]
 
 HTTP_TIMEOUT = 60
