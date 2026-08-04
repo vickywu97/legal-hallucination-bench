@@ -28,7 +28,15 @@
     "two_metrics": {
       "HVI": "硬核验指标 = 引注幻觉率(hr_statutory) + 时序幻觉率(rate_deprecated)，只考核存在性与时效性，不要求逐字。",
       "CRFI": "内容级吹哨指标 = 张冠李戴率（MISATTRIBUTED 占已核验引注之比），专门暴露'条号对、内容错'的危险错误。"
-    }
+    },
+    "models": [
+      {"label": "DeepSeek-V3", "provider": "DeepSeek", "role": "效率模型", "cost": "免费额度"},
+      {"label": "DeepSeek-R1", "provider": "DeepSeek", "role": "旗舰模型", "cost": "约 ¥0.5 / 15 题"},
+      {"label": "GLM-4-Flash", "provider": "智谱", "role": "效率模型", "cost": "完全免费"},
+      {"label": "Qwen-Max", "provider": "阿里云", "role": "效率模型", "cost": "免费额度"},
+      {"label": "Kimi", "provider": "月之暗面", "role": "效率模型", "cost": "免费额度"}
+    ],
+    "model_lineup_note": "纯国产 5 模型阵容，替代原 OpenAI（GPT-4o-mini）与 Anthropic（Claude-Haiku）海外模型；全部 OpenAI 兼容协议，总成本近乎为零。"
   },
   "questions": [
     {

@@ -3,7 +3,7 @@
 """Generate model answers for the Legal-Hallucination-Bench real-model leaderboard.
 
 Zero runtime dependencies (Python stdlib only: urllib, json, os, sys, time).
-Calls 7 cheap/fast LLM providers over REST, pins temperature=0 for
+Calls 5 domestic (China-based) LLM providers over REST, pins temperature=0 for
 reproducibility, and writes ``answers.jsonl`` in the exact format the offline
 pipeline consumes::
 
@@ -18,14 +18,13 @@ out-of-scope or fictional citation into a clean instruction violation +
 hard hallucination (NOT_FOUND) — so the leaderboard conclusion is defensible.
 
 API keys are read from the environment (never hardcoded):
-    DEEPSEEK_API_KEY, ZHIPU_API_KEY, DASHSCOPE_API_KEY, MOONSHOT_API_KEY,
-    OPENAI_API_KEY, ANTHROPIC_API_KEY
+    DEEPSEEK_API_KEY, ZHIPU_API_KEY, DASHSCOPE_API_KEY, MOONSHOT_API_KEY
 A model with no key is skipped (with a warning) rather than failing the run.
 
 Usage
 -----
     python scripts/generate_answers.py                 # all models, all questions
-    python scripts/generate_answers.py --models DeepSeek-V3 GLM-4
+    python scripts/generate_answers.py --models DeepSeek-V3 GLM-4-Flash
     python scripts/generate_answers.py --questions questions.json --out answers.jsonl
     python scripts/generate_answers.py --only Q1 Q7 Q13
 """
@@ -54,25 +53,19 @@ SYSTEM_PROMPT = (
     "回答请简洁：先给出引注（如《民法典》第X条），再给出条文原文，最后简要说明适用。"
 )
 
-# Provider registry. kind "openai" = OpenAI-compatible chat/completions JSON.
-# kind "anthropic" = Anthropic /v1/messages (system as top-level field).
+# Provider registry. All providers are OpenAI-compatible chat/completions JSON.
 MODELS = [
     {"label": "DeepSeek-V3", "key": "DEEPSEEK_API_KEY", "kind": "openai",
      "url": "https://api.deepseek.com/chat/completions", "model": "deepseek-chat"},
     {"label": "DeepSeek-R1", "key": "DEEPSEEK_API_KEY", "kind": "openai",
      "url": "https://api.deepseek.com/chat/completions", "model": "deepseek-reasoner"},
-    {"label": "GLM-4", "key": "ZHIPU_API_KEY", "kind": "openai",
-     "url": "https://open.bigmodel.cn/api/paas/v4/chat/completions", "model": "glm-4"},
+    {"label": "GLM-4-Flash", "key": "ZHIPU_API_KEY", "kind": "openai",
+     "url": "https://open.bigmodel.cn/api/paas/v4/chat/completions", "model": "glm-4-flash"},
     {"label": "Qwen-Max", "key": "DASHSCOPE_API_KEY", "kind": "openai",
      "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
      "model": "qwen-max"},
     {"label": "Kimi", "key": "MOONSHOT_API_KEY", "kind": "openai",
      "url": "https://api.moonshot.cn/v1/chat/completions", "model": "moonshot-v1-8k"},
-    {"label": "GPT-4o-mini", "key": "OPENAI_API_KEY", "kind": "openai",
-     "url": "https://api.openai.com/v1/chat/completions", "model": "gpt-4o-mini"},
-    {"label": "Claude-Haiku", "key": "ANTHROPIC_API_KEY", "kind": "anthropic",
-     "url": "https://api.anthropic.com/v1/messages",
-     "model": "claude-3-5-haiku-20241022"},
 ]
 
 HTTP_TIMEOUT = 60
@@ -115,35 +108,13 @@ def _call_openai(cfg: dict, api_key: str, user_prompt: str) -> str:
     return obj["choices"][0]["message"]["content"].strip()
 
 
-def _call_anthropic(cfg: dict, api_key: str, user_prompt: str) -> str:
-    headers = {
-        "Content-Type": "application/json",
-        "x-api-key": api_key,
-        "anthropic-version": "2023-06-01",
-    }
-    payload = {
-        "model": cfg["model"],
-        "system": SYSTEM_PROMPT,
-        "messages": [{"role": "user", "content": user_prompt}],
-        "max_tokens": 1500,
-        "temperature": 0,
-    }
-    obj = _post(cfg["url"], headers, payload)
-    # Anthropic returns content as a list of blocks; concatenate text blocks.
-    parts = [b.get("text", "") for b in obj.get("content", [])
-             if b.get("type") == "text"]
-    return "".join(parts).strip()
-
-
 def call_model(cfg: dict, user_prompt: str) -> str:
     api_key = os.environ.get(cfg["key"], "").strip()
     if not api_key:
         raise RuntimeError(f"missing env var {cfg['key']}")
-    if cfg["kind"] == "openai":
-        return _call_openai(cfg, api_key, user_prompt)
-    if cfg["kind"] == "anthropic":
-        return _call_anthropic(cfg, api_key, user_prompt)
-    raise RuntimeError(f"unknown provider kind: {cfg['kind']}")
+    if cfg["kind"] != "openai":
+        raise RuntimeError(f"unsupported provider kind: {cfg['kind']}")
+    return _call_openai(cfg, api_key, user_prompt)
 
 
 def main(argv=None):

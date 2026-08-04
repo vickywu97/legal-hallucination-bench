@@ -34,6 +34,7 @@
   （`{question_id, model, as_of_date, answer}`）。内置 5 法护栏系统提示词，把"超范围/虚构引用"转化为干净的硬幻觉判定。
 - **README 新增「真实模型排行榜」章节**：目标、15 题陷阱表、双指标 HVI（引注幻觉率+时序幻觉率）与 CRFI（张冠李戴率）、采集与 `--input` 评分命令、逐题诊断矩阵说明。
 - **`.gitignore`**：新增 `answers.jsonl`（个人 API 产物，不入库）。
+- **阵容收敛为纯国产 5 模型（2026-08-04 收口）**：`generate_answers.py` 移除 GPT-4o-mini（OpenAI）与 Claude-Haiku（Anthropic），GLM-4 升级为免费的 GLM-4-Flash；最终阵容 = DeepSeek-V3 / DeepSeek-R1（付费旗舰）/ GLM-4-Flash / Qwen-Max / Kimi，全部 OpenAI 兼容协议、总成本≈零；删除脚本内已无用的 Anthropic 分支；`questions.json` 的 `_meta.models` 同步记录阵容。
 
 ### 引擎支撑（此前已实现，本版串接）
 - `verify.Verification` 新增 `question_id` 字段；`pipeline.audit` 按模型**累加**引注（修复同模型多题被覆盖的 bug）；
