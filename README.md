@@ -177,19 +177,18 @@ python -S demo/run_eval.py        # 启发式 vs 严格 双跑对比，落到 de
 
 ### 3. 采集真实模型答案（零依赖脚本）
 
-`scripts/generate_answers.py` 纯标准库（`urllib`）调用 7 个便宜/高效模型，
+`scripts/generate_answers.py` 纯标准库（`urllib`）调用 5 个**纯国产**便宜/高效模型，
 `temperature=0` 保证可复现，写入 `answers.jsonl`：
 
 ```bash
-# 设置 API Key（缺哪个就跳过哪个模型，不报错）
-export DEEPSEEK_API_KEY=... ZHIPU_API_KEY=... DASHSCOPE_API_KEY=...
-export MOONSHOT_API_KEY=... OPENAI_API_KEY=... ANTHROPIC_API_KEY=...
+# 设置 API Key（均为国产平台；缺哪个就跳过哪个模型，不报错）
+export DEEPSEEK_API_KEY=... ZHIPU_API_KEY=... DASHSCOPE_API_KEY=... MOONSHOT_API_KEY=...
 
-# 跑全部 7 个模型 × 15 题（也可 --models / --only 指定子集）
+# 跑全部 5 个模型 × 15 题（也可 --models / --only 指定子集）
 python -S scripts/generate_answers.py --out answers.jsonl
 
-# 内置 7 个模型：DeepSeek-V3、DeepSeek-R1(付费旗舰)、GLM-4、Qwen-Max、
-#                 Kimi、GPT-4o-mini、Claude-Haiku
+# 内置 5 个纯国产模型：DeepSeek-V3、DeepSeek-R1(付费旗舰)、GLM-4-Flash(免费)、
+#                      Qwen-Max、Kimi（全部 OpenAI 兼容协议，总成本≈零）
 ```
 
 **关键护栏**：系统提示词强制模型"仅可引用 5 部现行法；超出范围或虚构的法律一律说明无法回答"。
