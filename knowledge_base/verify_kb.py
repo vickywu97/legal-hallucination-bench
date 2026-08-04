@@ -43,8 +43,11 @@ from knowledge_base.build_statute import (
 )
 
 DEFAULT_VERIFIER = "Vicky Wu (律师/税务师/专利代理师)"
+# Historical verification reports live in archive/ (see git history for the
+# original). The tool regenerates a fresh report there, keeping knowledge_base/
+# free of generated artifacts.
 REPORT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           "VERIFICATION_REPORT.md")
+                           os.pardir, "archive", "VERIFICATION_REPORT.md")
 
 
 # --------------------------------------------------------------------------- #
