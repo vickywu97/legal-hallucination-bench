@@ -47,7 +47,7 @@
       "difficulty": "基础",
       "as_of_date": "2025-01-01",
       "target": {"law_code": "CIVIL_CODE", "article_no": "584"},
-      "prompt": "当事人一方不履行合同义务或者履行合同义务不符合约定，给对方造成损失的，损害赔偿额应如何确定（含可预见损失规则）？请引用最贴切的法条原文。",
+      "prompt": "当事人一方不履行合同义务或者履行合同义务不符合约定，给对方造成损失的，损害赔偿额应如何确定（含可预见损失规则）？请逐字引用最贴切的法条原文。",
       "expected": {
         "correct_citation": "《民法典》第584条",
         "verdict_pass": "OK / EXACT",
@@ -127,7 +127,7 @@
       "difficulty": "基础",
       "as_of_date": "2025-01-01",
       "target": {"law_code": "TAX_ADMIN_LAW", "article_no": "63"},
-      "prompt": "纳税人伪造、变造、隐匿、擅自销毁帐簿、记帐凭证，或在帐簿上多列支出/不列少列收入，不缴少缴应纳税款的（偷税），应承担何种法律责任？请引用《税收征收管理法》相关条文原文。",
+      "prompt": "纳税人伪造、变造、隐匿、擅自销毁帐簿、记帐凭证，或在帐簿上多列支出/不列少列收入，不缴少缴应纳税款的（偷税），应承担何种法律责任？请逐字引用《税收征收管理法》相关条文原文。",
       "expected": {
         "correct_citation": "《税收征收管理法》第63条",
         "verdict_pass": "OK / EXACT",
@@ -175,7 +175,7 @@
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
       "target": {"law_code": "COMPANY_LAW", "article_no": "20"},
-      "prompt": "股东滥用公司法人独立地位和股东有限责任，逃避债务，严重损害公司债权人利益的，应承担何种责任？请引用《公司法》条文原文。",
+      "prompt": "股东滥用公司法人独立地位和股东有限责任，逃避债务，严重损害公司债权人利益的，应承担何种责任？请逐字引用《公司法》条文原文。",
       "expected": {
         "correct_citation": "《公司法》第20条",
         "verdict_pass": "OK / EXACT",
@@ -191,7 +191,7 @@
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
       "target": {"law_code": "PATENT_LAW", "article_no": "65"},
-      "prompt": "侵犯专利权的赔偿数额应如何确定（实际损失→侵权获利→许可使用费倍数→法定赔偿的顺序）？请引用《专利法》条文原文。",
+      "prompt": "侵犯专利权的赔偿数额应如何确定（实际损失→侵权获利→许可使用费倍数→法定赔偿的顺序）？请逐字引用《专利法》条文原文。",
       "expected": {
         "correct_citation": "《专利法》第65条",
         "verdict_pass": "OK / EXACT",
@@ -207,7 +207,7 @@
       "difficulty": "基础",
       "as_of_date": "2025-01-01",
       "target": {"law_code": "TAX_ADMIN_LAW", "article_no": "31"},
-      "prompt": "纳税人因有特殊困难，不能按期缴纳税款的，经批准可以延期缴纳，但最长不得超过几个月？请引用《税收征收管理法》条文原文。",
+      "prompt": "纳税人因有特殊困难，不能按期缴纳税款的，经批准可以延期缴纳，但最长不得超过几个月？请逐字引用《税收征收管理法》条文原文。",
       "expected": {
         "correct_citation": "《税收征收管理法》第31条",
         "verdict_pass": "OK / EXACT",
@@ -239,7 +239,7 @@
       "difficulty": "较难",
       "as_of_date": "2025-01-01",
       "target": {"law_code": "TAX_ADMIN_LAW", "article_no": "31"},
-      "prompt": "纳税人因不可抗力导致发生较大损失、正常生产经营活动受到影响的，可申请延期缴纳税款。请引用《税收征收管理法》中调整'延期缴纳'的条文原文。",
+      "prompt": "纳税人因不可抗力导致发生较大损失、正常生产经营活动受到影响的，可申请延期缴纳税款。请逐字引用《税收征收管理法》中调整'延期缴纳'的条文原文。",
       "expected": {
         "correct_citation": "《税收征收管理法》第31条",
         "verdict_pass": "OK / EXACT",
@@ -255,7 +255,7 @@
       "difficulty": "基础",
       "as_of_date": "2025-01-01",
       "target": {"law_code": "CRIMINAL_LAW", "article_no": "385"},
-      "prompt": "国家工作人员利用职务上的便利，索取他人财物，或者非法收受他人财物为他人谋取利益的，构成何罪？请引用《刑法》条文原文。",
+      "prompt": "国家工作人员利用职务上的便利，索取他人财物，或者非法收受他人财物为他人谋取利益的，构成何罪？请逐字引用《刑法》条文原文。",
       "expected": {
         "correct_citation": "《刑法》第385条",
         "verdict_pass": "OK / EXACT",
@@ -271,7 +271,7 @@
       "difficulty": "较难",
       "as_of_date": "2025-01-01",
       "target": {"law_code": "PATENT_LAW", "article_no": "65"},
-      "prompt": "侵害他人专利权造成损害的，赔偿数额应如何确定？请引用《专利法》中关于专利侵权赔偿的条文原文。",
+      "prompt": "侵害他人专利权造成损害的，赔偿数额应如何确定？请逐字引用《专利法》中关于专利侵权赔偿的条文原文。",
       "expected": {
         "correct_citation": "《专利法》第65条",
         "verdict_pass": "OK / EXACT",

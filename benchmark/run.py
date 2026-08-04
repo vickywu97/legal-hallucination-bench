@@ -135,6 +135,9 @@ def _SAMPLE_RECORDS():
     rev_co = laws["公司法"].revisions[list(laws["公司法"].revisions)[-1]]
     gt10 = rev_co.articles["10"].content  # current-company-law correct article
     gt15 = rev_co.articles["15"].content  # current-company-law art.15 (guarantee)
+    rev_p = laws["专利法"].revisions[list(laws["专利法"].revisions)[-1]]
+    gt65 = rev_p.articles["65"].content  # patent infringement damages
+    gt69 = rev_p.articles["69"].content  # patent preservation/evidence (decoy)
 
     grid = []
     # Q1 — 民法典 第584条 (verbatim benchmark)
@@ -169,17 +172,17 @@ def _SAMPLE_RECORDS():
     grid.append({"model": "Model-C-partial", "question_id": "Q4",
                  "as_of_date": "2025-01-01",
                  "answer": "依据旧公司法第16条，公司对外担保由董事会或股东会决议。"})  # TEMPORAL
-    # Q10 — 刑法 第232条 (good=EXACT; bad=张冠李戴 填234文本; partial=截断)
+    # Q10 — 专利法 第65条 (good=EXACT; bad=张冠李戴 填69文本; partial=截断)
     grid.append({"model": "Model-A-good", "question_id": "Q10",
                  "as_of_date": "2025-01-01",
-                 "answer": "根据《刑法》第232条，" + gt232})
+                 "answer": "根据《专利法》第65条，" + gt65})
     grid.append({"model": "Model-B-bad", "question_id": "Q10",
                  "as_of_date": "2025-01-01",
-                 "answer": "根据《刑法》第232条，" + gt234})  # 张冠李戴 -> MISATTRIBUTED
+                 "answer": "根据《专利法》第65条，" + gt69})  # 张冠李戴 -> MISATTRIBUTED
     grid.append({"model": "Model-C-partial", "question_id": "Q10",
                  "as_of_date": "2025-01-01",
-                 "answer": "根据《刑法》第232条，"
-                           + "；".join(gt232.split("；")[:-1])})  # 截断 -> FABRICATED
+                 "answer": "根据《专利法》第65条，"
+                           + "；".join(gt65.split("；")[:-1])})  # 截断 -> FABRICATED
     return grid
 
 

@@ -171,6 +171,7 @@ def _write_model_md(model: str, data: dict, out_dir: str) -> str:
     lines.append(f"- 引注幻觉率 HVI(hr_statutory)：{m.get('hr_statutory', 0):.1%} "
                  f"（bootstrap 95% CI {ci_stat[0]:.1%}–{ci_stat[1]:.1%}；仅统计存在性/时序性幻觉）")
     lines.append(f"- 内容级幻觉率 HR_content：{m.get('hr_content', 0):.1%}（仅逐字 diff 子集；反映是否照抄法条）")
+    lines.append(f"- 张冠李戴率 CRFI：{m.get('crfi', 0):.1%}（逐字 diff 子集中 MISATTRIBUTED 占比；专抓'条号对、内容错'）")
     lines.append(f"- 时序幻觉率 rate_deprecated：{m.get('rate_deprecated', 0):.1%}")
     lines.append(f"- 不可验率 rate_unverifiable：{m.get('rate_unverifiable', 0):.1%}")
     if rep.per_domain:
@@ -210,15 +211,16 @@ def _write_leaderboard(per_model: dict, out_dir: str) -> str:
     md_path = os.path.join(out_dir, "leaderboard.md")
     json_path = os.path.join(out_dir, "leaderboard.json")
     lines = ["# 法律引注幻觉排行榜 (Leaderboard)", "",
-             "| 排名 | 模型 | 引注幻觉率(HVI) | 内容级幻觉率 | 时序幻觉率 | "
-             "不可验率 | 引注数 |",
-             "| --- | --- | --- | --- | --- | --- | --- |"]
+             "| 排名 | 模型 | 引注幻觉率(HVI) | 内容级幻觉率 | 张冠李戴率(CRFI) | "
+             "时序幻觉率 | 不可验率 | 引注数 |",
+             "| --- | --- | --- | --- | --- | --- | --- | --- |"]
     board = []
     for rank, (model, d) in enumerate(ranked, 1):
         m = d["metrics"]
         lines.append(
             f"| {rank} | {model} | {m.get('hr_statutory', 0):.1%} | "
-            f"{m.get('hr_content', 0):.1%} | {m.get('rate_deprecated', 0):.1%} | "
+            f"{m.get('hr_content', 0):.1%} | {m.get('crfi', 0):.1%} | "
+            f"{m.get('rate_deprecated', 0):.1%} | "
             f"{m.get('rate_unverifiable', 0):.1%} | {d['n_citations']} |")
         board.append({"rank": rank, "model": model, "metrics": m,
                       "n_citations": d["n_citations"]})

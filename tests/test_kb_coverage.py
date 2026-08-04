@@ -27,7 +27,7 @@ MIN_NODES = {
     "PATENT_LAW": 12,
     "TAX_ADMIN_LAW": 12,
 }
-MIN_TOTAL = 99
+MIN_TOTAL = 100
 
 
 class TestCoverage(unittest.TestCase):

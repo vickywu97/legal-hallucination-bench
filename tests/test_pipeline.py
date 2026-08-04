@@ -115,6 +115,10 @@ class PipelineTests(unittest.TestCase):
         # -> HVI = 0.0
         self.assertEqual(res["C"]["report"].metrics["hr_statutory"], 0.0)
         self.assertEqual(res["C"]["report"].metrics["hr_content"], 1.0)
+        # CRFI isolates MISATTRIBUTED: only B has one (刑法232 + gt234)
+        self.assertEqual(res["A"]["report"].metrics["crfi"], 0.0)
+        self.assertEqual(res["B"]["report"].metrics["crfi"], 1.0)
+        self.assertEqual(res["C"]["report"].metrics["crfi"], 0.0)
         # build_report writes the artifacts
         build_report(res, self._tmp)
         self.assertTrue(os.path.exists(os.path.join(self._tmp, "leaderboard.json")))

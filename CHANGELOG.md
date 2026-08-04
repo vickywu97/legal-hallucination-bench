@@ -41,6 +41,12 @@
   `pipeline.build_report` 新增**逐题诊断矩阵**（Question × Model，✓/✗子类/?/·）。
 - 内置 `--offline` SAMPLE 重构为 3 题（Q1/Q3/Q10）× 3 玩具模型，开箱即演示逐题矩阵。
 
+### 改进（评测严谨性收口，2026-08-04）
+- **CRFI 指标落地**：`score.py` 计算 `crfi`（内容级 diff 子集中 `MISATTRIBUTED` 占比，专抓「条号对、内容错」）；`pipeline.py` 审计报告与排行榜新增「张冠李戴率(CRFI)」列，`_CAT_ABBR` 增 `MA=张冠李戴`；`test_pipeline.py`/`test_verify.py` 补 CRFI 断言。全量 83 用例绿。
+- **10 题改为「逐字引用」提示**：Q1/Q2/Q5/Q6/Q9/Q10/Q11/Q13/Q14/Q15 在 prompt 明确要求逐字引用法条原文，与绝对二元 DIFF_POLICY（逐字一致才 EXACT，否则 0 分）对齐；时序/硬幻觉类陷阱题（Q3/Q4/Q7/Q8/Q12）保持原样。
+- **修复内置 SAMPLE Q10 串题**：`run.py` `_SAMPLE_RECORDS` 的 Q10 块原误测刑法232/234，改为正确测试专利法65（gt65 正确 EXACT / gt69 张冠李戴 MISATTRIBUTED / 截断 gt65 FABRICATED）。
+- **KB 增补民法典第1182条（100 节点）**：Q15 为跨法张冠李戴（专利法65 vs 民法典1182），原 KB 缺 1182 会导致跨法检测只判通用 FABRICATED、抓不到 MISATTRIBUTED。现补 SEED + verifications.json 具名签名 + 重建 statutes.jsonl（100 verified / 0 unverified）；`test_kb_coverage` 的 `MIN_TOTAL` 99→100。
+
 ---
 
 ## 2026-08-03

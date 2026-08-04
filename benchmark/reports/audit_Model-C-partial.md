@@ -3,12 +3,13 @@
 - 引注数：4
 - 引注幻觉率 HVI(hr_statutory)：50.0% （bootstrap 95% CI 0.0%–100.0%；仅统计存在性/时序性幻觉）
 - 内容级幻觉率 HR_content：100.0%（仅逐字 diff 子集；反映是否照抄法条）
+- 张冠李戴率 CRFI：0.0%（逐字 diff 子集中 MISATTRIBUTED 占比；专抓'条号对、内容错'）
 - 时序幻觉率 rate_deprecated：25.0%
 - 不可验率 rate_unverifiable：0.0%
 - 分域 HR：
   - CIVIL_CODE：0.0%
   - COMPANY_LAW：100.0%
-  - CRIMINAL_LAW：0.0%
+  - PATENT_LAW：0.0%
 
 ## 逐条核验
 
@@ -17,7 +18,7 @@
 | Q1 | 《民法典》第584条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 50% of ground clauses present; counts as HALLUCINATION |
 | Q3 | 《公司法》第13条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q4 | 旧公司法第16条 | HALLUCINATION | TEMPORAL_DEPRECATED | - | 0.00 | temporal hallucination: abolished-law name used after repeal |
-| Q10 | 《刑法》第232条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 50% of ground clauses present; counts as HALLUCINATION |
+| Q10 | 《专利法》第65条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 75% of ground clauses present; counts as HALLUCINATION |
 
 ## 逐条对照（模型输出 vs 已核验基准）
 
@@ -36,8 +37,8 @@
 - 模型输出（候选）：公司对外担保由董事会或股东会决议。
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
-### 《刑法》第232条
+### 《专利法》第65条
 - 判定：HALLUCINATION ｜ 子类：PARTIAL ｜ 级别：FABRICATED ｜ 得分：0.00
-- 模型输出（候选）：【故意杀人罪】故意杀人的，处死刑、无期徒刑或者十年以上有期徒刑
-- 官方原文（基准）：【故意杀人罪】故意杀人的，处死刑、无期徒刑或者十年以上有期徒刑；情节较轻的，处三年以上十年以下有期徒刑。
+- 模型输出（候选）：未经专利权人许可，实施其专利，即侵犯其专利权，引起纠纷的，由当事人协商解决；不愿协商或者协商不成的，专利权人或者利害关系人可以向人民法院起诉，也可以请求管理专利工作的部门处理。管理专利工作的部门处理时，认定侵权行为成立的，可以责令侵权人立即停止侵权行为，当事人不服的，可以自收到处理通知之日起十五日内依照《中华人民共和国行政诉讼法》向人民法院起诉；侵权人期满不起诉又不停止侵权行为的，管理专利工作的部门可以申请人民法院强制执行。进行处理的管理专利工作的部门应当事人的请求，可以就侵犯专利权的赔偿数额进行调解
+- 官方原文（基准）：未经专利权人许可，实施其专利，即侵犯其专利权，引起纠纷的，由当事人协商解决；不愿协商或者协商不成的，专利权人或者利害关系人可以向人民法院起诉，也可以请求管理专利工作的部门处理。管理专利工作的部门处理时，认定侵权行为成立的，可以责令侵权人立即停止侵权行为，当事人不服的，可以自收到处理通知之日起十五日内依照《中华人民共和国行政诉讼法》向人民法院起诉；侵权人期满不起诉又不停止侵权行为的，管理专利工作的部门可以申请人民法院强制执行。进行处理的管理专利工作的部门应当事人的请求，可以就侵犯专利权的赔偿数额进行调解；调解不成的，当事人可以依照《中华人民共和国民事诉讼法》向人民法院起诉。
 

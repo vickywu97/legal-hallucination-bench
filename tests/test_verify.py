@@ -180,6 +180,8 @@ class ScoreTests(unittest.TestCase):
         # per-domain HVI (CRIMINAL_LAW has 1 OK + 1 PARTIAL-content; no HVI -> 0)
         self.assertIn("CRIMINAL_LAW", rep.per_domain)
         self.assertAlmostEqual(rep.per_domain["CRIMINAL_LAW"], 0.0, places=5)
+        # CRFI isolates MISATTRIBUTED; no misattribution in this fixture -> 0
+        self.assertAlmostEqual(rep.metrics["crfi"], 0.0, places=5)
 
 
 class RangeCitationTests(unittest.TestCase):

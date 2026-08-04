@@ -125,6 +125,12 @@ def score(verifications: List) -> ScoreReport:
     ci["hr_content"] = _bootstrap_ci(
         [0 if v["verdict"] == "HALLUCINATION" else 1 for v in content_subset])
 
+    # --- CRFI: misattribution rate (张冠李戴) — a focused slice of hr_content
+    #     isolating "right article number, wrong statute text" (MISATTRIBUTED)
+    #     from generic paraphrase / truncation failures. ---
+    n_mis = sum(1 for v in content_subset if v["category"] == "MISATTRIBUTED")
+    metrics["crfi"] = (n_mis / len(content_subset)) if content_subset else 0.0
+
     n_cited = sum(1 for v in statutory if v["verdict"] in ("HALLUCINATION", "OK"))
     n_dep = sum(1 for v in statutory if v["category"] == "TEMPORAL_DEPRECATED")
     metrics["rate_deprecated"] = (n_dep / n_cited) if n_cited else 0.0

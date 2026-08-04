@@ -5,6 +5,7 @@
     "metrics": {
       "hr_statutory": 0.0,
       "hr_content": 0.0,
+      "crfi": 0.0,
       "rate_deprecated": 0.0,
       "rate_unverifiable": 0.0
     },
@@ -16,6 +17,7 @@
     "metrics": {
       "hr_statutory": 0.5,
       "hr_content": 1.0,
+      "crfi": 0.5,
       "rate_deprecated": 0.25,
       "rate_unverifiable": 0.0
     },
@@ -27,6 +29,7 @@
     "metrics": {
       "hr_statutory": 0.5,
       "hr_content": 1.0,
+      "crfi": 0.0,
       "rate_deprecated": 0.25,
       "rate_unverifiable": 0.0
     },
