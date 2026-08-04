@@ -153,6 +153,8 @@ python -S demo/run_eval.py        # 启发式 vs 严格 双跑对比，落到 de
 - [`docs/DIFF_POLICY.md`](docs/DIFF_POLICY.md) — 二元内容 diff 政策、诊断子类、阈值常量。
 - [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md) — 整体方法论（抽取/核验/评分/时序陷阱）。
 - [`docs/KB_EXPANSION_PLAN.md`](docs/KB_EXPANSION_PLAN.md) — KB 扩容路线图。
+- [`CHANGELOG.md`](CHANGELOG.md) — 版本变更记录。
+- 历史设计文档（早期 MVP 设计、六周计划、核验报告）已归档至 [`archive/`](archive/)，供追溯，不再反映当前设计。
 
 ---
 
