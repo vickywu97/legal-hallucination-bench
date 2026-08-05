@@ -120,11 +120,11 @@ python -S -m benchmark.run --input answers.jsonl --candidates candidates.jsonl
 
 ## 当前规模与规划
 
-| 指标 | 现状 (v1.0) | 规划 (v2.0) |
+| 指标 | 现状 (v1.1-dev) | 规划 (v2.0) |
 | --- | --- | --- |
-| 法律部数 | 5（民法典/公司法/刑法/专利法/税收征管法） | 15–20 |
-| 条文节点 | 101（100% verified） | 700+ |
-| 覆盖域 | civil / criminal / tax / ip | + admin / 程序法 |
+| 法律部数 | 6（民法典/公司法/刑法/专利法/税收征管法/**增值税法**） | 15–20 |
+| 条文节点 | 116（100% verified） | 700+ |
+| 覆盖域 | civil / criminal / tax / ip / **vat** | + admin / 程序法 |
 | 失效法陷阱 | 10 部（单源） | 10 部（持续维护） |
 
 扩容规划见 [`docs/KB_EXPANSION_PLAN.md`](docs/KB_EXPANSION_PLAN.md)：优先补强**实体税法**

@@ -48,8 +48,9 @@
 → 预计 +130~150 节点，总计 ≈ 230–250。
 
 **进度追踪（2026-08-05）**
-- ✅ **增值税法 VAT_LAW pilot 已起草**：15 个高价值节点（纳税人定义/视同销售/税率13·9·6·0/征收率3%/进项抵扣与不得抵扣/留抵退税/起征点免税/纳税义务发生时间/计税期间等）已写入 `build_statute.py` 的 `SEED`，`laws_index.json` 已注册，`statutes.jsonl` 重建为 **116 节点（101 verified + 15 unverified）**。
-- ⏳ **待专家核验**：这 15 条目前 `verification_status=unverified`（SEED 草稿，默认态），**不参与判分**（verify.py 对 unverified 节点返回 `UNVERIFIED_GT`，张冠李戴检测也只看 verified 节点）。需你对照 `flk.npc.gov.cn` 逐条核验后，在 `verifications.json` 写入 `status:"verified"` 才能翻 verified、激活 VAT 域的 CRFI 区分力。
+- ✅ **增值税法 VAT_LAW pilot 已起草并核验**：15 个高价值节点（纳税人定义/视同销售/税率13·9·6·0/征收率3%/进项抵扣与不得抵扣/留抵退税/起征点免税/纳税义务发生时间/计税期间等）已写入 `build_statute.py` 的 `SEED`，`laws_index.json` 已注册，`statutes.jsonl` 重建为 **116 节点（116 verified，100%）**。
+- ✅ **专家核验（Agent 代核，待本人复核）**：对照用户提供的官方《增值税法》doc（主席令第四十一号，2024-12-25 通过 / 2026-01-01 施行），逐条 diff 结果：**13 条逐字 ACCEPT + 2 条仅因解析器把"第二章 税率/第四章 税收优惠"章标题误并入条文尾部（真实条文内容逐字一致）** → 15 条全部 verbatim 一致，已在 `verifications.json` 标记 `verified`（`verified_by` 注明 Agent 依官方 doc 代核、待 Vicky Wu 复核签署）。VAT 域现已进入判分面，可支撑 CRFI 区分力。
+- ⏳ **待补 VAT 陷阱题**：当前 15 道评测题无一道引用增值税法，故重跑排行榜 CRFI 仍为 0。需在 `questions.json` 增设 VAT 陷阱（如把某条文写错半句诱导"条号对、内容错"），才能真正激活 VAT 域的张冠李戴检测。
 - 企业所得税法 / 个人所得税法 / 专利法补强：尚未启动。
 
 ### Phase 2 — 民法典纵深（最大单一法域）
