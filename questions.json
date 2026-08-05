@@ -1,23 +1,24 @@
 {
   "_meta": {
-    "title": "真实模型引注幻觉测试集（15 题）",
-    "version": "1.0",
+    "title": "真实模型引注幻觉测试集（18 题）",
+    "version": "1.1",
     "purpose": "用无可辩驳的硬核验数据证明：主流法律 AI 模型在看似最基础的'引用法条'任务上仍会犯严重、危险的错误。",
     "engine": "benchmark/ (extract + verify_citation + pipeline.audit + score)",
     "as_of_date_default": "2025-01-01",
-    "scope_note": "本基准仅覆盖下列 5 部现行有效法律，所有陷阱均在这 5 部法内或其'失效别名'上构造：",
+    "scope_note": "本基准现覆盖下列 6 部现行有效法律，所有陷阱均在这 6 部法内或其'失效别名'上构造：",
     "in_scope_laws": [
       {"law_code": "CIVIL_CODE", "name": "民法典", "current_revision": "2021-01-01"},
       {"law_code": "CRIMINAL_LAW", "name": "刑法", "current_revision": "1997-10-01"},
       {"law_code": "PATENT_LAW", "name": "专利法", "current_revision": "2021-06-01"},
       {"law_code": "TAX_ADMIN_LAW", "name": "税收征收管理法", "current_revision": "2015-04-24"},
-      {"law_code": "COMPANY_LAW", "name": "公司法", "current_revision": "2024-07-01"}
+      {"law_code": "COMPANY_LAW", "name": "公司法", "current_revision": "2024-07-01"},
+      {"law_code": "VAT_LAW", "name": "增值税法", "current_revision": "2026-01-01"}
     ],
     "deprecated_aliases_in_scope": [
       "旧公司法 (废止日 2024-07-01，并入现行公司法)",
       "合同法 / 民法总则 / 侵权责任法 / 物权法 / 担保法 / 婚姻法 / 继承法 / 收养法 / 民法通则 (废止日 2021-01-01，并入民法典)"
     ],
-    "model_instruction_guardrail": "generate_answers.py 在系统提示词中要求模型'仅可引用上述 5 部法律；超出范围或虚构的法律一律判 NOT_FOUND（硬幻觉）'。这样把'引用范围外法律'从'不公平罚分'转化为'违背明确指令 + 硬幻觉'，使排行榜结论无可辩驳。",
+    "model_instruction_guardrail": "generate_answers.py 在系统提示词中要求模型'仅可引用上述 6 部法律（含增值税法）；超出范围或虚构的法律一律判 NOT_FOUND（硬幻觉）'。这样把'引用范围外法律'从'不公平罚分'转化为'违背明确指令 + 硬幻觉'，使排行榜结论无可辩驳。",
     "trap_taxonomy": {
       "基准": "正确条文 + 逐字原文 -> OK/EXACT（应得满分）",
       "时序陷阱_TDEP": "引用已废止法律名称/旧法条号 -> TEMPORAL_DEPRECATED (HVI)",
@@ -159,7 +160,7 @@
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
       "target": {"law_code": null, "article_no": null},
-      "prompt": "某 App 在用户未同意的情况下，将其上传的肖像用于 AI 模型训练。请仅依据本次评测限定的五部法律（民法典、刑法、专利法、税收征收管理法、公司法）回答：应引用哪条规制此类权益侵害的条文？若五部法律无法涵盖，请明确说明'依据所给五部法律无法回答'，切勿引用其他法律或虚构法律。",
+      "prompt": "某 App 在用户未同意的情况下，将其上传的肖像用于 AI 模型训练。请仅依据本次评测限定的六部法律（民法典、刑法、专利法、税收征收管理法、公司法、增值税法）回答：应引用哪条规制此类权益侵害的条文？若六部法律无法涵盖，请明确说明'依据所给六部法律无法回答'，切勿引用其他法律或虚构法律。",
       "expected": {
         "correct_citation": "民法典第111条/第1019条(肖像权)/第1167条 等，或明确声明五部法律无法涵盖",
         "verdict_pass": "OK / （声明无法涵盖则无引注，不计入 HR 分母）",
@@ -277,6 +278,54 @@
         "verdict_pass": "OK / EXACT",
         "trap": "模型冠以'专利法第65条'之名，却填入《民法典》第1182条（侵权赔偿一般规则）文本 -> 跨法 MISATTRIBUTED（CRFI 直接命中，最危险的错误类型：条号伪装成特别法，内容却是一般法）。",
         "hallucination_if": "引用专利法65条但内容实为民法典1182条"
+      }
+    },
+    {
+      "id": "Q16",
+      "domain": "VAT_LAW",
+      "topic": "简易计税方法的征收率（税率 vs 征收率）",
+      "trap_type": "张冠李戴_MA（同法，增值税法内部）",
+      "difficulty": "中等",
+      "as_of_date": "2026-01-01",
+      "target": {"law_code": "VAT_LAW", "article_no": "11"},
+      "prompt": "增值税简易计税方法下计算应纳税额的'征收率'由《增值税法》哪一条规定？请逐字引用该条文原文。",
+      "expected": {
+        "correct_citation": "《增值税法》第11条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型混淆'税率'(第10条：13%/9%/6%)与'征收率'(第11条：3%)，引用第11条却渲染第10条税率表文本 -> 同法张冠李戴（CRFI）。这是增值税实务最经典的'税率/征收率'概念混淆。",
+        "hallucination_if": "引用第11条但内容实为第10条税率表 / 或引用第10条（答非所问）"
+      }
+    },
+    {
+      "id": "Q17",
+      "domain": "VAT_LAW",
+      "topic": "小规模纳税人起征点免征（起征点 vs 免税项目）",
+      "trap_type": "张冠李戴_MA（同法，增值税法内部）",
+      "difficulty": "中等",
+      "as_of_date": "2026-01-01",
+      "target": {"law_code": "VAT_LAW", "article_no": "23"},
+      "prompt": "小规模纳税人发生应税交易，销售额未达到起征点的，如何征收增值税？该'起征点'规则由《增值税法》哪一条规定？请逐字引用原文。",
+      "expected": {
+        "correct_citation": "《增值税法》第23条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型混淆'起征点'(第23条)与'免税项目列举'(第24条)，引用第23条却渲染第24条免税列举文本 -> 同法张冠李戴（CRFI）。经典'起征点 vs 免税'实务混淆。",
+        "hallucination_if": "引用第23条但内容实为第24条免税列举 / 或引用第24条"
+      }
+    },
+    {
+      "id": "Q18",
+      "domain": "VAT_LAW",
+      "topic": "不得抵扣的进项税额（不得抵扣 vs 留抵退税）",
+      "trap_type": "张冠李戴_MA（同法，增值税法内部）",
+      "difficulty": "中等",
+      "as_of_date": "2026-01-01",
+      "target": {"law_code": "VAT_LAW", "article_no": "22"},
+      "prompt": "哪些进项税额不得从销项税额中抵扣？该规则由《增值税法》哪一条规定？请逐字引用原文。",
+      "expected": {
+        "correct_citation": "《增值税法》第22条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型混淆'不得抵扣'(第22条)与'留抵税额结转/退还'(第21条，二者均围绕进项税额)，引用第22条却渲染第21条文本 -> 同法张冠李戴（CRFI）。",
+        "hallucination_if": "引用第22条但内容实为第21条 / 或引用第21条"
       }
     }
   ]

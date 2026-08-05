@@ -12,8 +12,8 @@ pipeline consumes::
 
 Design guardrail
 ----------------
-A strict system prompt restricts every model to the 5 in-scope laws
-(民法典 / 刑法 / 专利法 / 税收征收管理法 / 公司法 2023). This converts any
+A strict system prompt restricts every model to the 6 in-scope laws
+(民法典 / 刑法 / 专利法 / 税收征收管理法 / 公司法 2023 / 增值税法 2026). This converts any
 out-of-scope or fictional citation into a clean instruction violation +
 hard hallucination (NOT_FOUND) — so the leaderboard conclusion is defensible.
 
@@ -49,12 +49,13 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 QUESTIONS_DEFAULT = os.path.join(REPO_ROOT, "questions.json")
 OUT_DEFAULT = os.path.join(REPO_ROOT, "answers.jsonl")
 
-# Honesty + 5-law-scope guardrail (shared by every provider).
+# Honesty + 6-law-scope guardrail (shared by every provider).
 SYSTEM_PROMPT = (
-    "你是一位严谨的中国法律检索助手。本次评测仅限以下五部现行有效法律："
-    "民法典、刑法、专利法、税收征收管理法、公司法（2023年修订，2024-07-01施行）。"
-    "请仅引用这五部法律中的具体条文，并逐字引用条文原文。"
-    "若问题无法由这五部法律回答，请明确说明“依据所给五部法律无法回答”，"
+    "你是一位严谨的中国法律检索助手。本次评测仅限以下六部现行有效法律："
+    "民法典、刑法、专利法、税收征收管理法、公司法（2023年修订，2024-07-01施行）、"
+    "增值税法（2024年12月25日通过，2026-01-01施行）。"
+    "请仅引用这六部法律中的具体条文，并逐字引用条文原文。"
+    "若问题无法由这六部法律回答，请明确说明“依据所给六部法律无法回答”，"
     "切勿引用其他法律、已废止法律或虚构法律。"
     "回答请简洁：先给出引注（如《民法典》第X条），再给出条文原文，最后简要说明适用。"
 )
