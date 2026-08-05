@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Legal-Hallucination-Bench · 真实模型引注幻觉排行榜</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#1e293b; --ink:#e2e8f0; --muted:#94a3b8;
+    --accent:#38bdf8; --good:#34d399; --warn:#fbbf24; --bad:#f87171;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:linear-gradient(160deg,#0b1220,#0f172a 60%);
+    color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",
+    "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    padding:40px 20px; display:flex; justify-content:center;
+  }
+  .wrap{width:100%; max-width:760px}
+  header h1{font-size:26px; margin:0 0 6px}
+  header p{color:var(--muted); margin:0 0 4px; font-size:14px}
+  .tag{display:inline-block; background:rgba(56,189,248,.12); color:var(--accent);
+    border:1px solid rgba(56,189,248,.3); border-radius:999px; padding:3px 10px;
+    font-size:12px; margin-top:8px}
+  .card{background:var(--card); border:1px solid rgba(148,163,184,.15);
+    border-radius:16px; padding:22px; margin-top:20px; box-shadow:0 10px 40px rgba(0,0,0,.35)}
+  table{width:100%; border-collapse:collapse; font-size:15px}
+  th,td{padding:12px 10px; text-align:left; border-bottom:1px solid rgba(148,163,184,.12)}
+  th{color:var(--muted); font-weight:600; font-size:13px; text-transform:uppercase; letter-spacing:.04em}
+  td.num{text-align:right; font-variant-numeric:tabular-nums; font-weight:700}
+  .rank{display:inline-flex; align-items:center; justify-content:center;
+    width:26px; height:26px; border-radius:8px; font-weight:700; font-size:13px;
+    background:rgba(148,163,184,.15)}
+  .r1{background:rgba(52,211,153,.18); color:var(--good)}
+  .r5{background:rgba(248,113,113,.18); color:var(--bad)}
+  .bar{height:8px; border-radius:6px; background:rgba(148,163,184,.18); overflow:hidden; margin-top:6px}
+  .bar > i{display:block; height:100%; border-radius:6px}
+  .hvi-cell{min-width:120px}
+  .pill{font-size:12px; padding:2px 8px; border-radius:999px; background:rgba(148,163,184,.15); color:var(--muted)}
+  h2{font-size:16px; margin:0 0 12px}
+  .insight{border-left:3px solid var(--accent); padding:10px 14px; margin:12px 0;
+    background:rgba(56,189,248,.06); border-radius:0 10px 10px 0}
+  .insight b{color:#fff}
+  footer{margin-top:18px; font-size:13px; color:var(--muted); text-align:center}
+  footer a{color:var(--accent); text-decoration:none}
+  footer a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>法律 AI 引注幻觉排行榜</h1>
+    <p>Legal-Hallucination-Bench · 15 题 × 5 国产模型 = 75 条真实回答</p>
+    <p>引注幻觉率（HVI，越低越好）：只查"引用的法条是否存在 / 是否废止"，不要求逐字</p>
+    <span class="tag">离线评分 · 零依赖 · 可复现</span>
+  </header>
+
+  <div class="card">
+    <h2>排行榜（按 HVI 升序）</h2>
+    <table>
+      <thead>
+        <tr><th>#</th><th>模型</th><th class="hvi-cell">引注幻觉率 HVI</th><th class="num">引注数</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="rank r1">1</span></td>
+          <td>DeepSeek-R1 <span class="pill">付费旗舰</span></td>
+          <td class="hvi-cell">36.8%
+            <div class="bar"><i style="width:36.8%;background:var(--good)"></i></div></td>
+          <td class="num">19</td>
+        </tr>
+        <tr>
+          <td><span class="rank">2</span></td>
+          <td>GLM-4-Flash <span class="pill">免费</span></td>
+          <td class="hvi-cell">45.0%
+            <div class="bar"><i style="width:45%;background:var(--warn)"></i></div></td>
+          <td class="num">20</td>
+        </tr>
+        <tr>
+          <td><span class="rank">3</span></td>
+          <td>Qwen-Max <span class="pill">付费</span></td>
+          <td class="hvi-cell">47.1%
+            <div class="bar"><i style="width:47.1%;background:var(--warn)"></i></div></td>
+          <td class="num">17</td>
+        </tr>
+        <tr>
+          <td><span class="rank">4</span></td>
+          <td>Kimi <span class="pill">kimi-k2.6</span></td>
+          <td class="hvi-cell">50.0%
+            <div class="bar"><i style="width:50%;background:#fb923c"></i></div></td>
+          <td class="num">22</td>
+        </tr>
+        <tr>
+          <td><span class="rank r5">5</span></td>
+          <td>DeepSeek-V3 <span class="pill">免费基础</span></td>
+          <td class="hvi-cell">60.0%
+            <div class="bar"><i style="width:60%;background:var(--bad)"></i></div></td>
+          <td class="num">20</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>两大核心洞察</h2>
+    <div class="insight">
+      <b>免费模型反超付费</b>：完全免费的 GLM-4-Flash（HVI 45.0%）优于付费的 Qwen-Max（47.1%）——
+      更高的价格并未换来更可靠的法条引用；付费旗舰 R1（36.8%）虽最佳，但领先幅度有限。
+    </div>
+    <div class="insight">
+      <b>面对虚构 / 失效法律，五模型全军覆没</b>：Q8（虚构法律"虚拟法"）五模型全部 NOT_FOUND、
+      Q4（2024 新《公司法》将对外担保由第16条移至第15条）五模型全部引用旧序号 → NOT_FOUND——
+      没有任何模型能识别"法律不存在 / 序号已随新法变更"。
+      <br><span style="color:var(--muted);font-size:13px">注：直接引用"已废止法律"的陷阱仅 R1 在 Q7 踩中，其余 4 模型均避开。</span>
+    </div>
+    <p style="color:var(--muted);font-size:13px;margin:14px 0 0">
+      全员内容级幻觉率 100%（零逐字合规）· 张冠李戴率(CRFI) 0%（受 KB 101 节点覆盖限制）·
+      仅 R1 触发时序幻觉 5.3%。
+    </p>
+  </div>
+
+  <footer>
+    数据与方法论详见 GitHub 仓库：
+    <a href="https://github.com/vickywu97/legal-hallucination-bench" target="_blank" rel="noopener">
+      github.com/vickywu97/legal-hallucination-bench
+    </a>
+  </footer>
+</div>
+</body>
+</html>
