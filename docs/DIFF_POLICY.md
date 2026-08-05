@@ -98,6 +98,25 @@ diff 前对候选文本与 ground truth **分别**做归一化，消除"排版�
 > 注意 `PARTIAL` 已不再是独立评分等级——它仅是 FABRICATED 的一个诊断子类，
 > 用以区分"覆盖了大部分条文但仍有偏差"与"完全编造"，但两者扣分相同（0 分）。
 
+### 5.1 软探针：`SOFT_MISATTRIBUTED`（诊断用，不影响评分）
+
+真实模型常以**改写/意译**方式填入"张冠李戴"内容，而非逐字照抄，导致硬
+`MISATTRIBUTED`（`cov' >= 0.80` 同法 / `>= 0.90` 跨法）漏判，结果落入
+`FABRICATED_GENERIC`/`PARTIAL`，使 CRFI 盲区。**软探针**在硬判定未触发时，
+对灰色带 `[SOFT_MIS_SAME_LAW, MIS_THRESHOLD)`（`[0.50, 0.80)`）与
+`[SOFT_MIS_CROSS_LAW, CROSS_LAW_MIS_THRESHOLD)`（`[0.70, 0.90)`）做一次宽松比对，
+若候选文本与**另一条已核验节点**的 `cov'` 落入该带，则在 `Verification.note`
+追加 `SOFT_MISATTRIBUTED: …` 标记（并注明 `cov` 与"疑似改写式张冠李戴"）。
+
+- **纯粹诊断**：软探针**绝不**改变 `category` / `score` / `diff_level`，也不计入
+  `crfi` 指标（CRFI 仍只统计硬 `MISATTRIBUTED`）。它只把"可能被改写蒙混的张冠李戴"
+  暴露到审计报告中，供人工/二次研判。
+- 阈值硬编码于 `verify.py`：`SOFT_MIS_SAME_LAW = 0.50`、`SOFT_MIS_CROSS_LAW = 0.70`；
+  下界取 `>=`（含 0.50），上界取 `<`（不含硬阈值），与硬判定零重叠。
+- 仅比对 `verification_status=verified` 节点（沿用来源门禁）。实现：
+  `verify.py:_soft_misattribution_check()`，在 `PARTIAL` 与 `FABRICATED_GENERIC`
+  两个分支（硬 `MISATTRIBUTED` 未触发处）调用。
+
 ### 引注级（无 candidate_text）判定
 
 | 情形 | verdict | category | score |

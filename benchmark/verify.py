@@ -48,6 +48,12 @@ MIS_THRESHOLD = 0.80     # cross-article cov' > this -> MISATTRIBUTED (tightened
 TRUNC_LEN_RATIO = 0.70   # cand shorter than this * ground AND rev>=0.9 -> TRUNCATED
 CROSS_LAW_MIS_THRESHOLD = 0.90  # 跨法张冠李戴阈值（高于同法 0.80，避免误判）
 
+# Soft 张冠李戴探针（诊断用，不影响评分）：在硬 MISATTRIBUTED 未触发时，
+# 对"改写/意译式张冠李戴"做一次宽松比对。落在硬阈值之下的灰色带内即标记，
+# 仅写入 Verification.note，不改变 category / score / diff_level。
+SOFT_MIS_SAME_LAW = 0.50    # 同法软下界：cov∈[0.50, 0.80) → 疑似改写式张冠李戴
+SOFT_MIS_CROSS_LAW = 0.70   # 跨法软下界：cov∈[0.70, 0.90)（高于同法，避免误判）
+
 EXACT = "EXACT"
 PARTIAL = "PARTIAL"          # diagnostic sub-category of FABRICATED (score 0.0)
 FABRICATED = "FABRICATED"
@@ -286,6 +292,75 @@ def _cross_check_misattribution(laws: Dict, resolved: ResolveResult,
     return best
 
 
+def _soft_misattribution_check(laws: Dict, resolved: ResolveResult,
+                               candidate: str, cited_article_no: str
+                               ) -> Optional[tuple]:
+    """Soft 张冠李戴 probe — runs ONLY when the HARD misattribution check
+    (_cross_check_misattribution) did NOT trigger.
+
+    Real models often PARAPHRASE the wrong article instead of quoting it
+    verbatim; the hard check (cov>=0.80 same-law / >=0.90 cross-law) misses
+    those, and they slip through as FABRICATED_GENERIC/PARTIAL, leaving CRFI
+    blind. This probe scans the loose band *below* the hard threshold
+    (same-law [SOFT_MIS_SAME_LAW, MIS_THRESHOLD); cross-law
+    [SOFT_MIS_CROSS_LAW, CROSS_LAW_MIS_THRESHOLD)) and flags a near-miss.
+
+    Returns ``(label, cov)`` where ``label`` mirrors the hard check
+    (``"<ano>"`` same-law, ``"<LawName> 第<ano>条"`` cross-law), or None.
+    DIAGNOSTIC ONLY: the caller appends it to Verification.note and NEVER
+    changes score/category/diff_level. Verified nodes only.
+    """
+    if not candidate:
+        return None
+    cited_name = resolved.law_name
+    cited_law = None
+    for code, lw in laws.items():
+        if code == cited_name or getattr(lw, "name", None) == cited_name \
+                or cited_name in getattr(lw, "aliases", []):
+            cited_law = lw
+            break
+    cited_law_name = getattr(cited_law, "name", None) if cited_law else None
+
+    # --- same-law scan (lower band) ---
+    soft_same: Optional[str] = None
+    soft_same_cov = -1.0  # start strictly below the lower bound
+    if cited_law is not None:
+        for rev in cited_law.revisions.values():
+            for ano, art in rev.articles.items():
+                if ano == cited_article_no:
+                    continue
+                if getattr(art, "verification_status", "unverified") != "verified":
+                    continue
+                d = content_diff(candidate, art.content)
+                if (SOFT_MIS_SAME_LAW <= d.cov < MIS_THRESHOLD
+                        and d.cov > soft_same_cov):
+                    soft_same_cov = d.cov
+                    soft_same = ano
+
+    # --- cross-law scan (lower band, higher floor) ---
+    soft_cross: Optional[str] = None
+    soft_cross_cov = -1.0
+    for code, lw in laws.items():
+        if cited_law_name is not None and getattr(lw, "name", None) == cited_law_name:
+            continue
+        short = lw.aliases[0] if getattr(lw, "aliases", None) else lw.name
+        for rev in lw.revisions.values():
+            for ano, art in rev.articles.items():
+                if getattr(art, "verification_status", "unverified") != "verified":
+                    continue
+                d = content_diff(candidate, art.content)
+                if (SOFT_MIS_CROSS_LAW <= d.cov < CROSS_LAW_MIS_THRESHOLD
+                        and d.cov > soft_cross_cov):
+                    soft_cross_cov = d.cov
+                    soft_cross = f"{short} 第{ano}条"
+
+    if soft_cross is not None:
+        return (soft_cross, soft_cross_cov)
+    if soft_same is not None:
+        return (soft_same, soft_same_cov)
+    return None
+
+
 # --------------------------------------------------------------------------- #
 # Range citations (第20条至第22条 -> 20/21/22)
 # --------------------------------------------------------------------------- #
@@ -467,16 +542,24 @@ def verify_citation(citation: Citation, as_of_date: str,
                             candidate=cand, ground_truth=gt)
     # Binary policy: any non-EXACT output is FABRICATED and scores 0.0.
     # PARTIAL survives only as a diagnostic sub-category (cov >= COV_PARTIAL).
+    cited_ano = resolved.article_no or ""
     if d.level == PARTIAL:
+        note = d.reason
+        soft = _soft_misattribution_check(laws, resolved, candidate_text, cited_ano)
+        if soft is not None:
+            label, cov = soft
+            tag = (f"{label} (cross-law)" if " " in label
+                   else f"same-law article {label}")
+            note = (f"{note} | SOFT_MISATTRIBUTED: text also partially matches "
+                    f"{tag} (cov={cov:.0%}) — possible paraphrased 张冠李戴")
         return Verification(tier=1, verdict="HALLUCINATION", hardness="hard",
                             detail="partial omission of statutory text "
                                    "(still wrong -> FABRICATED, score 0.0)",
-                            note=d.reason, score=0.0, diff_level=FABRICATED,
+                            note=note, score=0.0, diff_level=FABRICATED,
                             category="PARTIAL", domain=dom, citation_raw=raw,
                             candidate=cand, ground_truth=gt)
 
     # FABRICATED -> sub-classify
-    cited_ano = resolved.article_no or ""
     if d.rev >= 0.90 and len(normalize(candidate_text)) < TRUNC_LEN_RATIO * max(1, len(normalize(gt))):
         cat = "TRUNCATED"
         note = f"truncated: candidate is a prefix of ground truth ({d.reason})"
@@ -493,6 +576,13 @@ def verify_citation(citation: Citation, as_of_date: str,
         else:
             cat = "FABRICATED_GENERIC"
             note = f"fabricated: {d.reason}"
+            soft = _soft_misattribution_check(laws, resolved, candidate_text, cited_ano)
+            if soft is not None:
+                label, cov = soft
+                tag = (f"{label} (cross-law)" if " " in label
+                       else f"same-law article {label}")
+                note = (f"{note} | SOFT_MISATTRIBUTED: text also partially matches "
+                        f"{tag} (cov={cov:.0%}) — possible paraphrased 张冠李戴")
     return Verification(tier=1, verdict="HALLUCINATION", hardness="hard",
                         detail=f"fabricated content ({cat})", note=note,
                         score=0.0, diff_level=FABRICATED, category=cat,

@@ -7,6 +7,11 @@
 
 ## 2026-08-05
 
+### 新增（软探针 SOFT_MISATTRIBUTED — 诊断用）
+- `benchmark/verify.py` 新增 `_soft_misattribution_check()`：在硬 `MISATTRIBUTED` 未触发时，对灰色带（同法 `cov'∈[0.50,0.80)`、跨法 `∈[0.70,0.90)`）做一次宽松比对，若候选与另一条已核验节点落入该带，仅在 `Verification.note` 追加 `SOFT_MISATTRIBUTED`（注明 cov 与"疑似改写式张冠李戴"）。**不影响** `category`/`score`/`diff_level`，**不计入** `crfi`。阈值 `SOFT_MIS_SAME_LAW=0.50`、`SOFT_MIS_CROSS_LAW=0.70`，与硬判定零重叠。动机：真实模型常以改写方式张冠李戴，硬阈值漏判使 CRFI 盲区；软探针把此类暴露到审计报告供二次研判。
+- `tests/test_soft_misattribution.py`（6 用例）：改写式同法命中 / 真实部分答对不误报 / 无关文本不误报 / 硬 MISATTRIBUTED 优先不叠加 / VAT 域（引增值税法第11条、改写第10条）/ 单元返回 None。全量测试 96→102 绿。
+- `docs/DIFF_POLICY.md` §5.1 增补软探针说明（单真相源阈值表同步）。
+
 ### 新增（增值税法域陷阱题 — 激活 CRFI）
 - **测试集扩至 18 题**：`questions.json` 新增 Q16–Q18 三道增值税法张冠李戴（同法）陷阱——税率 vs 征收率（第10/11条）、起征点 vs 免税项目（第23/24条）、不得抵扣 vs 留抵退税（第22/21条）。`in_scope_laws` 增 VAT_LAW（共 6 部法），`scope_note` 与护栏说明同步 5→6；`_meta.version` 1.0→1.1。
 - **护栏放行增值税法**：`scripts/generate_answers.py` 系统提示词由"五部"扩为"六部（含增值税法）"，否则 VAT 引注会落入 NOT_FOUND；Q8 超范围拒绝题枚举同步补齐六部。
