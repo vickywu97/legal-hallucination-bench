@@ -22,6 +22,7 @@ Thumbs.db
 
 # ---- Generated real-model outputs (require personal API keys; vary per user) ----
 answers.jsonl
+answers.jsonl.bak.*
 
 # NOTE: the verified knowledge base (knowledge_base/laws/statutes.jsonl) and the
 # generated evidence reports (benchmark/reports/, demo/reports_*) are intentionally

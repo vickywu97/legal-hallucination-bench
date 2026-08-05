@@ -88,8 +88,16 @@ def _post(url: str, headers: dict, payload: dict) -> dict:
             with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as resp:
                 return json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
-            last_err = f"HTTP {e.code}: {e.reason}"
-            if e.code < 500:  # 4xx: do not retry (bad request / auth)
+            # Surface the provider's response body — it carries the real reason
+            # (e.g. Kimi's 400 "invalid parameter" detail). Without it a 400 is a
+            # black box; with it the run is debuggable from the logs alone.
+            body = ""
+            try:
+                body = e.read().decode("utf-8", "replace")
+            except Exception:
+                pass
+            last_err = f"HTTP {e.code}: {e.reason} | body={body[:600]}"
+            if e.code < 500:  # 4xx: do not blindly retry the same payload
                 break
         except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
             last_err = str(e)
@@ -101,16 +109,28 @@ def _post(url: str, headers: dict, payload: dict) -> dict:
 def _call_openai(cfg: dict, api_key: str, user_prompt: str) -> str:
     headers = {"Content-Type": "application/json",
                "Authorization": f"Bearer {api_key}"}
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_prompt},
+    ]
     payload = {
         "model": cfg["model"],
-        "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ],
+        "messages": messages,
         "temperature": 0,
         "stream": False,
     }
-    obj = _post(cfg["url"], headers, payload)
+    try:
+        obj = _post(cfg["url"], headers, payload)
+    except RuntimeError as e:
+        # Some providers reject optional params (e.g. temperature/stream) with a
+        # 400. Retry once with a minimal payload (model + messages only) before
+        # giving up — this self-heals schema-strict endpoints like Kimi. If the
+        # minimal call also fails, the captured body propagates for debugging.
+        if "HTTP 400" in str(e):
+            obj = _post(cfg["url"], headers,
+                        {"model": cfg["model"], "messages": messages})
+        else:
+            raise
     return obj["choices"][0]["message"]["content"].strip()
 
 
