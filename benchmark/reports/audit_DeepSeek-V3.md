@@ -1,7 +1,7 @@
 # 审计报告：DeepSeek-V3
 
-- 引注数：20
-- 引注幻觉率 HVI(hr_statutory)：60.0% （bootstrap 95% CI 15.0%–60.0%；仅统计存在性/时序性幻觉）
+- 引注数：30
+- 引注幻觉率 HVI(hr_statutory)：60.0% （bootstrap 95% CI 23.3%–56.7%；仅统计存在性/时序性幻觉）
 - 内容级幻觉率 HR_content：100.0%（仅逐字 diff 子集；反映是否照抄法条）
 - 张冠李戴率 CRFI：0.0%（逐字 diff 子集中 MISATTRIBUTED 占比；专抓'条号对、内容错'）
 - 时序幻觉率 rate_deprecated：0.0%
@@ -13,6 +13,7 @@
   - CRIMINAL_LAW：0.0%
   - PATENT_LAW：75.0%
   - TAX_ADMIN_LAW：0.0%
+  - VAT_LAW：60.0%
 
 ## 逐条核验
 
@@ -38,6 +39,16 @@
 | Q14 | 《刑法》第385条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q15 | 《专利法》第71条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q15 | 《专利法》第71条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q16 | 《增值税法》 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q16 | 《增值税法》第十一条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
+| Q17 | 《增值税法》第23条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
+| Q17 | 《增值税法》第23条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
+| Q17 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q17 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q17 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q18 | 《增值税法》第二十二条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
+| Q18 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q18 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 
 ## 逐条对照（模型输出 vs 已核验基准）
 
@@ -201,5 +212,81 @@
 - 模型输出（候选）：**：“侵犯专利权的赔偿数额按照权利人因被侵权所受到的实际损失或者侵权人因侵权所获得的利益确定；权利人的损失或者侵权人获得的利益难以确定的，参照该专利许可使用费的倍数合理确定。对故意侵犯专利权，情节严重的，可以在按照上述方法确定数额的一倍以上五倍以下给予赔偿。权利人的损失、侵权人获得的利益和专利许可使用费均难以确定的，人民法院可以根据专利权的类型、侵权行为的性质和情节等因素，确定给予三万元以上五百万元以下的赔偿。赔偿数额还应当包括权利人为制止侵权行为所支付的合理开支。”
 
 **适用说明**：该条确立了专利侵权赔偿的“实际损失→侵权获利→许可费倍数→法定赔偿”的递进计算规则，并规定了惩罚性赔偿（故意且情节严重）及合理开支的纳入。
+- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+
+### 《增值税法》
+- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 模型输出（候选）：中关于简易计税方法征收率的规定为
+- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+
+### 《增值税法》第十一条
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
+- 模型输出（候选）：条文原文如下：
+
+“纳税人发生应税交易，应当按照一般计税方法计算缴纳增值税，但下列情形除外：
+（一）小规模纳税人发生应税交易；
+（二）按照规定应当采用简易计税方法计税的特定情形。
+简易计税方法的征收率为百分之三。”
+
+适用说明：该条明确简易计税方法的征收率为3%，适用于小规模纳税人及特定情形。
+- 官方原文（基准）：适用简易计税方法计算缴纳增值税的征收率为百分之三。
+
+### 《增值税法》第23条
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
+- 模型输出（候选）：规定了相关规则。条文原文如下：
+- 官方原文（基准）：小规模纳税人发生应税交易，销售额未达到起征点的，免征增值税；达到起征点的，依照本法规定全额计算缴纳增值税。前款规定的起征点标准由国务院规定，报全国人民代表大会常务委员会备案。
+
+### 《增值税法》第23条
+- 判定：HALLUCINATION ｜ 子类：PARTIAL ｜ 级别：FABRICATED ｜ 得分：0.00
+- 模型输出（候选）：“小规模纳税人发生应税交易，销售额未达到起征点的，免征增值税；达到起征点的，依照本法规定全额计算缴纳增值税。前款规定的起征点标准由国务院规定，报全国人民代表大会常务委员会备案。”
+
+适用说明：该条明确小规模纳税人销售额未达起征点时免征增值税，起征点标准由国务院规定并备案。
+- 官方原文（基准）：小规模纳税人发生应税交易，销售额未达到起征点的，免征增值税；达到起征点的，依照本法规定全额计算缴纳增值税。前款规定的起征点标准由国务院规定，报全国人民代表大会常务委员会备案。
+
+### 增值税
+- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 模型输出（候选）：达到起征点的，依照本法规定全额计算缴纳增值税。前款规定的起征点标准由国务院规定，报全国人民代表大会常务委员会备案。”
+
+适用说明：该条明确小规模纳税人销售额未达起征点时免征增值税，起征点标准由国务院规定并备案。
+- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+
+### 增值税
+- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 模型输出（候选）：前款规定的起征点标准由国务院规定，报全国人民代表大会常务委员会备案。”
+
+适用说明：该条明确小规模纳税人销售额未达起征点时免征增值税，起征点标准由国务院规定并备案。
+- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+
+### 增值税
+- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 模型输出（候选）：起征点标准由国务院规定并备案。
+- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+
+### 《增值税法》第二十二条
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
+- 模型输出（候选）：条文原文如下：
+
+“下列进项税额不得从销项税额中抵扣：
+（一）适用简易计税方法计税项目、免征增值税项目、集体福利或者个人消费的购进货物、服务、无形资产、不动产；
+（二）非正常损失项目对应的进项税额；
+（三）购进并直接用于消费的餐饮服务、居民日常服务和娱乐服务；
+（四）国务院规定的其他进项税额。”
+
+适用说明：该条明确列举了不得抵扣的进项税额范围，适用于增值税一般纳税人的进项税额抵扣管理。
+- 官方原文（基准）：纳税人的下列进项税额不得从其销项税额中抵扣：（一）适用简易计税方法计税项目对应的进项税额；（二）免征增值税项目对应的进项税额；（三）非正常损失项目对应的进项税额；（四）购进并用于集体福利或者个人消费的货物、服务、无形资产、不动产对应的进项税额；（五）购进并直接用于消费的餐饮服务、居民日常服务和娱乐服务对应的进项税额；（六）国务院规定的其他进项税额。
+
+### 增值税
+- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 模型输出（候选）：项目、集体福利或者个人消费的购进货物、服务、无形资产、不动产；
+（二）非正常损失项目对应的进项税额；
+（三）购进并直接用于消费的餐饮服务、居民日常服务和娱乐服务；
+（四）国务院规定的其他进项税额。”
+
+适用说明：该条明确列举了不得抵扣的进项税额范围，适用于增值税一般纳税人的进项税额抵扣管理。
+- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+
+### 增值税
+- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 模型输出（候选）：一般纳税人的进项税额抵扣管理。
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
