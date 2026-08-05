@@ -27,6 +27,12 @@ Usage
     python scripts/generate_answers.py --models DeepSeek-V3 GLM-4-Flash
     python scripts/generate_answers.py --questions questions.json --out answers.jsonl
     python scripts/generate_answers.py --only Q1 Q7 Q13
+    python scripts/generate_answers.py --resume        # merge into existing out (skip done pairs)
+    python scripts/generate_answers.py --models Kimi --resume   # add one model safely
+
+Note: before overwriting --out, the existing file is copied to a timestamped
+.backup (answers.jsonl.bak.YYYYMMDD-HHMMSS) so a re-run never silently destroys
+prior data. Use --resume to incrementally add a model without re-calling others.
 """
 from __future__ import annotations
 
@@ -117,6 +123,35 @@ def call_model(cfg: dict, user_prompt: str) -> str:
     return _call_openai(cfg, api_key, user_prompt)
 
 
+def _merge_resume(records, out_path):
+    """Merge new records into an existing out_path, keeping any prior answer
+    that was successful (non-empty, no _error). Returns the merged list.
+
+    Used by --resume so a later single-model run (e.g. adding Kimi) cannot
+    clobber answers already collected for other models.
+    """
+    existing = {}
+    for l in open(out_path, encoding="utf-8"):
+        l = l.strip()
+        if not l:
+            continue
+        try:
+            r = json.loads(l)
+        except json.JSONDecodeError:
+            continue
+        existing[(r.get("model"), r.get("question_id"))] = r
+    added = 0
+    for r in records:
+        key = (r.get("model"), r.get("question_id"))
+        prev = existing.get(key)
+        if prev and prev.get("answer") and not prev.get("_error"):
+            continue  # already have a good answer; skip
+        existing[key] = r
+        added += 1
+    print(f"[resume] kept {len(existing) - added} prior, added/refreshed {added}")
+    return list(existing.values())
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Generate model answers for the "
                                              "legal-hallucination-bench leaderboard.")
@@ -128,6 +163,10 @@ def main(argv=None):
                     help="subset of model labels to run (default: all)")
     ap.add_argument("--only", nargs="*", default=None,
                     help="subset of question ids to run (default: all)")
+    ap.add_argument("--resume", action="store_true",
+                    help="merge with existing --out file, skipping (model,question) "
+                         "pairs already answered successfully. Prevents clobbering "
+                         "prior runs when adding a single model later.")
     args = ap.parse_args(argv)
 
     with open(args.questions, encoding="utf-8") as f:
@@ -172,6 +211,22 @@ def main(argv=None):
 
     out_path = args.out
     os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
+
+    if args.resume and os.path.exists(out_path):
+        # Merge with prior answers: keep a previously successful answer, only
+        # refresh pairs that failed or were not present. Safe for incremental
+        # single-model runs (e.g. adding Kimi later without re-calling others).
+        records = _merge_resume(records, out_path)
+    else:
+        # Safety net: never silently destroy a prior run. Back up the existing
+        # file (timestamped) before overwriting.
+        if os.path.exists(out_path):
+            import shutil, datetime
+            ts = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+            bak = f"{out_path}.bak.{ts}"
+            shutil.copy2(out_path, bak)
+            print(f"[backup] existing {out_path} -> {bak}")
+
     with open(out_path, "w", encoding="utf-8") as f:
         for r in records:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
