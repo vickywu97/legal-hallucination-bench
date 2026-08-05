@@ -207,7 +207,8 @@ def _write_model_md(model: str, data: dict, out_dir: str) -> str:
 def _write_leaderboard(per_model: dict, out_dir: str) -> str:
     # rank by HR_statutory ascending (lower hallucination = better)
     ranked = sorted(per_model.items(),
-                    key=lambda kv: kv[1]["metrics"].get("hr_statutory", 1.0))
+                    key=lambda kv: (0 if kv[1]["n_citations"] > 0 else 1,
+                                    kv[1]["metrics"].get("hr_statutory", 1.0)))
     md_path = os.path.join(out_dir, "leaderboard.md")
     json_path = os.path.join(out_dir, "leaderboard.json")
     lines = ["# 法律引注幻觉排行榜 (Leaderboard)", "",
@@ -217,8 +218,9 @@ def _write_leaderboard(per_model: dict, out_dir: str) -> str:
     board = []
     for rank, (model, d) in enumerate(ranked, 1):
         m = d["metrics"]
+        disp = f"{model}（无数据）" if d["n_citations"] == 0 else model
         lines.append(
-            f"| {rank} | {model} | {m.get('hr_statutory', 0):.1%} | "
+            f"| {rank} | {disp} | {m.get('hr_statutory', 0):.1%} | "
             f"{m.get('hr_content', 0):.1%} | {m.get('crfi', 0):.1%} | "
             f"{m.get('rate_deprecated', 0):.1%} | "
             f"{m.get('rate_unverifiable', 0):.1%} | {d['n_citations']} |")
@@ -255,7 +257,8 @@ def _write_question_matrix(flat: List[dict], per_model: dict, out_dir: str) -> s
     questions = sorted({r.get("question_id") or "-" for r in flat}, key=_qkey)
     # order models by HR_statutory ascending (best -> worst), consistent w/ board
     models = sorted(per_model.keys(),
-                    key=lambda m: per_model[m]["metrics"].get("hr_statutory", 1.0))
+                    key=lambda m: (0 if per_model[m]["n_citations"] > 0 else 1,
+                                   per_model[m]["metrics"].get("hr_statutory", 1.0)))
 
     lines = ["", "## 逐题诊断矩阵 (Question × Model)", ""]
     lines.append("图例：✓ 通过(OK) ｜ ✗ 幻觉(HALLUCINATION) ｜ ? 不可验(UNVERIFIABLE) "

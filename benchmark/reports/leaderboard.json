@@ -1,7 +1,55 @@
 [
   {
     "rank": 1,
-    "model": "Model-A-good",
+    "model": "DeepSeek-R1",
+    "metrics": {
+      "hr_statutory": 0.3684210526315789,
+      "hr_content": 1.0,
+      "crfi": 0.0,
+      "rate_deprecated": 0.05263157894736842,
+      "rate_unverifiable": 0.0
+    },
+    "n_citations": 19
+  },
+  {
+    "rank": 2,
+    "model": "GLM-4-Flash",
+    "metrics": {
+      "hr_statutory": 0.45,
+      "hr_content": 1.0,
+      "crfi": 0.0,
+      "rate_deprecated": 0.0,
+      "rate_unverifiable": 0.0
+    },
+    "n_citations": 20
+  },
+  {
+    "rank": 3,
+    "model": "Qwen-Max",
+    "metrics": {
+      "hr_statutory": 0.47058823529411764,
+      "hr_content": 1.0,
+      "crfi": 0.0,
+      "rate_deprecated": 0.0,
+      "rate_unverifiable": 0.0
+    },
+    "n_citations": 17
+  },
+  {
+    "rank": 4,
+    "model": "DeepSeek-V3",
+    "metrics": {
+      "hr_statutory": 0.6,
+      "hr_content": 1.0,
+      "crfi": 0.0,
+      "rate_deprecated": 0.0,
+      "rate_unverifiable": 0.0
+    },
+    "n_citations": 20
+  },
+  {
+    "rank": 5,
+    "model": "Kimi",
     "metrics": {
       "hr_statutory": 0.0,
       "hr_content": 0.0,
@@ -9,30 +57,6 @@
       "rate_deprecated": 0.0,
       "rate_unverifiable": 0.0
     },
-    "n_citations": 4
-  },
-  {
-    "rank": 2,
-    "model": "Model-B-bad",
-    "metrics": {
-      "hr_statutory": 0.5,
-      "hr_content": 1.0,
-      "crfi": 0.5,
-      "rate_deprecated": 0.25,
-      "rate_unverifiable": 0.0
-    },
-    "n_citations": 4
-  },
-  {
-    "rank": 3,
-    "model": "Model-C-partial",
-    "metrics": {
-      "hr_statutory": 0.5,
-      "hr_content": 1.0,
-      "crfi": 0.0,
-      "rate_deprecated": 0.25,
-      "rate_unverifiable": 0.0
-    },
-    "n_citations": 4
+    "n_citations": 0
   }
 ]

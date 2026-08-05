@@ -255,6 +255,13 @@
     "note": "",
     "source": "网络公开来源（flk.npc.gov.cn 等官方发布平台，仅供评测研究，不构成法律意见）"
   },
+  "COMPANY_LAW_23_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-05",
+    "note": "新增：法人人格否认由旧法第20条 relocation 至新法第23条（2024-07-01施行），含横向否认（第2款）与一人公司（第3款）。与 Q9 目标对齐。",
+    "source": "中华人民共和国公司法(2023修订) 第23条（flk.npc.gov.cn 等官方发布平台，仅供评测研究，不构成法律意见）"
+  },
   "COMPANY_LAW_21_v1": {
     "status": "verified",
     "verified_by": "Vicky Wu (律师/税务师/专利代理师)",

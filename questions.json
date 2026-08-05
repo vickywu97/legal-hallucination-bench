@@ -174,12 +174,12 @@
       "trap_type": "内容级（张冠李戴/漏但书）",
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "COMPANY_LAW", "article_no": "20"},
+      "target": {"law_code": "COMPANY_LAW", "article_no": "23"},
       "prompt": "股东滥用公司法人独立地位和股东有限责任，逃避债务，严重损害公司债权人利益的，应承担何种责任？请逐字引用《公司法》条文原文。",
       "expected": {
-        "correct_citation": "《公司法》第20条",
+        "correct_citation": "《公司法》第23条",
         "verdict_pass": "OK / EXACT",
-        "trap": "模型引用第20条但渲染成其他条文（如第3条法人定义）文本 -> MISATTRIBUTED；或漏'严重损害债权人利益'要件 -> FABRICATED。",
+        "trap": "模型引用第23条但渲染成其他条文（如第3条法人定义）文本 -> MISATTRIBUTED；或漏'严重损害债权人利益'要件 -> FABRICATED。",
         "hallucination_if": "条号对、内容错或关键要件缺失"
       }
     },

@@ -22,12 +22,12 @@ from knowledge_base.build_statute import (  # noqa: E402
 # Floor thresholds (nodes per law). Raise as curation grows toward ~200/250.
 MIN_NODES = {
     "CIVIL_CODE": 20,
-    "COMPANY_LAW": 15,
+    "COMPANY_LAW": 16,
     "CRIMINAL_LAW": 20,
     "PATENT_LAW": 12,
     "TAX_ADMIN_LAW": 12,
 }
-MIN_TOTAL = 100
+MIN_TOTAL = 101
 
 
 class TestCoverage(unittest.TestCase):
