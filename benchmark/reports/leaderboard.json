@@ -37,6 +37,18 @@
   },
   {
     "rank": 4,
+    "model": "Kimi",
+    "metrics": {
+      "hr_statutory": 0.5,
+      "hr_content": 1.0,
+      "crfi": 0.0,
+      "rate_deprecated": 0.0,
+      "rate_unverifiable": 0.0
+    },
+    "n_citations": 22
+  },
+  {
+    "rank": 5,
     "model": "DeepSeek-V3",
     "metrics": {
       "hr_statutory": 0.6,
@@ -46,17 +58,5 @@
       "rate_unverifiable": 0.0
     },
     "n_citations": 20
-  },
-  {
-    "rank": 5,
-    "model": "Kimi",
-    "metrics": {
-      "hr_statutory": 0.0,
-      "hr_content": 0.0,
-      "crfi": 0.0,
-      "rate_deprecated": 0.0,
-      "rate_unverifiable": 0.0
-    },
-    "n_citations": 0
   }
 ]
