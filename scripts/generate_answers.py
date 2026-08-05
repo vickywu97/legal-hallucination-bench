@@ -78,7 +78,8 @@ MODELS = [
      "minimal": True},
 ]
 
-HTTP_TIMEOUT = 60
+HTTP_TIMEOUT = 180  # seconds; reasoning models (e.g. Kimi k2.6) can take >60s
+                     # to return a full non-streamed completion on long prompts.
 MAX_RETRIES = 2
 RETRY_BACKOFF = 2.0  # seconds
 
