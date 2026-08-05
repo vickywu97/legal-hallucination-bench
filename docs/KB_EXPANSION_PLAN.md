@@ -47,6 +47,11 @@
 
 → 预计 +130~150 节点，总计 ≈ 230–250。
 
+**进度追踪（2026-08-05）**
+- ✅ **增值税法 VAT_LAW pilot 已起草**：15 个高价值节点（纳税人定义/视同销售/税率13·9·6·0/征收率3%/进项抵扣与不得抵扣/留抵退税/起征点免税/纳税义务发生时间/计税期间等）已写入 `build_statute.py` 的 `SEED`，`laws_index.json` 已注册，`statutes.jsonl` 重建为 **116 节点（101 verified + 15 unverified）**。
+- ⏳ **待专家核验**：这 15 条目前 `verification_status=unverified`（SEED 草稿，默认态），**不参与判分**（verify.py 对 unverified 节点返回 `UNVERIFIED_GT`，张冠李戴检测也只看 verified 节点）。需你对照 `flk.npc.gov.cn` 逐条核验后，在 `verifications.json` 写入 `status:"verified"` 才能翻 verified、激活 VAT 域的 CRFI 区分力。
+- 企业所得税法 / 个人所得税法 / 专利法补强：尚未启动。
+
 ### Phase 2 — 民法典纵深（最大单一法域）
 | 编章 | 方向 | 建议节点 |
 | --- | --- | --- |
@@ -119,7 +124,7 @@
 | 版本 | 范围 | 目标节点 | 状态 |
 | --- | --- | --- | --- |
 | v1.0 (当前) | 5 部法 MVP | 101 | ✅ 完成 |
-| v1.1 | Phase 1 税制+知产 | ~230 | ⬜ 待启动 |
+| v1.1 | Phase 1 税制+知产 | 116（VAT pilot 15 条已起草待核验；EIT/IIT/专利补强未启） | 🟡 进行中 |
 | v1.2 | Phase 2 民法典纵深 | ~370 | ⬜ |
 | v1.3 | Phase 3 公司/证券/破产+刑法分则 | ~500 | ⬜ |
 | v1.4 | Phase 4 程序/行政 | ~600 | ⬜ |

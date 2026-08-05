@@ -63,5 +63,18 @@
     "effective_date": "2015-04-24",
     "source_url": "https://flk.npc.gov.cn/",
     "source_accessed_at": "2026-07-31"
+  },
+  "VAT_LAW": {
+    "name": "中华人民共和国增值税法",
+    "aliases": ["增值税法", "增值税"],
+    "type": "法律",
+    "order": 6,
+    "issuing_authority": "全国人民代表大会常务委员会",
+    "jurisdiction": "全国",
+    "status": "effective",
+    "promulgation_date": "2024-12-25",
+    "effective_date": "2026-01-01",
+    "source_url": "https://www.gov.cn/yaowen/liebiao/202412/content_6994557.htm",
+    "source_accessed_at": "2026-08-05"
   }
 }
