@@ -30,5 +30,5 @@ jobs:
       - name: Run test suite (python -S, pure stdlib)
         run: python -S -m unittest discover -s tests -p "test_*.py"
 
-      - name: Offline pipeline smoke (--offline)
-        run: python -S -m benchmark.run --offline
+      - name: Offline pipeline smoke (--offline SAMPLE demo)
+        run: python -S -m benchmark.run --offline --out-dir sample_demo_reports

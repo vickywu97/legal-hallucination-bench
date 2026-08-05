@@ -5,6 +5,18 @@
 
 ---
 
+## 2026-08-06
+
+### 修复（运维护栏：`--offline` 静默覆盖真实报告）
+- `benchmark/run.py` 新增 `--offline` SAMPLE 覆盖护栏：无 `--input` 时若 `benchmark/reports/` 已存在真实报告（`verifications.jsonl` 非空），则**拒绝**运行并提示改用 `--input answers.jsonl` 评测真实答案或 `--force` 强制覆盖，返回码 1。避免手滑一条命令把 90 条真实复采结果覆盖成玩具 SAMPLE。
+- 新增 `--out-dir <dir>`：`--offline` 可将 SAMPLE 演示写入独立目录（如 `sample_demo_reports/`），完全不碰真实报告；CI 烟测与 README 快速开始改用此路径。
+- 清理 `benchmark/reports/` 中 3 个历史遗留的 SAMPLE 玩具模型审计报告（`audit_Model-A-good/B-bad/C-partial.md`）——它们与真实 `verifications.jsonl`（仅含真实模型）不一致，属误导孤儿文件。
+- `tests/test_offline_guard.py`（8 用例）：护栏拒绝/放行、`--force` 覆盖、空目录放行、`--input` 模式不受护栏限制、`--out-dir` 隔离真实报告且字节级不变。全量测试 102→110 绿。
+- `.github/workflows/ci.yml` 烟测改为 `python -S -m benchmark.run --offline --out-dir sample_demo_reports`；`.gitignore` 忽略 `sample_demo_reports/`。
+- `README.md` 快速开始：测试计数 83→102；演示命令改为 `--out-dir sample_demo_reports` 并注明护栏语义。
+
+---
+
 ## 2026-08-05
 
 ### 新增（软探针 SOFT_MISATTRIBUTED — 诊断用）

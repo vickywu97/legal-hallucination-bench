@@ -115,7 +115,7 @@
    （每节点 `verified`）。这是唯一能把节点翻转为 verified 的动作。
 6. **测试同步**：`tests/test_kb_coverage.py` 抬高 `MIN_TOTAL` / `MIN_NODES[law_code]`；
    必要时补该法的覆盖断言；全量 `python -S -m unittest discover` 保持绿灯。
-7. **报告刷新**：`python -S -m benchmark.run --offline` 重生成审计报告 + 排行榜。
+7. **报告刷新**：`python -S -m benchmark.run --offline --input answers.jsonl` 重生成审计报告 + 排行榜（裸 `--offline` 仅跑玩具 SAMPLE 演示，且真实报告已存在时会被护栏拦截）。
 8. **提交**：commit（KB 变更与基准代码变更分开 commit 便于审阅）。
 
 ---

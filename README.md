@@ -87,10 +87,13 @@ Verification (verdict / category / diff_level / score / candidate / ground_truth
 
 ```bash
 # 0) 仓库零依赖，直接用受管 Python 跑（-S 关闭 site-packages，纯标准库）
-python -S -m unittest discover -s tests        # 全量测试（当前 83 用例绿灯）
+python -S -m unittest discover -s tests        # 全量测试（当前 102 用例绿灯）
 
-# 1) 开箱即用的离线评测（内置 good/bad/partial 三个玩具模型）
-python -S -m benchmark.run --offline
+# 1) 开箱即用的离线评测（内置 good/bad/partial 三个玩具模型；写入独立目录，不碰真实报告）
+python -S -m benchmark.run --offline --out-dir sample_demo_reports
+
+# 1b) 护栏：若 benchmark/reports/ 已存在真实报告，裸 `--offline` 会被拦截以防静默覆盖
+#     真实复采结果；想强制覆盖真实报告请显式加 --force，想评测真实答案请用 --input answers.jsonl
 
 # 2) 内容 diff 引擎演示（二元判定：逐字=1.0 / 否则=0、时序陷阱）
 python -S -m benchmark.run --verify-demo
@@ -102,7 +105,7 @@ python -S -m benchmark.annotate --input answers.jsonl --output candidates.jsonl
 #    3c. 专家编辑 candidates.jsonl 的 "candidates" 值（隔离模型真实引文）
 #    3d. 严格评测
 python -S -m benchmark.run --input answers.jsonl --candidates candidates.jsonl
-# 若已 `pip install -e .`，上述命令可简写为 `lhb`（如 `lhb --offline` / `lhb --verify-demo`）
+# 若已 `pip install -e .`，上述命令可简写为 `lhb`（如 `lhb --offline --out-dir sample_demo_reports` / `lhb --verify-demo`）
 ```
 
 `demo/` 目录内置一套可复现的端到端示例（见下）。

@@ -64,23 +64,50 @@ def _verify_demo():
         print(f"  {label:12s} -> {v.diff_level}/{v.category} score={v.score}")
 
 
-def _pipeline_demo(input_path: str = None, candidates_path: str = None):
+def _real_reports_exist(out_dir: str) -> bool:
+    """True if out_dir already holds a non-empty verifications.jsonl — i.e. real
+    benchmark reports are present and would be clobbered by a SAMPLE run."""
+    p = os.path.join(out_dir, "verifications.jsonl")
+    return os.path.isfile(p) and os.path.getsize(p) > 0
+
+
+def _pipeline_demo(input_path: str = None, candidates_path: str = None,
+                   force: bool = False, out_dir: str = None):
     """Week 5/6: full offline pipeline -> audit report + leaderboard.
 
     With --input <answers.jsonl> uses the user's model answers; otherwise runs
     a built-in SAMPLE (good model vs bad model) to produce the first report.
     With --candidates <candidates.jsonl> (from benchmark.annotate) the gold
     candidate texts are merged in for STRICT content-level evaluation.
+
+    SAFETY: SAMPLE mode (no --input) refuses to run when real benchmark reports
+    already exist in out_dir, because it would silently clobber the real
+    collected reports (e.g. the 90-record real collection). Pass --force to
+    overwrite anyway, or --input to score real answers.
     """
     from benchmark.pipeline import audit, build_report
 
-    out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           "reports")
+    if out_dir is None:
+        out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               "reports")
     if input_path:
         records = [json.loads(l) for l in open(input_path, encoding="utf-8")
                    if l.strip()]
         print(f"[pipeline] loaded {len(records)} model-answer records from {input_path}")
     else:
+        # SAMPLE mode: guard against silently clobbering real reports
+        if _real_reports_exist(out_dir) and not force:
+            sys.stderr.write(
+                "[pipeline] REFUSED: `--offline` without `--input` would "
+                "overwrite the REAL benchmark reports in\n"
+                f"           {out_dir}\n"
+                "           (the built-in SAMPLE is a toy demo, NOT your real "
+                "collected reports).\n"
+                "           -> pass `--input answers.jsonl` to score real "
+                "answers, or\n"
+                "           -> add `--force` to overwrite the reports with the "
+                "SAMPLE anyway.\n")
+            return 1
         records = _SAMPLE_RECORDS()
         print(f"[pipeline] no --input given; running built-in SAMPLE "
               f"({len(records)} model-answer records)")
@@ -115,6 +142,7 @@ def _pipeline_demo(input_path: str = None, candidates_path: str = None):
               f"deprecated={m.get('rate_deprecated', 0):.1%} "
               f"unverif={m.get('rate_unverifiable', 0):.1%} "
               f"n={d['n_citations']}")
+    return 0
 
 
 def _SAMPLE_RECORDS():
@@ -198,6 +226,11 @@ def main(argv=None):
                     help="run the Week-4 content-diff engine demo")
     ap.add_argument("--input", default=None,
                     help="path to answers.jsonl for --offline (else built-in SAMPLE)")
+    ap.add_argument("--force", action="store_true",
+                    help="allow --offline SAMPLE mode to overwrite existing real reports")
+    ap.add_argument("--out-dir", default=None,
+                    help="write reports to this dir instead of benchmark/reports "
+                         "(keeps the real collection untouched; good for the SAMPLE demo)")
     ap.add_argument("--candidates", default=None,
                     help="path to candidates.jsonl (from benchmark.annotate) "
                          "for strict content-level evaluation")
@@ -210,8 +243,8 @@ def main(argv=None):
         _verify_demo()
         return 0
     if args.offline:
-        _pipeline_demo(args.input, args.candidates)
-        return 0
+        rc = _pipeline_demo(args.input, args.candidates, args.force, args.out_dir)
+        return rc
     ap.print_help()
     return 0
 

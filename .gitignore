@@ -27,3 +27,6 @@ answers.jsonl.bak.*
 # NOTE: the verified knowledge base (knowledge_base/laws/statutes.jsonl) and the
 # generated evidence reports (benchmark/reports/, demo/reports_*) are intentionally
 # tracked — they are the artifact, not build output.
+
+# ---- Ephemeral SAMPLE-demo output (--offline demo / CI smoke; real reports are separate) ----
+sample_demo_reports/
