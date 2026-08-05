@@ -71,7 +71,11 @@ MODELS = [
      "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
      "model": "qwen-max"},
     {"label": "Kimi", "key": "MOONSHOT_API_KEY", "kind": "openai",
-     "url": "https://api.moonshot.cn/v1/chat/completions", "model": "kimi-k2.6"},
+     "url": "https://api.moonshot.cn/v1/chat/completions", "model": "kimi-k2.6",
+     # Moonshot's kimi-k2.6 endpoint rejects optional params (temperature/stream)
+     # with HTTP 400. Send the minimal payload (model + messages) up front — proven
+     # working via curl — instead of burning a 400 + retry on every call.
+     "minimal": True},
 ]
 
 HTTP_TIMEOUT = 60
@@ -116,17 +120,19 @@ def _call_openai(cfg: dict, api_key: str, user_prompt: str) -> str:
     payload = {
         "model": cfg["model"],
         "messages": messages,
-        "temperature": 0,
-        "stream": False,
     }
+    # Schema-strict endpoints (e.g. Kimi / kimi-k2.6) reject optional params like
+    # temperature/stream with HTTP 400. For those providers (cfg["minimal"]) we
+    # send the stripped payload up front so the call succeeds on the first try.
+    if not cfg.get("minimal"):
+        payload["temperature"] = 0
+        payload["stream"] = False
     try:
         obj = _post(cfg["url"], headers, payload)
     except RuntimeError as e:
-        # Some providers reject optional params (e.g. temperature/stream) with a
-        # 400. Retry once with a minimal payload (model + messages only) before
-        # giving up — this self-heals schema-strict endpoints like Kimi. If the
-        # minimal call also fails, the captured body propagates for debugging.
-        if "HTTP 400" in str(e):
+        # Last-resort self-heal: if a non-minimal call still 400s, retry once with
+        # the stripped payload. The captured body propagates if even that fails.
+        if (not cfg.get("minimal")) and "HTTP 400" in str(e):
             obj = _post(cfg["url"], headers,
                         {"model": cfg["model"], "messages": messages})
         else:
