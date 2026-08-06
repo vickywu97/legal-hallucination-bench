@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>法条库 · 按需下载版</title>
+<style>
+body{font-family:-apple-system,system-ui,"PingFang SC",sans-serif;max-width:880px;margin:40px auto;padding:0 20px;color:#1a1a1a;line-height:1.6}
+h1{font-size:22px} table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border:1px solid #e3e3e3;padding:8px 10px;text-align:left}
+th{background:#f6f6f6} a{color:#2563eb;text-decoration:none}
+.note{background:#fffbe6;border:1px solid #ffe58f;padding:12px 16px;border-radius:8px;font-size:13px}
+</style></head>
+<body>
+<h1>《法条库 · 按需下载版》— 模块化全集包</h1>
+<p>基于 <a href="https://github.com/vickywu97/legal-hallucination-bench">legal-hallucination-bench</a> 的已核验 KB pipeline。
+每个包独立下载，Tier A=专家核验，Tier B=官方全文提取（未逐条签核，仅作参考）。</p>
+<div class="note">Tier B 条文来自官方 .doc 逐字提取，尚未经执业律师逐条签署，<b>不作为 AI 评测 ground truth</b>。
+升 A 需运行 <code>python -S -m knowledge_base.verify_kb review</code>。</div>
+<table>
+<tr><th>法律包</th><th>条文数</th><th>Tier A</th><th>Tier B</th><th>核验覆盖</th><th>下载</th></tr>
+<tr><td><code>PATENT_LAW</code></td><td>82</td><td>30</td><td>52</td><td>37%</td><td><a href="PATENT_LAW_full.jsonl">jsonl</a> · <a href="PATENT_LAW_full.md">md</a> · <a href="PATENT_LAW_full.csv">csv</a></td></tr>
+</table>
+<p style="color:#888;font-size:12px">生成于 2026-08-07 · 机器可读 JSONL 可直接接入 RAG / Embedding 管线。</p>
+</body></html>
