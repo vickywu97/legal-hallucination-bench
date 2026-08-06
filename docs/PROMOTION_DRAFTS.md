@@ -11,7 +11,7 @@
 
 > I built an offline, expert-verified benchmark for Chinese legal citation hallucination — and the results are uncomfortable.
 >
-> Tested 5 major domestic LLMs (DeepSeek-R1/V3, GLM-4-Flash, Qwen-Max, Kimi) on 18 carefully designed statute-citation traps across 6 current Chinese laws. Even on the most forgiving metric (does the cited article even exist / is it repealed?), the best model still hallucinated **50%** of citations.
+> Tested 5 major domestic LLMs (DeepSeek-R1/V3, GLM-4-Flash, Qwen-Max, Kimi) on 23 carefully designed statute-citation traps across 8 current Chinese laws. Even on the most forgiving metric (does the cited article even exist / is it repealed?), the best model still hallucinated **50.0%** of citations.
 >
 > The standout: China's new **VAT Law (effective 2026-01-01)**. 42 citations across all 5 models, **0 verbatim-correct**. The models don't misquote it — they fabricate article numbers, exposing a training-data recency blind spot on a law that's now in force.
 >
