@@ -43,10 +43,10 @@ def cn2int(s: str) -> int:
 
 # 只认「行首」的 第X条 作为条文起点，避免把正文里"本法第X条"这类句中引用误判为新条文
 ART_RE = re.compile(r'(?:^|\n)\s*第([零一二三四五六七八九十百千0-9]+)条', re.M)
-CHAPTER_RE = re.compile(r'第[零一二三四五六七八九十百千]+[章编节]\s*')
+CHAPTER_RE = re.compile(r'第[零一二三四五六七八九十百千]+[章编节][^\n第]*')
 HYPERLINK_RE = re.compile(r'HYPERLINK\s+"[^"]*"')
-# .doc 转 txt 常见的页脚/水印噪点
-FOOTER_RE = re.compile(r'扫.*?(?:AGE|NUMPAGES|PAGE).*')
+# .doc 转 txt 常见的页脚/水印噪点（覆盖「扫…AGE/NUMPAGES」与纯「PAGE/NUMPAGES」两种形态）
+FOOTER_RE = re.compile(r'PAGE/NUMPAGES|NUMPAGES|PAGE\s*\d+|扫[^\n]*?NUMPAGES|扫[^\n]*?AGE/NUMPAGES')
 LEAK_RE = re.compile(r'(wkinfo|HYPERLINK|https?://|PAGE\s*\d+|NUMPAGES|WORD\s*\d+)')
 
 
@@ -125,6 +125,8 @@ def build_pack(txt_path, law_code, law_name, effective_date, statutes_path, out_
                 'notes': None,
                 'trust_tier': 'B',
             }
+        # 对所有记录（含 Tier A 原文）统一剥离 .doc 页脚噪点（pack 为派生产物，不改 KB）
+        rec['content'] = FOOTER_RE.sub('', rec['content']).strip()
         records.append(rec)
 
     records.sort(key=lambda r: r['article_sort_key'])
