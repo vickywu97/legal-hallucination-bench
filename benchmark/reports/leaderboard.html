@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Legal-Hallucination-Bench · 真实模型引注幻觉排行榜</title>
-<style>
+  <style>
   :root{
     --bg:#0f172a; --card:#1e293b; --ink:#e2e8f0; --muted:#94a3b8;
     --accent:#38bdf8; --good:#34d399; --warn:#fbbf24; --bad:#f87171;
@@ -44,13 +44,12 @@
   footer{margin-top:18px; font-size:13px; color:var(--muted); text-align:center}
   footer a{color:var(--accent); text-decoration:none}
   footer a:hover{text-decoration:underline}
-</style>
-</head>
+  </style></head>
 <body>
 <div class="wrap">
   <header>
     <h1>法律 AI 引注幻觉排行榜</h1>
-    <p>Legal-Hallucination-Bench · 18 题 × 5 国产模型 = 90 条真实回答</p>
+    <p>Legal-Hallucination-Bench · 23 题 × 5 国产模型 = 115 条真实回答</p>
     <p>引注幻觉率（HVI，越低越好）：只查"引用的法条是否存在 / 是否废止"，不要求逐字</p>
     <span class="tag">离线评分 · 零依赖 · 可复现</span>
   </header>
@@ -67,35 +66,35 @@
           <td>DeepSeek-R1 <span class="pill">付费旗舰</span></td>
           <td class="hvi-cell">50.0%
             <div class="bar"><i style="width:50.0%;background:var(--good)"></i></div></td>
-          <td class="num">30</td>
+          <td class="num">42</td>
         </tr>
         <tr>
-          <td><span class="rank">2</span></td>
-          <td>GLM-4-Flash <span class="pill">免费</span></td>
-          <td class="hvi-cell">53.8%
-            <div class="bar"><i style="width:53.8%;background:var(--warn)"></i></div></td>
-          <td class="num">26</td>
-        </tr>
-        <tr>
-          <td><span class="rank">3</span></td>
+          <td><span class="rank ">2</span></td>
           <td>Qwen-Max <span class="pill">付费</span></td>
-          <td class="hvi-cell">56.5%
-            <div class="bar"><i style="width:56.5%;background:var(--warn)"></i></div></td>
-          <td class="num">23</td>
+          <td class="hvi-cell">54.5%
+            <div class="bar"><i style="width:54.5%;background:var(--warn)"></i></div></td>
+          <td class="num">33</td>
         </tr>
         <tr>
-          <td><span class="rank">4</span></td>
+          <td><span class="rank ">3</span></td>
           <td>DeepSeek-V3 <span class="pill">免费基础</span></td>
-          <td class="hvi-cell">60.0%
-            <div class="bar"><i style="width:60.0%;background:var(--bad)"></i></div></td>
-          <td class="num">30</td>
+          <td class="hvi-cell">55.0%
+            <div class="bar"><i style="width:55.0%;background:var(--warn)"></i></div></td>
+          <td class="num">40</td>
+        </tr>
+        <tr>
+          <td><span class="rank ">4</span></td>
+          <td>GLM-4-Flash <span class="pill">免费</span></td>
+          <td class="hvi-cell">55.0%
+            <div class="bar"><i style="width:55.0%;background:var(--warn)"></i></div></td>
+          <td class="num">40</td>
         </tr>
         <tr>
           <td><span class="rank r5">5</span></td>
           <td>Kimi <span class="pill">kimi-k2.6</span></td>
-          <td class="hvi-cell">62.5%
-            <div class="bar"><i style="width:62.5%;background:var(--bad)"></i></div></td>
-          <td class="num">32</td>
+          <td class="hvi-cell">64.6%
+            <div class="bar"><i style="width:64.6%;background:var(--bad)"></i></div></td>
+          <td class="num">48</td>
         </tr>
       </tbody>
     </table>
@@ -104,20 +103,22 @@
   <div class="card">
     <h2>核心洞察</h2>
     <div class="insight">
-      <b>免费模型未输付费</b>：完全免费的 GLM-4-Flash（HVI 53.8%）仍优于付费的 Qwen-Max（56.5%）；
-      另一免费模型 DeepSeek-V3（60.0%）略弱于 Qwen-Max——付费并不保证更可靠，但"贵即好"也不成立。
-      付费旗舰 R1（50.0%）仍居首，但较首轮（36.8%）优势明显收窄。
+      <b>榜首与末位</b>：DeepSeek-R1（50.0%，42 次引注）表现最佳；
+      Kimi（64.6%，48 次引注）引注最积极却幻觉率最高——"引得越多错得越多"稳定成立。
     </div>
     <div class="insight">
-      <b>面对虚构 / 失效 / 新法序号，模型密集踩坑</b>：Q8（虚构法律"虚拟法"）五模型全部 NOT_FOUND、
-      Q4（2024 新《公司法》将对外担保由第16条移至第15条）五模型全部引用旧序号 → NOT_FOUND、
-      新增 Q16–Q18（《增值税法》2026-01-01 施行）5 模型 42 次引注 0 次 EXACT，失败以虚构序号为主。
-      <br><span style="color:var(--muted);font-size:13px">注：直接引用"已废止法律"的陷阱仅 R1 在 Q7 踩中，其余 4 模型均避开。</span>
+      <b>付费 vs 免费：付费并不保证更可靠，但旗舰仍居首</b>：最佳付费模型 DeepSeek-R1（50.0%）
+      对比最佳免费模型 DeepSeek-V3（55.0%）——"贵即好"与"免费即差"均不成立。
     </div>
-    <p style="color:var(--muted);font-size:13px;margin:14px 0 0">
-      全员内容级幻觉率 100%（零逐字合规）· 张冠李戴率(CRFI) 0%（增值税法域已激活，失效形态为虚构序号而非条号对内容错）·
-      仅 R1 触发时序幻觉 3.3%。
-    </p>
+
+<div class="insight">
+  <b>面对虚构 / 失效 / 新法序号，模型密集踩坑</b>：Q8（虚构法律"虚拟法"）五模型全部 NOT_FOUND、
+  Q4（2024 新《公司法》将对外担保由第16条移至第15条）五模型全部引用旧序号 → NOT_FOUND、
+  新增 Q16–Q18（《增值税法》2026-01-01 施行）5 模型 42 次引注 0 次 EXACT，失败以虚构序号为主。
+  <br><span style="color:var(--muted);font-size:13px">注：直接引用"已废止法律"的陷阱仅 R1 在 Q7 踩中，其余 4 模型均避开。</span>
+</div>
+
+    <p style="color:var(--muted);font-size:13px;margin:14px 0 0">全员内容级幻觉率 100%（零逐字合规） · 张冠李戴率(CRFI) 0.0% · 时序幻觉：DeepSeek-R1 2.4%</p>
   </div>
 
   <footer>

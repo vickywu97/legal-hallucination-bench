@@ -217,6 +217,10 @@ python -S -m benchmark.run --offline --input answers.jsonl
 产出 `benchmark/reports/`：每模型 `audit_<model>.md` + `leaderboard.md`
 （含**逐题诊断矩阵** Question × Model，一眼看出"哪个模型在哪题翻车"）。
 
+> 分享用的 `leaderboard.html`（同款深色品牌页）由 `scripts/render_leaderboard.py` 从
+> `leaderboard.json` 渲染生成，**数据驱动、可复现**——重跑基准后执行
+> `python -S scripts/render_leaderboard.py` 即可同步，避免手改数字过期。
+
 > 注：本基准**仅覆盖 8 部法律**（`questions.json` 的 `_meta.in_scope_laws`，含增值税法、企业所得税法、个人所得税法）。
 > 超出这 8 部的真实法律不在评测范围内——护栏已通过系统提示词约束模型不引用它们。
 
