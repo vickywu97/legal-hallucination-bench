@@ -130,15 +130,15 @@ python -S -m benchmark.run --input answers.jsonl --candidates candidates.jsonl
 
 ## 当前规模与规划
 
-| 指标 | 现状 (v1.1) | 规划 (v2.0) |
+| 指标 | 现状 (v1.2) | 规划 (v2.0) |
 | --- | --- | --- |
-| 法律部数 | 6（民法典/公司法/刑法/专利法/税收征管法/**增值税法**） | 15–20 |
-| 条文节点 | 116（100% verified） | 700+ |
-| 覆盖域 | civil / criminal / tax / ip / **vat** | + admin / 程序法 |
+| 法律部数 | 8（民法典/公司法/刑法/专利法/税收征管法/增值税法/**企业所得税法/个人所得税法**） | 15–20 |
+| 条文节点 | 212（100% verified） | 700+ |
+| 覆盖域 | civil / criminal / tax / ip / **vat** / **eit** / **iit** | + admin / 程序法 |
 | 失效法陷阱 | 10 部（单源） | 10 部（持续维护） |
 
-扩容规划见 [`docs/KB_EXPANSION_PLAN.md`](docs/KB_EXPANSION_PLAN.md)：优先补强**实体税法**
-（增值税法/企业所得税法/个人所得税法）与**知产**纵深——这正是最稀缺的差异化覆盖。
+扩容规划见 [`docs/KB_EXPANSION_PLAN.md`](docs/KB_EXPANSION_PLAN.md)：v1.2 已完成**实体税法**
+（企业所得税法/个人所得税法）与**专利法**纵深补强；下一步优先**民法典纵深**与程序/行政法——这正是最稀缺的差异化覆盖。
 
 ---
 
@@ -164,9 +164,9 @@ python -S demo/run_eval.py        # 启发式 vs 严格 双跑对比，落到 de
 > 任务上，依然会犯严重、危险的错误。测试集是一份严谨的法律交叉审查备忘录：
 > 有体系、有陷阱、有对照、无死角。
 
-### 1. 测试集 `questions.json`（18 题）
+### 1. 测试集 `questions.json`（23 题）
 
-覆盖 6 部现行法（含增值税法），四类陷阱（详见 `questions.json` 的 `_meta.trap_taxonomy`）：
+覆盖 8 部现行法（含增值税法、企业所得税法、个人所得税法），四类陷阱（详见 `questions.json` 的 `_meta.trap_taxonomy`）：
 
 | 陷阱类别 | 含义 | 引擎判定 | 代表题 |
 | --- | --- | --- | --- |
@@ -197,14 +197,14 @@ python -S demo/run_eval.py        # 启发式 vs 严格 双跑对比，落到 de
 # 设置 API Key（均为国产平台；缺哪个就跳过哪个模型，不报错）
 export DEEPSEEK_API_KEY=... ZHIPU_API_KEY=... DASHSCOPE_API_KEY=... MOONSHOT_API_KEY=...
 
-# 跑全部 5 个模型 × 18 题（也可 --models / --only 指定子集）
+# 跑全部 5 个模型 × 23 题（也可 --models / --only 指定子集）
 python -S scripts/generate_answers.py --out answers.jsonl
 
 # 内置 5 个纯国产模型：DeepSeek-V3、DeepSeek-R1(付费旗舰)、GLM-4-Flash(免费)、
 #                      Qwen-Max、Kimi（全部 OpenAI 兼容协议，总成本≈零）
 ```
 
-**关键护栏**：系统提示词强制模型"仅可引用 6 部现行法（含增值税法）；超出范围或虚构的法律一律说明无法回答"。
+**关键护栏**：系统提示词强制模型"仅可引用 8 部现行法（含增值税法、企业所得税法、个人所得税法）；超出范围或虚构的法律一律说明无法回答"。
 这把"引用范围外法律"从"不公平罚分"转化为"违背明确指令 + 硬幻觉（NOT_FOUND）"，
 使排行榜结论经得起质疑。
 
@@ -217,8 +217,8 @@ python -S -m benchmark.run --offline --input answers.jsonl
 产出 `benchmark/reports/`：每模型 `audit_<model>.md` + `leaderboard.md`
 （含**逐题诊断矩阵** Question × Model，一眼看出"哪个模型在哪题翻车"）。
 
-> 注：本基准**仅覆盖 6 部法律**（`questions.json` 的 `_meta.in_scope_laws`，含增值税法）。
-> 超出这 6 部的真实法律不在评测范围内——护栏已通过系统提示词约束模型不引用它们。
+> 注：本基准**仅覆盖 8 部法律**（`questions.json` 的 `_meta.in_scope_laws`，含增值税法、企业所得税法、个人所得税法）。
+> 超出这 8 部的真实法律不在评测范围内——护栏已通过系统提示词约束模型不引用它们。
 
 ### 5. 实测结果（Real-Model Results，2026-08-05 采集）
 

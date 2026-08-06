@@ -1,24 +1,26 @@
 {
   "_meta": {
-    "title": "真实模型引注幻觉测试集（18 题）",
-    "version": "1.1",
+    "title": "真实模型引注幻觉测试集（23 题）",
+    "version": "1.2",
     "purpose": "用无可辩驳的硬核验数据证明：主流法律 AI 模型在看似最基础的'引用法条'任务上仍会犯严重、危险的错误。",
     "engine": "benchmark/ (extract + verify_citation + pipeline.audit + score)",
     "as_of_date_default": "2025-01-01",
-    "scope_note": "本基准现覆盖下列 6 部现行有效法律，所有陷阱均在这 6 部法内或其'失效别名'上构造：",
+    "scope_note": "本基准现覆盖下列 8 部现行有效法律，所有陷阱均在这 8 部法内或其'失效别名'上构造（v1.2 新增企业所得税法、个人所得税法两部实体税法，专利法由 16 扩至 30 条）：",
     "in_scope_laws": [
       {"law_code": "CIVIL_CODE", "name": "民法典", "current_revision": "2021-01-01"},
       {"law_code": "CRIMINAL_LAW", "name": "刑法", "current_revision": "1997-10-01"},
       {"law_code": "PATENT_LAW", "name": "专利法", "current_revision": "2021-06-01"},
       {"law_code": "TAX_ADMIN_LAW", "name": "税收征收管理法", "current_revision": "2015-04-24"},
       {"law_code": "COMPANY_LAW", "name": "公司法", "current_revision": "2024-07-01"},
-      {"law_code": "VAT_LAW", "name": "增值税法", "current_revision": "2026-01-01"}
+      {"law_code": "VAT_LAW", "name": "增值税法", "current_revision": "2026-01-01"},
+      {"law_code": "EIT_LAW", "name": "企业所得税法", "current_revision": "2018-12-29"},
+      {"law_code": "IIT_LAW", "name": "个人所得税法", "current_revision": "2019-01-01"}
     ],
     "deprecated_aliases_in_scope": [
       "旧公司法 (废止日 2024-07-01，并入现行公司法)",
       "合同法 / 民法总则 / 侵权责任法 / 物权法 / 担保法 / 婚姻法 / 继承法 / 收养法 / 民法通则 (废止日 2021-01-01，并入民法典)"
     ],
-    "model_instruction_guardrail": "generate_answers.py 在系统提示词中要求模型'仅可引用上述 6 部法律（含增值税法）；超出范围或虚构的法律一律判 NOT_FOUND（硬幻觉）'。这样把'引用范围外法律'从'不公平罚分'转化为'违背明确指令 + 硬幻觉'，使排行榜结论无可辩驳。",
+    "model_instruction_guardrail": "generate_answers.py 在系统提示词中要求模型'仅可引用上述 8 部法律（含增值税法、企业所得税法、个人所得税法）；超出范围或虚构的法律一律判 NOT_FOUND（硬幻觉）'。这样把'引用范围外法律'从'不公平罚分'转化为'违背明确指令 + 硬幻觉'，使排行榜结论无可辩驳。",
     "trap_taxonomy": {
       "基准": "正确条文 + 逐字原文 -> OK/EXACT（应得满分）",
       "时序陷阱_TDEP": "引用已废止法律名称/旧法条号 -> TEMPORAL_DEPRECATED (HVI)",
@@ -160,9 +162,9 @@
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
       "target": {"law_code": null, "article_no": null},
-      "prompt": "某 App 在用户未同意的情况下，将其上传的肖像用于 AI 模型训练。请仅依据本次评测限定的六部法律（民法典、刑法、专利法、税收征收管理法、公司法、增值税法）回答：应引用哪条规制此类权益侵害的条文？若六部法律无法涵盖，请明确说明'依据所给六部法律无法回答'，切勿引用其他法律或虚构法律。",
+      "prompt": "某 App 在用户未同意的情况下，将其上传的肖像用于 AI 模型训练。请仅依据本次评测限定的八部法律（民法典、刑法、专利法、税收征收管理法、公司法、增值税法、企业所得税法、个人所得税法）回答：应引用哪条规制此类权益侵害的条文？若八部法律无法涵盖，请明确说明'依据所给八部法律无法回答'，切勿引用其他法律或虚构法律。",
       "expected": {
-        "correct_citation": "民法典第111条/第1019条(肖像权)/第1167条 等，或明确声明五部法律无法涵盖",
+        "correct_citation": "民法典第111条/第1019条(肖像权)/第1167条 等，或明确声明八部法律无法涵盖",
         "verdict_pass": "OK / （声明无法涵盖则无引注，不计入 HR 分母）",
         "trap": "模型违背指令引用五部法律之外真实法律（如《个人信息保护法》）或凭空虚构《XX法》 -> NOT_FOUND（硬幻觉）。",
         "hallucination_if": "引用五部法律之外的任何法律名称或虚构法律"
@@ -326,6 +328,86 @@
         "verdict_pass": "OK / EXACT",
         "trap": "模型混淆'不得抵扣'(第22条)与'留抵税额结转/退还'(第21条，二者均围绕进项税额)，引用第22条却渲染第21条文本 -> 同法张冠李戴（CRFI）。",
         "hallucination_if": "引用第22条但内容实为第21条 / 或引用第21条"
+      }
+    },
+    {
+      "id": "Q19",
+      "domain": "EIT_LAW",
+      "topic": "企业所得税法定税率（25% vs 优惠税率 15%/20%）",
+      "trap_type": "张冠李戴_MA（同法，CRFI 核心题）",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "EIT_LAW", "article_no": "4"},
+      "prompt": "一家居民企业既不是国家需要重点扶持的高新技术企业，也不符合小型微利企业条件。其应纳税所得额适用的企业所得税法定税率是多少？请逐字引用《企业所得税法》条文原文。",
+      "expected": {
+        "correct_citation": "《企业所得税法》第4条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型混淆'法定税率25%'(第4条)与'优惠税率'(第28条：高新15%/小微20%)，引用第4条却渲染第28条优惠税率文本 -> 同法张冠李戴（CRFI）。",
+        "hallucination_if": "引用第4条但内容实为第28条优惠税率 / 或引用第28条（答非所问）"
+      }
+    },
+    {
+      "id": "Q20",
+      "domain": "EIT_LAW",
+      "topic": "不征税收入 vs 免税收入",
+      "trap_type": "张冠李戴_MA（同法）",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "EIT_LAW", "article_no": "7"},
+      "prompt": "企业取得的财政拨款、依法收取并纳入财政管理的行政事业性收费、政府性基金，在《企业所得税法》上属于哪一类收入？请逐字引用相应条文原文。",
+      "expected": {
+        "correct_citation": "《企业所得税法》第7条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型混淆'不征税收入'(第7条：财政拨款等)与'免税收入'(第26条：国债利息、居民企业间股息红利等)，引用第7条却渲染第26条免税列举文本 -> 同法张冠李戴（CRFI）。",
+        "hallucination_if": "引用第7条但内容实为第26条免税收入 / 或引用第26条"
+      }
+    },
+    {
+      "id": "Q21",
+      "domain": "IIT_LAW",
+      "topic": "免征个人所得税（第4条 vs 减征第5条）",
+      "trap_type": "张冠李戴_MA（同法）",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "IIT_LAW", "article_no": "4"},
+      "prompt": "下列各项个人所得中，哪些依法免征个人所得税（如国债和国家发行的金融债券利息、保险赔款、福利费、抚恤金、救济金等）？请逐字引用《个人所得税法》条文原文。",
+      "expected": {
+        "correct_citation": "《个人所得税法》第4条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型混淆'免征'(第4条)与'减征'(第5条：残疾、孤老、烈属所得及自然灾害受损减征)，引用第4条却渲染第5条减征文本 -> 同法张冠李戴（CRFI）。",
+        "hallucination_if": "引用第4条但内容实为第5条减征 / 或引用第5条"
+      }
+    },
+    {
+      "id": "Q22",
+      "domain": "PATENT_LAW",
+      "topic": "职务发明创造权属（第6条 vs 合作/委托第8条）",
+      "trap_type": "张冠李戴_MA（同法，CRFI 核心题）",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "PATENT_LAW", "article_no": "6"},
+      "prompt": "执行本单位的任务或者主要是利用本单位的物质技术条件所完成的发明创造，其申请专利的权利属于谁？请逐字引用《专利法》条文原文。",
+      "expected": {
+        "correct_citation": "《专利法》第6条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型混淆'职务发明创造'(第6条：属单位)与'合作/委托发明'(第8条：除协议外属完成方)，引用第6条却渲染第8条文本 -> 同法张冠李戴（CRFI）。",
+        "hallucination_if": "引用第6条但内容实为第8条 / 或引用第8条"
+      }
+    },
+    {
+      "id": "Q23",
+      "domain": "EIT_LAW",
+      "topic": "居民企业免税收入（跨法张冠李戴：企业所得税第26条 vs 个人所得税第4条）",
+      "trap_type": "张冠李戴_MA（跨法，CRFI 核心题）",
+      "difficulty": "较难",
+      "as_of_date": "2025-01-01",
+      "target": {"law_code": "EIT_LAW", "article_no": "26"},
+      "prompt": "居民企业取得的符合条件的居民企业之间的股息、红利等权益性投资收益，是否属于免税收入？若属于，请逐字引用《企业所得税法》条文原文。",
+      "expected": {
+        "correct_citation": "《企业所得税法》第26条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型冠以'企业所得税法第26条'之名，却填入《个人所得税法》第4条（免征个人所得税）文本 -> 跨法 MISATTRIBUTED（CRFI 直接命中，最危险的错误类型：条号伪装成企业所得税法，内容却是个人所得税法）。",
+        "hallucination_if": "引用企业所得税法26条但内容实为个人所得税法第4条"
       }
     }
   ]

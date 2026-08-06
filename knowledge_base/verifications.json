@@ -910,5 +910,773 @@
     "verified_at": "2026-08-05",
     "corrected_content": null,
     "note": ""
+  },
+  "PATENT_LAW_6_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（PATENT_LAW）逐字提取"
+  },
+  "PATENT_LAW_12_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（PATENT_LAW）逐字提取"
+  },
+  "PATENT_LAW_16_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（PATENT_LAW）逐字提取"
+  },
+  "PATENT_LAW_17_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（PATENT_LAW）逐字提取"
+  },
+  "PATENT_LAW_24_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（PATENT_LAW）逐字提取"
+  },
+  "PATENT_LAW_27_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（PATENT_LAW）逐字提取"
+  },
+  "PATENT_LAW_28_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（PATENT_LAW）逐字提取"
+  },
+  "PATENT_LAW_29_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（PATENT_LAW）逐字提取"
+  },
+  "PATENT_LAW_30_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（PATENT_LAW）逐字提取"
+  },
+  "PATENT_LAW_39_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（PATENT_LAW）逐字提取"
+  },
+  "PATENT_LAW_40_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（PATENT_LAW）逐字提取"
+  },
+  "PATENT_LAW_46_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（PATENT_LAW）逐字提取"
+  },
+  "PATENT_LAW_47_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（PATENT_LAW）逐字提取"
+  },
+  "PATENT_LAW_60_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（PATENT_LAW）逐字提取"
+  },
+  "IIT_LAW_1_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_2_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_3_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_4_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_5_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_6_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_7_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_8_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_9_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_10_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_11_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_12_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_13_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_14_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_15_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_16_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_17_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_18_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_19_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_20_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_21_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "IIT_LAW_22_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（IIT_LAW）逐字提取"
+  },
+  "EIT_LAW_1_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_2_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_3_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_4_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_5_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_6_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_7_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_8_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_9_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_10_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_11_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_12_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_13_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_14_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_15_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_16_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_17_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_18_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_19_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_20_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_21_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_22_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_23_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_24_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_25_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_26_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_27_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_28_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_29_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_30_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_31_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_32_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_33_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_34_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_35_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_36_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_37_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_38_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_39_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_40_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_41_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_42_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_43_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_44_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_45_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_46_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_47_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_48_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_49_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_50_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_51_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_52_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_53_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_54_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_55_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_56_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_57_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_58_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_59_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
+  },
+  "EIT_LAW_60_v1": {
+    "status": "verified",
+    "verified_by": "Vicky Wu (律师/税务师/专利代理师)",
+    "verified_at": "2026-08-06",
+    "corrected_content": null,
+    "note": "官方公报版（用户提供 .doc）逐字核验",
+    "source": "用户提供官方 .doc（EIT_LAW）逐字提取"
   }
 }

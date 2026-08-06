@@ -10,8 +10,8 @@
 
 ### 采集概况
 - **日期**：2026-08-05（北京时间）
-- **题目集**：`questions.json` v1.1（18 题，6 法域，含 Q16–Q18 增值税法）
-- **系统提示词**：`scripts/generate_answers.py` 内 SYSTEM_PROMPT（限制仅可引用 6 部现行法，含增值税法）
+- **题目集**：`questions.json` v1.2（23 题，8 法域，含 Q16–Q18 增值税法、Q19–Q23 实体税法/专利张冠李戴）
+- **系统提示词**：`scripts/generate_answers.py` 内 SYSTEM_PROMPT（限制仅可引用 8 部现行法，含增值税法、企业所得税法、个人所得税法）
 - **温度参数**：`temperature=0`（全模型，保证可复现）
 - **采集脚本**：`python -S scripts/generate_answers.py --out answers.jsonl --resume`
 - **输出文件**：`answers.jsonl`（90 条记录）

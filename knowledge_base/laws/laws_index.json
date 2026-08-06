@@ -1,7 +1,9 @@
 {
   "CIVIL_CODE": {
     "name": "中华人民共和国民法典",
-    "aliases": ["民法典"],
+    "aliases": [
+      "民法典"
+    ],
     "type": "法律",
     "order": 1,
     "issuing_authority": "全国人民代表大会",
@@ -14,7 +16,10 @@
   },
   "COMPANY_LAW": {
     "name": "中华人民共和国公司法",
-    "aliases": ["公司法", "新公司法"],
+    "aliases": [
+      "公司法",
+      "新公司法"
+    ],
     "type": "法律",
     "order": 2,
     "issuing_authority": "全国人民代表大会常务委员会",
@@ -27,7 +32,9 @@
   },
   "CRIMINAL_LAW": {
     "name": "中华人民共和国刑法",
-    "aliases": ["刑法"],
+    "aliases": [
+      "刑法"
+    ],
     "type": "法律",
     "order": 3,
     "issuing_authority": "全国人民代表大会",
@@ -40,7 +47,9 @@
   },
   "PATENT_LAW": {
     "name": "中华人民共和国专利法",
-    "aliases": ["专利法"],
+    "aliases": [
+      "专利法"
+    ],
     "type": "法律",
     "order": 4,
     "issuing_authority": "全国人民代表大会常务委员会",
@@ -53,7 +62,10 @@
   },
   "TAX_ADMIN_LAW": {
     "name": "中华人民共和国税收征收管理法",
-    "aliases": ["税收征收管理法", "税收征管法"],
+    "aliases": [
+      "税收征收管理法",
+      "税收征管法"
+    ],
     "type": "法律",
     "order": 5,
     "issuing_authority": "全国人民代表大会常务委员会",
@@ -66,7 +78,10 @@
   },
   "VAT_LAW": {
     "name": "中华人民共和国增值税法",
-    "aliases": ["增值税法", "增值税"],
+    "aliases": [
+      "增值税法",
+      "增值税"
+    ],
     "type": "法律",
     "order": 6,
     "issuing_authority": "全国人民代表大会常务委员会",
@@ -76,5 +91,37 @@
     "effective_date": "2026-01-01",
     "source_url": "https://www.gov.cn/yaowen/liebiao/202412/content_6994557.htm",
     "source_accessed_at": "2026-08-05"
+  },
+  "EIT_LAW": {
+    "name": "中华人民共和国企业所得税法",
+    "aliases": [
+      "企业所得税法",
+      "企业所得税"
+    ],
+    "type": "法律",
+    "order": 7,
+    "issuing_authority": "全国人民代表大会常务委员会",
+    "jurisdiction": "全国",
+    "status": "effective",
+    "promulgation_date": "2018-12-29",
+    "effective_date": "2018-12-29",
+    "source_url": "https://flk.npc.gov.cn/",
+    "source_accessed_at": "2026-08-06"
+  },
+  "IIT_LAW": {
+    "name": "中华人民共和国个人所得税法",
+    "aliases": [
+      "个人所得税法",
+      "个人所得税"
+    ],
+    "type": "法律",
+    "order": 8,
+    "issuing_authority": "全国人民代表大会常务委员会",
+    "jurisdiction": "全国",
+    "status": "effective",
+    "promulgation_date": "2018-08-31",
+    "effective_date": "2019-01-01",
+    "source_url": "https://flk.npc.gov.cn/",
+    "source_accessed_at": "2026-08-06"
   }
 }

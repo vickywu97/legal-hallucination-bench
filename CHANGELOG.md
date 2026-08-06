@@ -15,6 +15,14 @@
 - `.github/workflows/ci.yml` 烟测改为 `python -S -m benchmark.run --offline --out-dir sample_demo_reports`；`.gitignore` 忽略 `sample_demo_reports/`。
 - `README.md` 快速开始：测试计数 83→102；演示命令改为 `--out-dir sample_demo_reports` 并注明护栏语义。
 
+### 新增（v1.2 KB 扩容：实体税法 + 专利法补强 → 212 节点 / 8 部法）
+- **KB 由 116/6 法 → 212/8 法**：企业所得税法 EIT_LAW（2018 修正，全文 60 条）、个人所得税法 IIT_LAW（2018 修正，全文 22 条）从用户提供的官方 .doc 逐字提取入库；专利法补强 +14（职务发明/许可/申请日/优先权/授权/无效宣告/强制许可等）→ 30 条。条文经 `textutil` 转换并清洗 Word `\l` 超链接域代码与章标题泄漏。
+- **专家核验台账**：`verifications.json` 逐条 `verified`（212/212，100%）；`laws_index.json` 注册 EIT_LAW（order 7）/ IIT_LAW（order 8）。
+- **测试集扩至 23 题**：`questions.json` 新增 Q19–Q23 五道 EIT/IIT/专利张冠李戴陷阱——税率25%↔高新15%/小微20%（EIT 4↔28）、不征税↔免税（EIT 7↔26）、免征↔减征（IIT 4↔5）、职务发明↔合作委托（专利 6↔8）、跨法企业所得税免税收入↔个税免征（EIT 26 vs IIT 4）；`in_scope_laws` 扩为 8 部，`_meta.version` 1.1→1.2。
+- **护栏放行新法域**：`scripts/generate_answers.py` 系统提示词由"六部"扩为"八部（含企业所得税法、个人所得税法）"，否则新法域引注会落入 NOT_FOUND；Q8 超范围拒绝题枚举同步补齐八部。
+- **测试同步**：`tests/test_kb_coverage.py` 地板抬高（MIN_TOTAL 101→200，新增 EIT_LAW/IIT_LAW，PATENT_LAW 12→30）；全量 110 测试绿灯。
+- 文档同步：README（6→8 部 / 116→212 节点）、KB_EXPANSION_PLAN（里程碑重标 v1.2=实体税法完成、v1.3=民法典纵深）、KB_V1.2_PREP（标记已落地）更新。
+
 ---
 
 ## 2026-08-05
@@ -37,12 +45,11 @@
 - **增值税法域激活**：VAT_LAW 42 次引注、0 次 EXACT（5 模型全灭，其中 32/42（76.2%）为纯 NOT_FOUND）；失败以"虚构条文序号"（`NOT_FOUND`）为主，CRFI 与软探针 `SOFT_MISATTRIBUTED` 均 0 触发——失效形态是"乱编序号"而非"改写邻居条文"。
 - **结论强化**：免费 GLM-4-Flash 仍优于付费 Qwen-Max；付费旗舰 R1 仍居首但优势由 8.2pt 收窄至 3.8pt；全员内容级幻觉率 100%（零逐字合规）；仅 R1 触发时序幻觉（3.3%，Q7 引已废止《合同法》）。`README.md` / `PORTFOLIO_SUMMARY.md` / `leaderboard.html` 同步至 90 条口径。
 
-### 规划中（v1.2 准备 — 完成 Phase 1 税制+知产纵深 → ~230 节点）
+### 历史（v1.2 准备 → 已于 2026-08-06 落地，212 节点 / 8 部法，见上方 v1.2 条目）
 - 新增 `docs/KB_V1.2_PREP.md`：v1.2 扩容执行准备清单。目标在 v1.1（116 节点/6 法）基础上补齐
   Phase 1 剩余三部法——企业所得税法 `EIT_LAW`(+30-40)、个人所得税法 `IIT_LAW`(+20-30)、
-  专利法补强 `PATENT_LAW`(+14→30)——合计推到 ~230-250 节点。
-- **关键阻塞**：需用户提供三部法的官方 .doc 源文件（或确认 `flk.npc.gov.cn` 可下载），
-  否则节点无法进入判分面（旧法文本会被 as_of 门禁判 `TEMPORAL_DEPRECATED`）。
+  专利法补强 `PATENT_LAW`(+14→30)——实际落地为 EIT 60 + IIT 22 + 专利补强 14 = 212 节点（全文入库，比规划更完整）。
+- **阻塞已解除**：用户已提供三部法官方 .doc，逐字提取 + 专家核验已完成。
 - **配套产物**：`benchmark/reports/vat_domain_wipeout.html` —— 增值税法域"全灭"独立可视化
   （42 引注 / 0 EXACT / 5 模型全灭 / 失败形态=虚构条文序号）；含分域 HVI 对比条形图（增值税法 76.2% 居首，全 6 域逐字 EXACT 均为 0%）与每模型 VAT 引注次数 n（R1/V3/Kimi 各 10、GLM/Qwen 各 6），可直接贴简历 / 作品集。
 - **里程碑表重标建议**：`KB_EXPANSION_PLAN.md` 的 v1.2 当前标为"民法典纵深 ~370"，落地后实际对应
