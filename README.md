@@ -142,6 +142,17 @@ python -S -m benchmark.run --input answers.jsonl --candidates candidates.jsonl
 
 ---
 
+## 按需下载版法条库（Packs）
+
+除评测基准外，本仓库把 8 部法做成**按领域拆分、可单独下载的全集包**，详见 [`packs/README.md`](packs/README.md)
+与产品规格 [`docs/PRODUCT_SPEC_法条库按需下载版.md`](docs/PRODUCT_SPEC_法条库按需下载版.md)。
+
+- **9 个包 / 2541 条**：8 部法全集（民法典1260 / 刑法505 / 公司法266 / 税收征管94 / 专利法82 / 企税60 / 个税22 / 增值税法38）+ 税务合并包(214)。
+- **信任分级**：`Tier A`=专家核验（沿用已签核 KB 节点，可作评测 ground truth）；`Tier B`=官方 .doc 逐字提取（未逐条签核，仅作参考）。
+- 每包提供 `jsonl` / `md` / `csv` 三格式，下载页见 [`packs/index.html`](packs/index.html)。
+
+---
+
 ## 端到端示例（demo/）
 
 `demo/` 内含一套可复现的"专家标注 → 严格评测"闭环，亲手验证三件事：

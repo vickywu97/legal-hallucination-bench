@@ -41,8 +41,10 @@ def cn2int(s: str) -> int:
     return total + cur
 
 
-# 只认「行首」的 第X条 作为条文起点，避免把正文里"本法第X条"这类句中引用误判为新条文
-ART_RE = re.compile(r'(?:^|\n)\s*第([零一二三四五六七八九十百千0-9]+)条', re.M)
+# 只认「行首」的 第X条 作为条文起点，避免把正文里"本法第X条"这类句中引用误判为新条文。
+# 注意：民法典等 .docx 转 txt 后条文以全角空格(　, U+3000) 缩进，\s 不匹配，故显式纳入 [　\s]。
+# 刑法/公司法等含修正案插入的"第X条之一/之二"，需整体捕获，否则会塌缩到 sort_key X 造成重复节点。
+ART_RE = re.compile(r'(?:^|\n)[　\s]*第([零一二三四五六七八九十百千0-9]+)条(之[零一二三四五六七八九十百千]+)?', re.M)
 CHAPTER_RE = re.compile(r'第[零一二三四五六七八九十百千]+[章编节][^\n第]*')
 HYPERLINK_RE = re.compile(r'HYPERLINK\s+"[^"]*"')
 # .doc 转 txt 常见的页脚/水印噪点（覆盖「扫…AGE/NUMPAGES」与纯「PAGE/NUMPAGES」两种形态）
@@ -71,12 +73,25 @@ def parse_articles(text: str):
         body = FOOTER_RE.sub('', body).strip()  # 去掉页脚噪点
         if not body:
             continue
-        out.append((m.group(1), body))
+        out.append((m.group(1), m.group(2), body))
     return out
 
 
+def norm_ref(article_number: str):
+    """把"第13条"/"第234条之一"/"第十三条"/"第二百三十四条之一" 统一归一为 (base, sub) 元组，
+    规避 KB 用阿拉伯数字、官方 .doc 用中文数字、以及"之一"修正案插入条的表示差异。"""
+    m = re.match(r'第([0-9零一二三四五六七八九十百千]+)条(之[零一二三四五六七八九十百千]+)?',
+                 article_number)
+    if not m:
+        return None
+    num = m.group(1)
+    base = int(num) if num.isdigit() else cn2int(num)
+    sub = cn2int(m.group(2)[1:]) if m.group(2) else 0
+    return (base, sub)
+
+
 def load_verified_set(statutes_path: str):
-    # 用 (law_code, article_sort_key) 作匹配键，规避"第2条"(阿拉伯) vs "第二条"(中文) 的字符串不一致
+    # 用 (law_code, norm_ref(article_number)) 作匹配键，规避阿拉伯/中文数字与"之一"的差异
     verified = {}
     if not os.path.exists(statutes_path):
         return verified
@@ -87,7 +102,9 @@ def load_verified_set(statutes_path: str):
                 continue
             d = json.loads(line)
             if d.get('verification_status') == 'verified':
-                verified[(d['law_code'], d['article_sort_key'])] = d
+                key = (d['law_code'], norm_ref(d['article_number']))
+                if key[1] is not None:
+                    verified[key] = d
     return verified
 
 
@@ -99,10 +116,11 @@ def build_pack(txt_path, law_code, law_name, effective_date, statutes_path, out_
     today = datetime.date.today().isoformat()
 
     records = []
-    for num_cn, body in articles:
-        sort_key = cn2int(num_cn)
-        article_number = f'第{num_cn}条'
-        existing = verified.get((law_code, sort_key))
+    for num_cn, sub_cn, body in articles:
+        # 修正案插入条（第X条之一/之二）用小数 sort_key 保证唯一且有序（X.001, X.002…），不与第(X+1)条冲突
+        sort_key = cn2int(num_cn) + (cn2int(sub_cn[1:]) * 0.001 if sub_cn else 0)
+        article_number = f'第{num_cn}条{sub_cn or ""}'
+        existing = verified.get((law_code, norm_ref(article_number)))
         if existing:
             rec = dict(existing)          # 沿用专家签署与已核验正文
             rec['article_number'] = article_number   # 统一为中文条号
