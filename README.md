@@ -12,7 +12,7 @@
 > - **Offline & zero-dependency**: scores how faithfully LLMs quote Chinese statute text — `python -S`, no `pip install`.
 > - **Expert-verified KB**: every article signed against the official `flk.npc.gov.cn` source — 100% current-law, 0 unverified nodes.
 > - **Strict binary evaluator**: verbatim = 1.0, anything else = 0.0; plus a **repealed-law trap** (citing a repealed statute = automatic fail).
-> - **Real-model results**: 5 domestic LLMs on 18 traps across 6 laws — 50–62.5% citation hallucination even on the most forgiving metric; on China's new **VAT Law (2026-01-01)**, 42 citations, **0 correct**.
+> - **Real-model results**: 5 domestic LLMs on 23 traps across 8 laws — 50.0–64.6% citation hallucination even on the most forgiving metric; on China's new **VAT Law (2026-01-01)**, 42 citations, **0 correct**.
 > - Reproducible with no API keys: `python -S -m benchmark.run --offline --out-dir sample_demo_reports`.
 
 ---
@@ -220,27 +220,28 @@ python -S -m benchmark.run --offline --input answers.jsonl
 > 注：本基准**仅覆盖 8 部法律**（`questions.json` 的 `_meta.in_scope_laws`，含增值税法、企业所得税法、个人所得税法）。
 > 超出这 8 部的真实法律不在评测范围内——护栏已通过系统提示词约束模型不引用它们。
 
-### 5. 实测结果（Real-Model Results，2026-08-05 采集）
+### 5. 实测结果（Real-Model Results，2026-08-06 采集，v1.2）
 
-18 题 × 5 个国产模型 = 90 条有效回答。评分完全离线、零依赖、可复现。
+23 题 × 5 个国产模型 = 115 条有效回答。评分完全离线、零依赖、可复现。
 
 | 排名 | 模型 | 引注幻觉率(HVI) | 引注数 |
 | --- | --- | --- | --- |
-| 1 | DeepSeek-R1（付费旗舰） | 50.0% | 30 |
-| 2 | GLM-4-Flash（免费） | 53.8% | 26 |
-| 3 | Qwen-Max（付费） | 56.5% | 23 |
-| 4 | DeepSeek-V3（免费基础） | 60.0% | 30 |
-| 5 | Kimi | 62.5% | 32 |
+| 1 | DeepSeek-R1（付费旗舰） | 50.0% | 42 |
+| 2 | Qwen-Max（付费） | 54.5% | 33 |
+| 3 | DeepSeek-V3（免费基础） | 55.0% | 40 |
+| 3 | GLM-4-Flash（免费） | 55.0% | 40 |
+| 5 | Kimi | 64.6% | 48 |
 
 **核心结论**：即使在最宽容的 HVI 尺度下（只查"条文是否存在 / 是否废止"，不要求逐字），
-表现最好的付费旗舰 DeepSeek-R1 也有 **50.0%** 的引注是幻觉；Kimi（62.5%）引注数最多（32 条）
-却幻觉率最高，DeepSeek-V3（60.0%）几近持平——**主流法律 AI 在"引用法条"这一基础动作上可靠性堪忧，
+表现最好的付费旗舰 DeepSeek-R1 也有 **50.0%** 的引注是幻觉；Kimi（64.6%）引注数最多（48 条）
+却幻觉率最高，DeepSeek-V3 / GLM-4-Flash（55.0%）几近持平——**主流法律 AI 在"引用法条"这一基础动作上可靠性堪忧，
 而在 2026 年新施行的《增值税法》域更近乎崩溃（5 模型 42 次引注 0 次准确）**。
 
 **核心洞察**：
-- **免费模型未输付费**：完全免费的 GLM-4-Flash（HVI 53.8%）仍优于付费的 Qwen-Max（56.5%）；
-  另一免费模型 DeepSeek-V3（60.0%）略弱于 Qwen-Max——付费并不保证更可靠，但"贵即好"也不成立。
-  付费旗舰 R1（50.0%）仍居首，但较首轮（36.8%）优势明显收窄，差距从 8.2pt 缩至 3.8pt。
+- **免费模型未输付费**：免费的 GLM-4-Flash / DeepSeek-V3（55.0%）与付费的 Qwen-Max（54.5%）几乎同档；
+  付费旗舰 R1（50.0%）仍居首，但领先身位仅 4.5pt，优势微弱且持续被逼近——"贵即好"不成立。
+- **Qwen-Max 在 v1.2 反超 GLM-4-Flash**：扩到 23 题（新增实体税法/专利陷阱）后，Qwen-Max（54.5%）升至第二，
+  GLM-4-Flash（55.0%）降至并列第三——新增的税法题目暴露 GLM 在税法知识储备上的相对短板。
 - **面对虚构 / 失效 / 新法序号，模型密集踩坑**：Q8（虚构法律"虚拟法"）五模型全部 `NOT_FOUND`、
   Q4（2024 新《公司法》将对外担保由第16条移至第15条）五模型全部引用旧序号 → `NOT_FOUND`、
   新增 Q16–Q18（《增值税法》2026-01-01 施行）5 模型 42 次引注 **0 次 EXACT**，且失败以"虚构条文序号"
@@ -249,9 +250,11 @@ python -S -m benchmark.run --offline --input answers.jsonl
 
 **关键发现（逐题诊断矩阵印证）**：
 - **内容级幻觉率全员 100%**：5 个模型没有任何一条逐字复述法条原文——真实模型做不到精确引用，全部概括/改写。
-- **张冠李戴率(CRFI) 全员 0%**：增值税法域已激活（42 次引注），但模型失败模式是"虚构条文序号"
-  （`NOT_FOUND`）而非"条号对、内容错"，故 CRFI 仍为 0%——新增的软探针 `SOFT_MISATTRIBUTED`
-  亦 0 触发，印证失效形态是"乱编序号"而非"改写邻居条文"。这是评测刻意区分的两种幻觉形态。
+- **张冠李戴率(CRFI) 全员 0%，v1.2 仍未激活**：新增 Q19–Q23（EIT/IIT/专利 张冠李戴陷阱）后，模型在该 5 题的失分形态
+  **并非"条号对、内容错"**，而是① 引对正确条号但写概括/改写内容 → `PARTIAL`/`FABRICATED_GENERIC`（如 Q20/Q21/Q23）；
+  ② 引不存在条号或仅写法律名无条号 → `NOT_FOUND`（suspected 启发式）。硬 `MISATTRIBUTED`（同法 cov≥0.80）与软探针
+  `SOFT_MISATTRIBUTED` 在 115 条中**均 0 触发**。这说明真实模型在税法域倾向于"编/概括"而非"记混邻居条文"——
+  CRFI 为 0 恰恰是评测归因能力的体现（详见 `docs/INTERVIEW_QA.md` Q3），而非指标失效。
 - **时序幻觉仅 R1 触发（5.3%）**：R1 在 Q7 引用了已废止的《合同法》第113条（合同法 2021 已废止，Q7 题干已警示）。
 - **Q4 暴露"新法序号盲区"**：5 模型全部引用旧《公司法》第16条（公司对外担保），而 2024 新法已移至第15条 → 全员 `NOT_FOUND`。模型锚定 2024 年前的法条序号。
 - **Q8 全员 `NOT_FOUND`**：虚构法律（"中华人民共和国虚拟法"）无一被识破。
@@ -260,10 +263,12 @@ python -S -m benchmark.run --offline --input answers.jsonl
 - **增值税法域（Q16–Q18）5 模型全灭**：新增的 2026 年新法域 42 次引注 **0 次 EXACT**，
   失败以"虚构条文序号"（`NOT_FOUND`）为主，软探针 `SOFT_MISATTRIBUTED` 亦 0 触发——
   暴露模型对这部新法的序号与内容认知近乎空白，也证明基准已具备新法域评测能力。
+- **实体税法/专利陷阱题（Q19–Q23）揭示"记对条号、写错原文"为主**：5 模型在 EIT/IIT/专利 题上多数能引对正确条号，
+  但内容全为非逐字概括（`PARTIAL` 90–100% 子句命中却仍判 `FABRICATED`），表明"精确复述原文"比"张冠李戴"更主流的失败形态。
 
 > **Kimi 采集完成**：月之暗面 `kimi-k2.6` 接口对可选参数（`temperature`/`stream`）返回 HTTP 400，
 > 已改为最小载荷（`model`+`messages`）首调即通；长推理题 Q6/Q13 原超时，已将读取超时提至 180s 后补跑成功。
-> 最终 Kimi 引注数最多（32 条）但幻觉率 62.5%，排名末位（详见 [`benchmark/reports/leaderboard.md`](benchmark/reports/leaderboard.md)）。
+> 最终 Kimi 引注数最多（48 条）但幻觉率 64.6%，排名末位（详见 [`benchmark/reports/leaderboard.md`](benchmark/reports/leaderboard.md)）。
 
 ---
 

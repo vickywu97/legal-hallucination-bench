@@ -6,57 +6,57 @@
       "hr_statutory": 0.5,
       "hr_content": 1.0,
       "crfi": 0.0,
-      "rate_deprecated": 0.03333333333333333,
+      "rate_deprecated": 0.023809523809523808,
       "rate_unverifiable": 0.0
     },
-    "n_citations": 30
+    "n_citations": 42
   },
   {
     "rank": 2,
-    "model": "GLM-4-Flash",
+    "model": "Qwen-Max",
     "metrics": {
-      "hr_statutory": 0.5384615384615384,
+      "hr_statutory": 0.5454545454545454,
       "hr_content": 1.0,
       "crfi": 0.0,
       "rate_deprecated": 0.0,
       "rate_unverifiable": 0.0
     },
-    "n_citations": 26
+    "n_citations": 33
   },
   {
     "rank": 3,
-    "model": "Qwen-Max",
+    "model": "DeepSeek-V3",
     "metrics": {
-      "hr_statutory": 0.5652173913043478,
+      "hr_statutory": 0.55,
       "hr_content": 1.0,
       "crfi": 0.0,
       "rate_deprecated": 0.0,
       "rate_unverifiable": 0.0
     },
-    "n_citations": 23
+    "n_citations": 40
   },
   {
     "rank": 4,
-    "model": "DeepSeek-V3",
+    "model": "GLM-4-Flash",
     "metrics": {
-      "hr_statutory": 0.6,
+      "hr_statutory": 0.55,
       "hr_content": 1.0,
       "crfi": 0.0,
       "rate_deprecated": 0.0,
       "rate_unverifiable": 0.0
     },
-    "n_citations": 30
+    "n_citations": 40
   },
   {
     "rank": 5,
     "model": "Kimi",
     "metrics": {
-      "hr_statutory": 0.625,
+      "hr_statutory": 0.6458333333333334,
       "hr_content": 1.0,
       "crfi": 0.0,
       "rate_deprecated": 0.0,
       "rate_unverifiable": 0.0
     },
-    "n_citations": 32
+    "n_citations": 48
   }
 ]

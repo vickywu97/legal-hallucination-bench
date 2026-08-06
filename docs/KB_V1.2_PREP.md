@@ -94,6 +94,8 @@
 
 这些陷阱的"正确条号 + 错误条文"邻居在 KB 扩容后密度足够，硬 MISATTRIBUTED 更易命中。
 
+> **复采验证（2026-08-06）**：新增 Q19–Q23 后实跑 5 模型，硬 `MISATTRIBUTED` 与软探针 `SOFT_MISATTRIBUTED` 在 115 条中**均 0 触发**——模型在该 5 题失分形态为「引对正确条号但写概括/改写内容 → PARTIAL/FABRICATED_GENERIC」与「引不存在条号 → NOT_FOUND」，并非"条号对、内容错"。CRFI 仍 0%，说明真实模型在税法域更倾向"编/概括"而非"记混邻居条文"；此乃评测归因能力体现，非指标失效。
+
 ---
 
 ## 六、落地状态（2026-08-06，✅ 已完成）
@@ -107,4 +109,4 @@
 - `questions.json` 扩为 8 部法 + 新增 Q19–Q23 五道 EIT/IIT/专利张冠李戴陷阱；`_meta.version` → 1.2。
 - `scripts/generate_answers.py` 护栏由"六部"扩为"八部"（含企业所得税法、个人所得税法）。
 - `tests/test_kb_coverage.py` 地板抬高（MIN_TOTAL 101→200，新增 EIT_LAW/IIT_LAW，PATENT_LAW 12→30）；全量 110 测试绿灯。
-- `benchmark.run --offline --input answers.jsonl` 需在用户复采 23 题答案后重跑以刷新真实排行榜。
+- `benchmark.run --offline --input answers.jsonl` 已复采并刷新真实排行榜（115 条 / 23 题 / 8 部法，2026-08-06）。

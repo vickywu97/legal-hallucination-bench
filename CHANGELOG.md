@@ -23,6 +23,12 @@
 - **测试同步**：`tests/test_kb_coverage.py` 地板抬高（MIN_TOTAL 101→200，新增 EIT_LAW/IIT_LAW，PATENT_LAW 12→30）；全量 110 测试绿灯。
 - 文档同步：README（6→8 部 / 116→212 节点）、KB_EXPANSION_PLAN（里程碑重标 v1.2=实体税法完成、v1.3=民法典纵深）、KB_V1.2_PREP（标记已落地）更新。
 
+### 实测（v1.2 真实模型排行榜，2026-08-06 复采）
+- **复采落地**：设 4 个国产平台 key 后 `--resume --only Q19 Q20 Q21 Q22 Q23` 仅补 5 题（25 次调用）→ 115 条（5×23），重跑管线刷新 `benchmark/reports/`。
+- **排行榜（HVI，越低越好）**：R1 **50.0%**（n=42）/ Qwen-Max 54.5%（33）/ DeepSeek-V3 55.0%（40）/ GLM-4-Flash 55.0%（40）/ **Kimi 64.6%**（48，引注最多）。较 v1.1：Qwen-Max 反超 GLM-4-Flash 升至第二，R1 仍以 4.5pt 微弱优势居首。
+- **CRFI（张冠李戴率）仍全员 0%——v1.2 未激活**：新增 Q19–Q23 五道 EIT/IIT/专利 张冠李戴陷阱后，5 模型在该 5 题失分形态为「引对正确条号但写概括/改写内容 → PARTIAL/FABRICATED_GENERIC」（Q20/Q21/Q22/Q23）与「引不存在条号/仅法律名 → NOT_FOUND」（Q19/Q20/Q21 的 suspected 启发式），**硬 MISATTRIBUTED 与软探针 SOFT_MISATTRIBUTED 在 115 条中均 0 触发**。结论：真实模型在税法域倾向"编/概括"而非"记混邻居条文"，CRFI 为 0 是评测归因能力的体现（非指标失效），详见 `docs/INTERVIEW_QA.md` Q3。
+- **内容级幻觉率全员 100%**：零逐字合规；仅 R1 触发时序幻觉（约 2.4%，Q7 引已废止《合同法》）。`README.md` / `docs/MODEL_VERSIONS.md` / `docs/PROMOTION_DRAFTS.md` / `PORTFOLIO_SUMMARY.md` 同步至 115 条口径。
+
 ---
 
 ## 2026-08-05
