@@ -8,6 +8,13 @@
 > zero tolerance for repealed-law citations and a strict binary (verbatim-or-zero)
 > content evaluator.
 
+> **TL;DR (English)** — I'm a lawyer + tax agent + patent attorney pivoting to AI legal product management. This repo is my portfolio proof that I can *define, quantify, and ship* AI-quality evaluation:
+> - **Offline & zero-dependency**: scores how faithfully LLMs quote Chinese statute text — `python -S`, no `pip install`.
+> - **Expert-verified KB**: every article signed against the official `flk.npc.gov.cn` source — 100% current-law, 0 unverified nodes.
+> - **Strict binary evaluator**: verbatim = 1.0, anything else = 0.0; plus a **repealed-law trap** (citing a repealed statute = automatic fail).
+> - **Real-model results**: 5 domestic LLMs on 18 traps across 6 laws — 50–62.5% citation hallucination even on the most forgiving metric; on China's new **VAT Law (2026-01-01)**, 42 citations, **0 correct**.
+> - Reproducible with no API keys: `python -S -m benchmark.run --offline --out-dir sample_demo_reports`.
+
 ---
 
 ## 一句话定位
@@ -123,7 +130,7 @@ python -S -m benchmark.run --input answers.jsonl --candidates candidates.jsonl
 
 ## 当前规模与规划
 
-| 指标 | 现状 (v1.1-dev) | 规划 (v2.0) |
+| 指标 | 现状 (v1.1) | 规划 (v2.0) |
 | --- | --- | --- |
 | 法律部数 | 6（民法典/公司法/刑法/专利法/税收征管法/**增值税法**） | 15–20 |
 | 条文节点 | 116（100% verified） | 700+ |
