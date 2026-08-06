@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>增值税法域「全灭」— 5 个国产大模型法条引注可靠性实测</title>
+<title>增值税法域「全灭」— 8 法域法条引注可靠性实测</title>
 <style>
   :root{
     --bg:#ffffff; --ink:#1a1a1a; --muted:#6b6b73; --line:#e4e4ea;
@@ -40,8 +40,8 @@
 <body>
 <div class="page">
 
-  <h1>增值税法域「全灭」<br>5 个国产大模型法条引注可靠性实测</h1>
-  <p class="sub">legal-hallucination-bench · v1.1 · 18 题 / 90 条真实模型回答 · 采集日期 2026-08-05</p>
+  <h1>增值税法域「全灭」<br>8 法域法条引注可靠性实测</h1>
+  <p class="sub">legal-hallucination-bench · v1.2 · 23 题 / 203 条真实模型回答 · 采集日期 2026-08-06</p>
 
   <div class="stats">
     <div class="stat"><div class="num">42</div><div class="lab">增值税法域引注次数</div></div>
@@ -50,59 +50,56 @@
     <div class="stat"><div class="num">5/5</div><div class="lab">模型全灭</div></div>
   </div>
 
-  <h2>一、分域 HVI（存在/时效幻觉率）对比（6 法域）</h2>
+  <h2>一、分域 HVI（存在/时效幻觉率）对比（8 法域）</h2>
   <p class="cap">HVI = 硬引注中 NOT_FOUND / TEMPORAL_DEPRECATED 占比（引擎原生 <code>per_domain</code> 指标）。
-  逐字 EXACT 在<b>全部 6 域均为 0%</b>（模型从不照抄法条原文），故"谁更准"无从区分，改用 HVI 看"谁更容易编造/引用失效法条"。
-  增值税法 76.2% 几乎全为 NOT_FOUND（新法未知），是时效盲区的直接证据。</p>
+  逐字 EXACT 在<b>全部 8 域均为 0%</b>（模型从不照抄法条原文），故"谁更准"无从区分，改用 HVI 看"谁更容易编造/引用失效法条"。
+  增值税法 76.2% 几乎全为 NOT_FOUND（新法未知），是时效盲区的直接证据；
+  v1.2 新增的<b>个人所得税法域（70.6%）</b>与<b>企业所得税法域（45.5%）</b>同样高位，
+  实体税法整体是模型可靠性洼地。</p>
   <div class="chart">
-    <svg viewBox="0 0 720 360" width="100%" role="img" aria-label="分域 HVI 横向条形图">
-      <!-- gridlines: 0/25/50/75/100% -->
-      <line x1="200" y1="28" x2="200" y2="338" stroke="#cfcfd6" stroke-width="1"/>
-      <line x1="320" y1="28" x2="320" y2="338" stroke="#ececf1" stroke-width="1"/>
-      <line x1="440" y1="28" x2="440" y2="338" stroke="#ececf1" stroke-width="1"/>
-      <line x1="560" y1="28" x2="560" y2="338" stroke="#ececf1" stroke-width="1"/>
-      <line x1="680" y1="28" x2="680" y2="338" stroke="#ececf1" stroke-width="1"/>
+    <svg viewBox="0 0 720 408" width="100%" role="img" aria-label="分域 HVI 横向条形图">
+      <line x1="200" y1="28" x2="200" y2="370" stroke="#cfcfd6" stroke-width="1"/>
       <text x="200" y="20" font-size="12" fill="#9a9aa2" text-anchor="middle">0%</text>
+      <line x1="320" y1="28" x2="320" y2="370" stroke="#ececf1" stroke-width="1"/>
       <text x="320" y="20" font-size="12" fill="#9a9aa2" text-anchor="middle">25%</text>
+      <line x1="440" y1="28" x2="440" y2="370" stroke="#ececf1" stroke-width="1"/>
       <text x="440" y="20" font-size="12" fill="#9a9aa2" text-anchor="middle">50%</text>
+      <line x1="560" y1="28" x2="560" y2="370" stroke="#ececf1" stroke-width="1"/>
       <text x="560" y="20" font-size="12" fill="#9a9aa2" text-anchor="middle">75%</text>
+      <line x1="680" y1="28" x2="680" y2="370" stroke="#ececf1" stroke-width="1"/>
       <text x="680" y="20" font-size="12" fill="#9a9aa2" text-anchor="middle">100%</text>
-
-      <!-- 增值税法 76.2 (highlight, NOT_FOUND 主导) -->
-      <text x="12" y="66" font-size="14" fill="#d64545" font-weight="700">增值税法</text>
-      <text x="12" y="82" font-size="11" fill="#d64545">VAT_LAW</text>
-      <rect x="200" y="48" width="366" height="28" rx="4" fill="#d64545"/>
-      <text x="574" y="67" font-size="13" fill="#d64545" font-weight="700">76.2%</text>
-
-      <!-- 公司法 75.0 -->
-      <text x="12" y="116" font-size="14" fill="#1a1a1a">公司法</text>
-      <text x="12" y="132" font-size="11" fill="#9a9aa2">COMPANY_LAW</text>
-      <rect x="200" y="98" width="360" height="28" rx="4" fill="#3b6ea5"/>
-      <text x="568" y="117" font-size="13" fill="#1a1a1a">75.0%</text>
-
-      <!-- 专利法 43.8 -->
-      <text x="12" y="166" font-size="14" fill="#1a1a1a">专利法</text>
-      <text x="12" y="182" font-size="11" fill="#9a9aa2">PATENT_LAW</text>
-      <rect x="200" y="148" width="210" height="28" rx="4" fill="#3b6ea5"/>
-      <text x="418" y="167" font-size="13" fill="#1a1a1a">43.8%</text>
-
-      <!-- 民法典 41.2 -->
-      <text x="12" y="216" font-size="14" fill="#1a1a1a">民法典</text>
-      <text x="12" y="232" font-size="11" fill="#9a9aa2">CIVIL_CODE</text>
-      <rect x="200" y="198" width="198" height="28" rx="4" fill="#3b6ea5"/>
-      <text x="406" y="217" font-size="13" fill="#1a1a1a">41.2%</text>
-
-      <!-- 税收征管法 21.1 -->
-      <text x="12" y="266" font-size="14" fill="#1a1a1a">税收征管法</text>
-      <text x="12" y="282" font-size="11" fill="#9a9aa2">TAX_ADMIN_LAW</text>
-      <rect x="200" y="248" width="101" height="28" rx="4" fill="#3b6ea5"/>
-      <text x="309" y="267" font-size="13" fill="#1a1a1a">21.1%</text>
-
-      <!-- 刑法 9.1 -->
-      <text x="12" y="316" font-size="14" fill="#1a1a1a">刑法</text>
-      <text x="12" y="332" font-size="11" fill="#9a9aa2">CRIMINAL_LAW</text>
-      <rect x="200" y="298" width="44" height="28" rx="4" fill="#3b6ea5"/>
-      <text x="252" y="317" font-size="13" fill="#1a1a1a">9.1%</text>
+      <text x="12" y="64" font-size="14" fill="#d64545" font-weight="700">增值税法</text>
+      <text x="12" y="80" font-size="11" fill="#9a9aa2">VAT_LAW</text>
+      <rect x="200" y="48" width="3.7" height="28" rx="4" fill="#d64545"/>
+      <text x="211.7" y="67" font-size="13" fill="#d64545" font-weight="700">76.2%</text>
+      <text x="12" y="106" font-size="14" fill="#3b6ea5" font-weight="700">公司法</text>
+      <text x="12" y="122" font-size="11" fill="#9a9aa2">COMPANY_LAW</text>
+      <rect x="200" y="90" width="3.6" height="28" rx="4" fill="#3b6ea5"/>
+      <text x="211.6" y="109" font-size="13" fill="#1a1a1a" font-weight="700">75.0%</text>
+      <text x="12" y="148" font-size="14" fill="#3b6ea5" font-weight="700">个人所得税法</text>
+      <text x="12" y="164" font-size="11" fill="#9a9aa2">IIT_LAW</text>
+      <rect x="200" y="132" width="3.4" height="28" rx="4" fill="#3b6ea5"/>
+      <text x="211.4" y="151" font-size="13" fill="#1a1a1a" font-weight="700">70.6%</text>
+      <text x="12" y="190" font-size="14" fill="#3b6ea5" font-weight="700">企业所得税法</text>
+      <text x="12" y="206" font-size="11" fill="#9a9aa2">EIT_LAW</text>
+      <rect x="200" y="174" width="2.2" height="28" rx="4" fill="#3b6ea5"/>
+      <text x="210.2" y="193" font-size="13" fill="#1a1a1a" font-weight="700">45.5%</text>
+      <text x="12" y="232" font-size="14" fill="#3b6ea5" font-weight="700">民法典</text>
+      <text x="12" y="248" font-size="11" fill="#9a9aa2">CIVIL_CODE</text>
+      <rect x="200" y="216" width="2.0" height="28" rx="4" fill="#3b6ea5"/>
+      <text x="210.0" y="235" font-size="13" fill="#1a1a1a" font-weight="700">41.2%</text>
+      <text x="12" y="274" font-size="14" fill="#3b6ea5" font-weight="700">专利法</text>
+      <text x="12" y="290" font-size="11" fill="#9a9aa2">PATENT_LAW</text>
+      <rect x="200" y="258" width="1.6" height="28" rx="4" fill="#3b6ea5"/>
+      <text x="209.6" y="277" font-size="13" fill="#1a1a1a" font-weight="700">33.3%</text>
+      <text x="12" y="316" font-size="14" fill="#3b6ea5" font-weight="700">税收征收管理法</text>
+      <text x="12" y="332" font-size="11" fill="#9a9aa2">TAX_ADMIN_LAW</text>
+      <rect x="200" y="300" width="1.0" height="28" rx="4" fill="#3b6ea5"/>
+      <text x="209.0" y="319" font-size="13" fill="#1a1a1a" font-weight="700">21.1%</text>
+      <text x="12" y="358" font-size="14" fill="#3b6ea5" font-weight="700">刑法</text>
+      <text x="12" y="374" font-size="11" fill="#9a9aa2">CRIMINAL_LAW</text>
+      <rect x="200" y="342" width="0.4" height="28" rx="4" fill="#3b6ea5"/>
+      <text x="208.4" y="361" font-size="13" fill="#1a1a1a" font-weight="700">9.1%</text>
     </svg>
   </div>
 
@@ -120,14 +117,14 @@
   <div class="callout">
     <b>失败形态：虚构条文序号（NOT_FOUND）。</b><br>
     模型并非"条号对、内容错"（张冠李戴），而是直接<b>编造或挪用了不存在的增值税法条号</b>。
-    全部 42 次增值税法引注中，<b>32 次（76.2%）为纯 NOT_FOUND</b>，其余 10 次虽引用了真实条号但内容全错（0 逐字 EXACT）。
+    全部 42 次增值税法引注中，<b>32 次（76.2%）为纯 NOT_FOUND</b>，其余虽引用了真实条号但内容全错（0 逐字 EXACT）。
     CRFI（张冠李戴率）与软探针 <code>SOFT_MISATTRIBUTED</code> 在 VAT 域均 0 触发——
     这比改写邻居条文更直白地暴露了<b>"训练数据截止导致的时效盲区"</b>：
     2026-01-01 施行的《增值税法》对全部 5 个被测模型近乎"未知法律"。
   </div>
 
   <footer>
-    <b>方法论</b>：数据源 benchmark/reports/verifications.jsonl——90 条真实模型回答（5 模型 × 18 题，temp=0 单轮采集）经抽取得 141 条法条引注。
+    <b>方法论</b>：数据源 benchmark/reports/verifications.jsonl——203 条真实模型回答（5 模型 × 23 题，temp=0 单轮采集）经抽取得 203 条硬法条引注。
     判定为绝对二元：逐字归一化相等 = EXACT(1.0)，任何非逐字偏离 = FABRICATED(0.0)；VAT 域 as_of_date = 2026-01-01（增值税法生效日，否则解析为 NOT_FOUND）。
     HVI 为本图对比维度（引擎原生 <code>per_domain</code>）。所有数值由该真实数据计算得出，可复现。<br>
     <b>项目</b>：github.com/&lt;owner&gt;/legal-hallucination-bench · MIT License

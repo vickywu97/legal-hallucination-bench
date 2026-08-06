@@ -221,6 +221,10 @@ python -S -m benchmark.run --offline --input answers.jsonl
 > `leaderboard.json` 渲染生成，**数据驱动、可复现**——重跑基准后执行
 > `python -S scripts/render_leaderboard.py` 即可同步，避免手改数字过期。
 
+> 增值税法域「全灭」专题图 `vat_domain_wipeout.html` 由 `scripts/render_vat_domain.py`
+> 从 `benchmark/reports/verifications.jsonl` 渲染生成（分域 HVI 条形图 + 每模型 VAT 引注卡片），
+> 同样数据驱动、可复现——重跑基准后执行 `python -S scripts/render_vat_domain.py` 同步。
+
 > 注：本基准**仅覆盖 8 部法律**（`questions.json` 的 `_meta.in_scope_laws`，含增值税法、企业所得税法、个人所得税法）。
 > 超出这 8 部的真实法律不在评测范围内——护栏已通过系统提示词约束模型不引用它们。
 
