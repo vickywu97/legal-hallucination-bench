@@ -5,7 +5,11 @@
 
 ---
 
-## 2026-08-07
+## v1.3 (2026-08-07) — 评测 ground truth 全文本落地 + 管线 10× 提速
+
+> 版本映射：`v1.3` 标签落在本次发布的 HEAD 提交上，涵盖 v1.2 之后的全部工作——
+> 《法条库·按需下载版》(Packs 产品) 落地 + 方案B（评测 ground truth 由 212 节点扩容为 8 部法完整官方全文 2327 节点）+ 评测管线约 10× 提速。
+> 引擎 CLI / 数据格式（statutes.jsonl）向后兼容，故为 MINOR 版本。
 
 ### 重大变更（方案B：评测 ground truth 扩容 212 → 2327 节点）
 - **KB 由 212 精选节点扩容为 8 部法完整官方全文（2327 节点）**：`knowledge_base/laws/statutes.jsonl` 现含民法典 1260 / 刑法 505 / 公司法 266 / 税收征管法 94 / 专利法 82 / 企税 60 / 个税 22 / 增值税法 38。212 个 Tier A 专家节点保留原始 `verified_by/at` provenance；其余 2115 个节点在「官方源经专家确认完整 + 逐字提取」准则下升为 verified（来源可信度门禁 `refuse_unverified_ground_truth` 仍有效）。
