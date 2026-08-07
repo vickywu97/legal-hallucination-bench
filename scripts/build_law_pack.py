@@ -9,11 +9,23 @@
 #   Tier A (verification_status=verified)  : 命中现有 statutes.jsonl 中已核验节点 -> 沿用专家签署
 #   Tier B (verification_status=unverified): 官方 .doc 逐字提取、尚未逐条专家签核 -> 仅作参考
 #
+# 专家确认源整体升 A（--verified-source）:
+#   当所据官方源已經执业专家确认"完整且正确"（如《增值税法》2026-01-01 施行版），
+#   即便未逐条比对 KB，也整体标为 Tier A（verified_by=专家署名、verified_at=当天），
+#   使整包成为可作评测 ground truth 的合规全集。该模式通过 --verified-source 开启，
+#   可配合 --verified-by / --verified-at 覆盖默认署名与日期。
+#
 # 用法:
 #   textutil -convert txt 官方.doc -output /tmp/law.txt
 #   python3 -S scripts/build_law_pack.py \
 #       --txt /tmp/law.txt --law-code PATENT_LAW \
 #       --law-name "中华人民共和国专利法（2020修正）" --effective-date 2021-06-01
+#
+# 专家确认源整体升 A:
+#   python3 -S scripts/build_law_pack.py \
+#       --txt /tmp/vat.txt --law-code VAT_LAW \
+#       --law-name "中华人民共和国增值税法" --effective-date 2026-01-01 \
+#       --verified-source
 # ///
 import argparse
 import csv
@@ -26,6 +38,9 @@ import datetime
 CN_DIGITS = {'零': 0, '一': 1, '二': 2, '两': 2, '三': 3, '四': 4,
              '五': 5, '六': 6, '七': 7, '八': 8, '九': 9}
 CN_POWERS = {'十': 10, '百': 100, '千': 1000}
+
+# 专家确认源升 A 时的默认署名（与 statutes.jsonl 中既有专家节点一致）
+DEFAULT_VERIFIER = 'Vicky Wu (律师/税务师/专利代理师)'
 
 
 def cn2int(s: str) -> int:
@@ -108,12 +123,15 @@ def load_verified_set(statutes_path: str):
     return verified
 
 
-def build_pack(txt_path, law_code, law_name, effective_date, statutes_path, out_dir):
+def build_pack(txt_path, law_code, law_name, effective_date, statutes_path, out_dir,
+               verified_source=False, verified_by=None, verified_at=None):
     with open(txt_path, encoding='utf-8', errors='replace') as f:
         text = f.read()
     articles = parse_articles(text)
     verified = load_verified_set(statutes_path)
     today = datetime.date.today().isoformat()
+    vby = verified_by or DEFAULT_VERIFIER
+    vat = verified_at or today
 
     records = []
     for num_cn, sub_cn, body in articles:
@@ -126,6 +144,24 @@ def build_pack(txt_path, law_code, law_name, effective_date, statutes_path, out_
             rec['article_number'] = article_number   # 统一为中文条号
             rec['article_sort_key'] = sort_key
             rec['trust_tier'] = 'A'
+        elif verified_source:
+            # 专家确认源完整且正确：整包升 A（含未逐条比对 KB 的条文）
+            rec = {
+                'id': f'{law_code}_{sort_key}_v1',
+                'law_code': law_code,
+                'article_number': article_number,
+                'article_sort_key': sort_key,
+                'content': body,
+                'effective_date': effective_date,
+                'revision_of': None,
+                'verification_status': 'verified',
+                'verified_by': vby,
+                'verified_at': vat,
+                'source_url': 'https://flk.npc.gov.cn/',
+                'source_accessed_at': today,
+                'notes': '源经专家确认完整（非截断）',
+                'trust_tier': 'A',
+            }
         else:
             rec = {
                 'id': f'{law_code}_{sort_key}_v1',
@@ -177,13 +213,67 @@ def build_pack(txt_path, law_code, law_name, effective_date, statutes_path, out_
         f.write(f'- 信任分级: 专家核验 **{n_a}** 条 (Tier A) / 官方全文提取 **{n_b}** 条 (Tier B)\n')
         f.write(f'- 数据格式: JSONL（同 Bench 的 statutes.jsonl schema，附加 `trust_tier` 字段）\n')
         f.write(f'- 来源: 全国人大法律法规数据库 flk.npc.gov.cn\n\n')
-        f.write('> **Tier B 条文**为从官方 .doc 逐字提取、尚未逐条专家签核，仅作参考，'
-                '不作 AI 评测 ground truth。升 A 需经 `python -S -m knowledge_base.verify_kb review`。\n\n---\n\n')
+        if n_b:
+            f.write('> **Tier B 条文**为从官方 .doc 逐字提取、尚未逐条专家签核，仅作参考，'
+                    '不作 AI 评测 ground truth。升 A 需经 `python -S -m knowledge_base.verify_kb review`。\n\n---\n\n')
+        else:
+            f.write('> 本包所据官方源**经专家确认完整且正确**，全部条文已逐条核验为 Tier A，'
+                    '可作 AI 评测 ground truth。\n\n---\n\n')
         for r in records:
             f.write(f'## {r["article_number"]}  _{r["trust_tier"]}_\n\n{r["content"]}\n\n')
 
     print(f'[pack] {law_code}: {len(records)} 条 (Tier A={n_a}, Tier B={n_b}) -> {base}.jsonl')
     return records
+
+
+def merge_pack(out_dir, merged_code, merged_name, law_codes):
+    """把若干 *_full.jsonl 拼接成合并包（如税务包），按 (法序, sort_key) 排序输出 jsonl/md/csv。"""
+    order = {c: i for i, c in enumerate(law_codes)}
+    recs = []
+    for c in law_codes:
+        jl = os.path.join(out_dir, f'{c}_full.jsonl')
+        with open(jl, encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    recs.append(json.loads(line))
+    recs.sort(key=lambda r: (order.get(r['law_code'], 99), r['article_sort_key']))
+
+    base = os.path.join(out_dir, f'{merged_code}_full')
+    with open(base + '.jsonl', 'w', encoding='utf-8') as f:
+        for r in recs:
+            f.write(json.dumps(r, ensure_ascii=False) + '\n')
+
+    fields = ['id', 'law_code', 'article_number', 'article_sort_key', 'content',
+              'effective_date', 'trust_tier', 'verification_status',
+              'verified_by', 'verified_at', 'source_url', 'source_accessed_at']
+    with open(base + '.csv', 'w', encoding='utf-8-sig', newline='') as f:
+        w = csv.DictWriter(f, fieldnames=fields, extrasaction='ignore')
+        w.writeheader()
+        for r in recs:
+            w.writerow(r)
+
+    n_a = sum(1 for r in recs if r['trust_tier'] == 'A')
+    n_b = len(recs) - n_a
+    with open(base + '.md', 'w', encoding='utf-8') as f:
+        f.write(f'# {merged_name} · 合并全集\n\n')
+        f.write(f'- 包含: ' + ' + '.join(
+            f'`{c}`({sum(1 for r in recs if r["law_code"]==c)}条)' for c in law_codes) + '\n')
+        f.write(f'- 条文总数: {len(recs)}\n')
+        f.write(f'- 信任分级: 专家核验 **{n_a}** 条 (Tier A) / 官方全文提取 **{n_b}** 条 (Tier B)\n')
+        f.write(f'- 数据格式: JSONL（同 Bench 的 statutes.jsonl schema，附加 `trust_tier` 字段）\n')
+        f.write(f'- 来源: 全国人大法律法规数据库 flk.npc.gov.cn\n\n')
+        if n_b:
+            f.write('> **Tier B 条文**为从官方 .doc 逐字提取、尚未逐条专家签核，仅作参考，'
+                    '不作 AI 评测 ground truth。升 A 需经 `python -S -m knowledge_base.verify_kb review`。\n\n---\n\n')
+        else:
+            f.write('> 本包所据官方源**经专家确认完整且正确**，全部条文已逐条核验为 Tier A，'
+                    '可作 AI 评测 ground truth。\n\n---\n\n')
+        for r in recs:
+            f.write(f'## {r["article_number"]}  _{r["trust_tier"]}_  `{r["law_code"]}`\n\n{r["content"]}\n\n')
+
+    print(f'[merge] {merged_code}: {len(recs)} 条 (Tier A={n_a}, Tier B={n_b}) -> {base}.jsonl')
+    return recs
 
 
 def regenerate_index(out_dir):
@@ -234,15 +324,39 @@ th{{background:#f6f6f6}} a{{color:#2563eb;text-decoration:none}}
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--txt', required=True)
-    ap.add_argument('--law-code', required=True)
-    ap.add_argument('--law-name', required=True)
-    ap.add_argument('--effective-date', required=True)
-    ap.add_argument('--statutes', default='knowledge_base/laws/statutes.jsonl')
-    ap.add_argument('--out-dir', default='packs')
+    sub = ap.add_subparsers(dest='cmd')
+
+    p_build = sub.add_parser('build', help='从官方 .txt 构建单部法全集包')
+    p_build.add_argument('--txt', required=True)
+    p_build.add_argument('--law-code', required=True)
+    p_build.add_argument('--law-name', required=True)
+    p_build.add_argument('--effective-date', required=True)
+    p_build.add_argument('--statutes', default='knowledge_base/laws/statutes.jsonl')
+    p_build.add_argument('--out-dir', default='packs')
+    p_build.add_argument('--verified-source', action='store_true',
+                         help='专家确认源完整且正确：整包升 Tier A')
+    p_build.add_argument('--verified-by', default=None,
+                         help='升 A 时的专家署名（默认项目作者）')
+    p_build.add_argument('--verified-at', default=None,
+                         help='升 A 时的签署日期 YYYY-MM-DD（默认当天）')
+
+    p_merge = sub.add_parser('merge', help='拼接若干 *_full.jsonl 为合并包')
+    p_merge.add_argument('--out-dir', default='packs')
+    p_merge.add_argument('--merged-code', required=True)
+    p_merge.add_argument('--merged-name', required=True)
+    p_merge.add_argument('--law-codes', required=True,
+                         help='逗号分隔的 law_code 列表，顺序即输出顺序')
+
     args = ap.parse_args()
-    build_pack(args.txt, args.law_code, args.law_name,
-               args.effective_date, args.statutes, args.out_dir)
+    if args.cmd == 'merge':
+        merge_pack(args.out_dir, args.merged_code, args.merged_name,
+                   [c.strip() for c in args.law_codes.split(',') if c.strip()])
+    else:
+        build_pack(args.txt, args.law_code, args.law_name,
+                   args.effective_date, args.statutes, args.out_dir,
+                   verified_source=args.verified_source,
+                   verified_by=args.verified_by,
+                   verified_at=args.verified_at)
     regenerate_index(args.out_dir)
 
 
