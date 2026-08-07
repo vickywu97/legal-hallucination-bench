@@ -867,12 +867,14 @@ SEED: List[dict] = [
 _ZHI = {'一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9}
 
 
-def _parse_sort_key(article_number: str) -> int:
+def _parse_sort_key(article_number: str) -> float:
     """Numeric sort/group key for an article_number string.
 
-    Handles '之一/之二/之三' sub-articles (e.g. 第234条之一 -> 2341) so they
-    form their own (law_code, sort_key) group and never chain onto the parent
-    article during window-integrity validation.
+    Aligns with the decimal scheme used by ``loader`` / ``build_law_pack`` so a
+    sub-article '之一/之二/之三' (e.g. 第234条之一 -> 234.001) occupies its own
+    (law_code, sort_key) slot and never chains onto the parent article during
+    window-integrity validation. Return type is float to preserve the fractional
+    sub-article offset; plain articles return an integral float (e.g. 234.0).
     """
     m = re.search(r"(\d+)", article_number)
     if not m:
@@ -880,8 +882,8 @@ def _parse_sort_key(article_number: str) -> int:
     base = int(m.group(1))
     suf = re.search(r"之([一二三四五六七八九])", article_number)
     if suf:
-        return base * 10 + _ZHI[suf.group(1)]
-    return base
+        return base + _ZHI[suf.group(1)] / 1000.0
+    return float(base)
 
 
 def generate(raw: Optional[List[dict]] = None,

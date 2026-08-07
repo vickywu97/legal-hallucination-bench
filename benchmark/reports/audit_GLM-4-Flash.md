@@ -1,38 +1,38 @@
 # 审计报告：GLM-4-Flash
 
 - 引注数：40
-- 引注幻觉率 HVI(hr_statutory)：55.0% （bootstrap 95% CI 30.0%–60.0%；仅统计存在性/时序性幻觉）
+- 引注幻觉率 HVI(hr_statutory)：45.0% （bootstrap 95% CI 40.0%–70.0%；仅统计存在性/时序性幻觉）
 - 内容级幻觉率 HR_content：100.0%（仅逐字 diff 子集；反映是否照抄法条）
 - 张冠李戴率 CRFI：0.0%（逐字 diff 子集中 MISATTRIBUTED 占比；专抓'条号对、内容错'）
 - 时序幻觉率 rate_deprecated：0.0%
 - 不可验率 rate_unverifiable：0.0%
 - 分域 HR：
   - ：100.0%
-  - CIVIL_CODE：33.3%
-  - COMPANY_LAW：87.5%
+  - CIVIL_CODE：0.0%
+  - COMPANY_LAW：62.5%
   - CRIMINAL_LAW：33.3%
   - EIT_LAW：50.0%
   - IIT_LAW：66.7%
   - PATENT_LAW：0.0%
   - TAX_ADMIN_LAW：0.0%
-  - VAT_LAW：83.3%
+  - VAT_LAW：66.7%
 
 ## 逐条核验
 
 | 题号 | 引注 | 判定 | 子类 | 级别 | 得分 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | Q1 | 《民法典》第五百八十四条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
-| Q2 | 《刑法》第232条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
+| Q2 | 《刑法》第232条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION | SOFT_MISATTRIBUTED: text also partially matches same-law article 112 (cov=50%) — possible paraphrased 张冠李戴 |
 | Q2 | 《刑法》 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
-| Q3 | 《公司法》第十三条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q3 | 《公司法》第十三条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q3 | 公司法 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q3 | 公司法 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q3 | 公司法 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
-| Q4 | 《公司法》第十六条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q4 | 《公司法》第十六条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q5 | 《专利法》第二十二条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
-| Q6 | 《税收征收管理法》第63条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 33% ground coverage |
+| Q6 | 《税收征收管理法》第63条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 33% ground coverage | SOFT_MISATTRIBUTED: text also partially matches same-law article 65 (cov=50%) — possible paraphrased 张冠李戴 |
 | Q7 | 《民法典》第五百八十四条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
-| Q8 | 《民法典》第1024条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q8 | 《民法典》第1024条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q9 | 《公司法》第20条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q9 | 公司法 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q9 | 公司法 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
@@ -42,7 +42,7 @@
 | Q14 | 《刑法》第385条 | HALLUCINATION | TRUNCATED | FABRICATED | 0.00 | truncated: candidate is a prefix of ground truth (fabricated: 0% ground coverage) |
 | Q15 | 《专利法》第65条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q16 | 《增值税法》第四十一条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
-| Q17 | 《增值税法》第十五条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q17 | 《增值税法》第十五条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage | SOFT_MISATTRIBUTED: text also partially matches same-law article 23 (cov=50%) — possible paraphrased 张冠李戴 |
 | Q17 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q17 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q18 | 《增值税法》第四条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
@@ -56,10 +56,10 @@
 | Q19 | 企业所得税法 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q20 | 《企业所得税法》第6条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
 | Q20 | 《企业所得税法》 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
-| Q21 | 《个人所得税法》第4条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 90% of ground clauses present; counts as HALLUCINATION |
+| Q21 | 《个人所得税法》第4条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
 | Q21 | 个人所得税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q21 | 个人所得税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
-| Q22 | 《专利法》第六条 | HALLUCINATION | TRUNCATED | FABRICATED | 0.00 | truncated: candidate is a prefix of ground truth (fabricated: 0% ground coverage) |
+| Q22 | 《专利法》第六条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q23 | 《企业所得税法》第26条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 75% of ground clauses present; counts as HALLUCINATION |
 
 ## 逐条对照（模型输出 vs 已核验基准）
@@ -84,11 +84,11 @@
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
 ### 《公司法》第十三条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：“公司法定代表人依照公司章程的规定，由董事长、执行董事或者经理担任，并依法登记。公司法定代表人变更，应当办理变更登记。”
 
 适用：本条明确了公司法定代表人的担任方式和确定程序，适用于2024年7月1日新《公司法》施行后的公司。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：公司可以设立子公司。子公司具有法人资格，依法独立承担民事责任。公司可以设立分公司。分公司不具有法人资格，其民事责任由公司承担。
 
 ### 公司法
 - 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
@@ -110,7 +110,7 @@
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
 ### 《公司法》第十六条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：公司向其他企业投资或者为他人提供担保，依照公司章程的规定，由董事会或者股东会、股东大会决议；公司章程对投资或者担保的总额及单项投资或者担保的数额有限额规定的，不得超过规定的限额。
 
 公司为公司股东或者实际控制人提供担保的，必须经股东会或者股东大会决议。
@@ -118,7 +118,7 @@
 前款规定的股东或者受前款规定的实际控制人支配的股东，不得参加前款规定事项的表决。该项表决由出席会议的其他股东所持表决权的过半数通过。
 
 适用：本条调整了有限责任公司对外担保的内部决议程序，规定了公司对外投资或提供担保的决策机制，包括董事会或股东会、股东大会的决议以及特定情况下股东表决的限制。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：公司应当保护职工的合法权益，依法与职工签订劳动合同，参加社会保险，加强劳动保护，实现安全生产。公司应当采用多种形式，加强公司职工的职业教育和岗位培训，提高职工素质。
 
 ### 《专利法》第二十二条
 - 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
@@ -138,11 +138,11 @@
 - 官方原文（基准）：当事人一方不履行合同义务或者履行合同义务不符合约定，造成对方损失的，损失赔偿额应当相当于因违约所造成的损失，包括合同履行后可以获得的利益；但是，不得超过违约一方订立合同时预见到或者应当预见到的因违约可能造成的损失。
 
 ### 《民法典》第1024条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：【个人信息的处理】自然人的个人信息受法律保护。任何组织或者个人需要处理个人信息，应当遵循合法、正当、必要的原则，不得过度处理，并采取技术措施和其他必要措施确保其信息安全，防止信息泄露、损毁、篡改或者非法使用。
 
 适用：该条文规定了个人信息处理的原则，包括合法、正当、必要等，适用于规制未经用户同意使用其肖像用于AI模型训练的行为。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：民事主体享有名誉权。任何组织或者个人不得以侮辱、诽谤等方式侵害他人的名誉权。名誉是对民事主体的品德、声望、才能、信用等的社会评价。
 
 ### 《公司法》第20条
 - 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
@@ -206,11 +206,11 @@
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
 ### 《增值税法》第十五条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：小规模纳税人发生应税交易，销售额未达到起征点的，免征增值税。
 
 适用：本条明确了小规模纳税人在销售额未达到起征点时，可以免征增值税的规定。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：境外单位和个人在境内发生应税交易，以购买方为扣缴义务人；按照国务院的规定委托境内代理人申报缴纳税款的除外。扣缴义务人依照本法规定代扣代缴税款的，按照销售额乘以税率计算应扣缴税额。
 
 ### 增值税
 - 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
@@ -395,7 +395,7 @@
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
 ### 《专利法》第六条
-- 判定：HALLUCINATION ｜ 子类：TRUNCATED ｜ 级别：FABRICATED ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：执行本单位的任务或者主要是利用本单位的物质技术条件所完成的发明创造为职务发明创造。职务发明创造申请专利的权利属于该单位，申请被批准后，该单位为专利权人。该单位可以依法处置其职务发明创造申请专利的权利和专利权，促进相关发明创造的实施和运用。
 - 官方原文（基准）：执行本单位的任务或者主要是利用本单位的物质技术条件所完成的发明创造为职务发明创造。职务发明创造申请专利的权利属于该单位，申请被批准后，该单位为专利权人。该单位可以依法处置其职务发明创造申请专利的权利和专利权，促进相关发明创造的实施和运用。非职务发明创造，申请专利的权利属于发明人或者设计人；申请被批准后，该发明人或者设计人为专利权人。利用本单位的物质技术条件所完成的发明创造，单位与发明人或者设计人订有合同，对申请专利的权利和专利权的归属作出约定的，从其约定。
 

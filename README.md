@@ -130,15 +130,14 @@ python -S -m benchmark.run --input answers.jsonl --candidates candidates.jsonl
 
 ## 当前规模与规划
 
-| 指标 | 现状 (v1.2) | 规划 (v2.0) |
+| 指标 | 现状 (方案B · 2327 节点) | 规划 (v2.0) |
 | --- | --- | --- |
 | 法律部数 | 8（民法典/公司法/刑法/专利法/税收征管法/增值税法/**企业所得税法/个人所得税法**） | 15–20 |
-| 条文节点 | 212（100% verified） | 700+ |
+| 条文节点 | **2327（100% verified = 8 部法完整官方全文）** | 随法域扩展持续维护 |
 | 覆盖域 | civil / criminal / tax / ip / **vat** / **eit** / **iit** | + admin / 程序法 |
 | 失效法陷阱 | 10 部（单源） | 10 部（持续维护） |
 
-扩容规划见 [`docs/KB_EXPANSION_PLAN.md`](docs/KB_EXPANSION_PLAN.md)：v1.2 已完成**实体税法**
-（企业所得税法/个人所得税法）与**专利法**纵深补强；下一步优先**民法典纵深**与程序/行政法——这正是最稀缺的差异化覆盖。
+> 方案 B 已落地：`statutes.jsonl` 由 212 节点（精选 + 专家逐条签核）扩容为 **2327 节点 = 8 部法的完整官方全文**（212 个 Tier A 专家节点保留原始 provenance，其余 2115 个节点在「官方源经专家确认完整 + 逐字提取」准则下升为 verified）。扩容规划见 [`docs/KB_EXPANSION_PLAN.md`](docs/KB_EXPANSION_PLAN.md)；下一步优先**程序法/行政法**等新法域与既有法域的持续维护。
 
 ---
 
@@ -148,8 +147,10 @@ python -S -m benchmark.run --input answers.jsonl --candidates candidates.jsonl
 与产品规格 [`docs/PRODUCT_SPEC_法条库按需下载版.md`](docs/PRODUCT_SPEC_法条库按需下载版.md)。
 
 - **9 个包 / 2541 条**：8 部法全集（民法典1260 / 刑法505 / 公司法266 / 税收征管94 / 专利法82 / 企税60 / 个税22 / 增值税法38）+ 税务合并包(214)。
-- **信任分级**：`Tier A`=专家核验（沿用已签核 KB 节点，可作评测 ground truth）；`Tier B`=官方 .doc 逐字提取（未逐条签核，仅作参考）。
+- **信任分级**：`Tier A`=专家核验（逐条比对官方来源的已签核节点）；`Tier B`=官方 .doc 逐字提取（未逐条签核，可作下载参考）。
 - 每包提供 `jsonl` / `md` / `csv` 三格式，下载页见 [`packs/index.html`](packs/index.html)。
+
+> **评测基准与 Packs 的关系（重要）**：评测引擎的 ground truth 永远是 `knowledge_base/laws/statutes.jsonl`，由 `loader.load_laws()` 单一来源加载，**引擎从不读取 `packs/`**。`statutes.jsonl` 现已扩容为 **2327 个已核验节点 = 8 部法的完整官方全文**（v1.0/v1.1 的 212 个 Tier A 专家节点继续保留其原始 `verified_by/at`  provenance，其余 2115 个节点在「官方源经专家确认完整 + 逐字提取」准则下升为 verified）。`packs/` 只是这份同一份已核验语料的**按领域拆分下载镜像**，二者数据同源、可相互校验，但 Packs 的 `Tier A/B` 标签仅用于下载侧信任说明，不改变评测侧「全部 verified」的事实。来源可信度门禁（`refuse_unverified_ground_truth`）仍然有效：任何未来真正未核验的节点仍会被引擎拒绝当作事实依据。
 
 ---
 

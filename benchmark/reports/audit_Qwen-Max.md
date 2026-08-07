@@ -1,47 +1,47 @@
 # 审计报告：Qwen-Max
 
 - 引注数：33
-- 引注幻觉率 HVI(hr_statutory)：54.5% （bootstrap 95% CI 30.3%–63.6%；仅统计存在性/时序性幻觉）
+- 引注幻觉率 HVI(hr_statutory)：33.3% （bootstrap 95% CI 51.5%–81.8%；仅统计存在性/时序性幻觉）
 - 内容级幻觉率 HR_content：100.0%（仅逐字 diff 子集；反映是否照抄法条）
 - 张冠李戴率 CRFI：0.0%（逐字 diff 子集中 MISATTRIBUTED 占比；专抓'条号对、内容错'）
 - 时序幻觉率 rate_deprecated：0.0%
 - 不可验率 rate_unverifiable：0.0%
 - 分域 HR：
-  - CIVIL_CODE：33.3%
-  - COMPANY_LAW：83.3%
+  - CIVIL_CODE：0.0%
+  - COMPANY_LAW：50.0%
   - CRIMINAL_LAW：0.0%
   - EIT_LAW：50.0%
   - IIT_LAW：66.7%
-  - PATENT_LAW：50.0%
+  - PATENT_LAW：0.0%
   - TAX_ADMIN_LAW：0.0%
-  - VAT_LAW：83.3%
+  - VAT_LAW：50.0%
 
 ## 逐条核验
 
 | 题号 | 引注 | 判定 | 子类 | 级别 | 得分 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | Q1 | 《民法典》第五百八十四条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
-| Q2 | 《刑法》第二百三十二条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
-| Q3 | 《公司法》第十三条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q2 | 《刑法》第二百三十二条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION | SOFT_MISATTRIBUTED: text also partially matches same-law article 112 (cov=50%) — possible paraphrased 张冠李戴 |
+| Q3 | 《公司法》第十三条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q3 | 公司法 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
-| Q4 | 《公司法》第十六条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q4 | 《公司法》第十六条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q5 | 《专利法》第二十二条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 50% of ground clauses present; counts as HALLUCINATION |
-| Q6 | 《税收征收管理法》第六十三条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 67% of ground clauses present; counts as HALLUCINATION |
+| Q6 | 《税收征收管理法》第六十三条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 67% of ground clauses present; counts as HALLUCINATION | SOFT_MISATTRIBUTED: text also partially matches same-law article 65 (cov=50%) — possible paraphrased 张冠李戴 |
 | Q7 | 《民法典》第584条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
-| Q8 | 《民法典》第1019条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q8 | 《民法典》第1019条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q9 | 《公司法》第二十条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q9 | 公司法 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q9 | 公司法 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
-| Q10 | 《专利法》第七十一条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q10 | 《专利法》第七十一条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 33% ground coverage |
 | Q11 | 《税收征收管理法》第三十一条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q13 | 《税收征收管理法》第三十一条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q14 | 《刑法》第三百八十五条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
-| Q15 | 《专利法》第七十一条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q15 | 《专利法》第七十一条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 33% ground coverage |
 | Q16 | 《增值税法》第十一条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q16 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
-| Q17 | 《增值税法》第十二条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q17 | 《增值税法》第十二条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q17 | 《增值税法》 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
-| Q18 | 《增值税法》第十九条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q18 | 《增值税法》第十九条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q18 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q19 | 《企业所得税法》第四条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q19 | 企业所得税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
@@ -71,11 +71,11 @@
 - 官方原文（基准）：【故意杀人罪】故意杀人的，处死刑、无期徒刑或者十年以上有期徒刑；情节较轻的，处三年以上十年以下有期徒刑。
 
 ### 《公司法》第十三条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：原文：“公司法定代表人依照公司章程的规定，由董事长、执行董事或者经理担任，并依法登记。公司法定代表人变更，应当办理变更登记。”
 
 适用说明：根据2024年7月1日施行的新《公司法》，公司的法定代表人应依据公司章程的规定确定，可由董事长、执行董事或经理担任，并需要进行相应的登记。如果法定代表人发生变更，也必须办理变更登记手续。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：公司可以设立子公司。子公司具有法人资格，依法独立承担民事责任。公司可以设立分公司。分公司不具有法人资格，其民事责任由公司承担。
 
 ### 公司法
 - 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
@@ -85,7 +85,7 @@
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
 ### 《公司法》第十六条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：原文如下：“公司向其他企业投资或者为他人提供担保，依照公司章程的规定，由董事会或者股东会、股东大会决议；公司章程对投资或者担保的总额及单项投资或者担保的数额有限额规定的，不得超过规定的限额。
 
 公司为公司股东或者实际控制人提供担保的，必须经股东会或者股东大会决议。
@@ -93,7 +93,7 @@
 前款规定的股东或者受前款规定的实际控制人支配的股东，不得参加前款规定事项的表决。该项表决由出席会议的其他股东所持表决权的过半数通过。”
 
 根据该条文，有限责任公司为其股东提供担保时，必须经过股东会或者股东大会决议，并且被担保的股东或受其控制的股东不得参与该决议的投票。此外，此类决议需要得到除上述股东外的、出席股东会议的其他股东所持有的表决权的过半数同意才能通过。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：公司应当保护职工的合法权益，依法与职工签订劳动合同，参加社会保险，加强劳动保护，实现安全生产。公司应当采用多种形式，加强公司职工的职业教育和岗位培训，提高职工素质。
 
 ### 《专利法》第二十二条
 - 判定：HALLUCINATION ｜ 子类：PARTIAL ｜ 级别：FABRICATED ｜ 得分：0.00
@@ -117,11 +117,11 @@
 - 官方原文（基准）：当事人一方不履行合同义务或者履行合同义务不符合约定，造成对方损失的，损失赔偿额应当相当于因违约所造成的损失，包括合同履行后可以获得的利益；但是，不得超过违约一方订立合同时预见到或者应当预见到的因违约可能造成的损失。
 
 ### 《民法典》第1019条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：“任何组织或者个人不得以丑化、污损，或者利用信息技术手段伪造等方式侵害他人的肖像权。未经肖像权人同意，不得制作、使用、公开肖像权人的肖像，但是法律另有规定的除外。”
 
 适用说明：该条文规定了未经肖像权人同意，不得制作、使用或公开其肖像，因此可以用于规制某App在用户未同意的情况下将其上传的肖像用于AI模型训练的行为。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：任何组织或者个人不得以丑化、污损，或者利用信息技术手段伪造等方式侵害他人的肖像权。未经肖像权人同意，不得制作、使用、公开肖像权人的肖像，但是法律另有规定的除外。未经肖像权人同意，肖像作品权利人不得以发表、复制、发行、出租、展览等方式使用或者公开肖像权人的肖像。
 
 ### 《公司法》第二十条
 - 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
@@ -143,11 +143,11 @@
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
 ### 《专利法》第七十一条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：规定：“侵犯专利权的赔偿数额按照权利人因被侵权所受到的实际损失或者侵权人因侵权所获得的利益确定；实际损失或者侵权所得利益难以确定的，参照该专利许可使用费的倍数合理确定。对故意侵犯专利权，情节严重的，可以在按照上述方法确定数额的一倍以上五倍以下确定赔偿数额。权利人的损失、侵权人获得的利益和专利许可使用费均难以确定的，人民法院可以根据专利权的类型、侵权行为的性质和情节等因素，确定给予三万元以上五百万元以下的赔偿。”
 
 根据上述条文，侵犯专利权的赔偿数额首先应当按照权利人因被侵权所受到的实际损失确定；如果实际损失难以确定，则按照侵权人因侵权所获得的利益确定；如果这两种方式都难以确定，则可以参照该专利许可使用费的倍数合理确定；最后，如果上述三种方式都无法确定赔偿数额，法院可以根据具体情况在三万元以上五百万元以下确定赔偿数额。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：侵犯专利权的赔偿数额按照权利人因被侵权所受到的实际损失或者侵权人因侵权所获得的利益确定；权利人的损失或者侵权人获得的利益难以确定的，参照该专利许可使用费的倍数合理确定。对故意侵犯专利权，情节严重的，可以在按照上述方法确定数额的一倍以上五倍以下确定赔偿数额。权利人的损失、侵权人获得的利益和专利许可使用费均难以确定的，人民法院可以根据专利权的类型、侵权行为的性质和情节等因素，确定给予三万元以上五百万元以下的赔偿。赔偿数额还应当包括权利人为制止侵权行为所支付的合理开支。人民法院为确定赔偿数额，在权利人已经尽力举证，而与侵权行为相关的账簿、资料主要由侵权人掌握的情况下，可以责令侵权人提供与侵权行为相关的账簿、资料；侵权人不提供或者提供虚假的账簿、资料的，人民法院可以参考权利人的主张和提供的证据判定赔偿数额。
 
 ### 《税收征收管理法》第三十一条
 - 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
@@ -171,7 +171,7 @@
 - 官方原文（基准）：【受贿罪】国家工作人员利用职务上的便利，索取他人财物的，或者非法收受他人财物，为他人谋取利益的，是受贿罪。国家工作人员在经济往来中，违反国家规定，收受各种名义的回扣、手续费，归个人所有的，以受贿论处。
 
 ### 《专利法》第七十一条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：规定：“侵犯专利权的赔偿数额按照权利人因被侵权所受到的实际损失或者侵权人因侵权所获得的利益确定；权利人的损失或者侵权人获得的利益难以确定的，参照该专利许可使用费的倍数合理确定。对故意侵犯专利权，情节严重的，可以在按照上述方法确定数额的一倍以上五倍以下确定赔偿数额。
 
 权利人的损失、侵权人获得的利益和专利许可使用费均难以确定的，人民法院可以根据专利权的类型、侵权行为的性质和情节等因素，确定给予三万元以上五百万元以下的赔偿。
@@ -179,7 +179,7 @@
 赔偿数额还应当包括权利人为制止侵权行为所支付的合理开支。”
 
 根据此条文，侵害他人专利权造成损害时，赔偿数额首先应按照权利人因被侵权所受到的实际损失或侵权人因侵权所获得的利益来确定；如果这两者都难以确定，则可以参照该专利许可使用费的倍数合理确定。对于故意且情节严重的侵权行为，法院可以将赔偿数额提高至上述计算方法所得数额的一倍到五倍之间。当上述所有方式都无法适用时，法院可根据具体情况，在三万元至五百万元之间酌定赔偿金额。此外，赔偿还包括权利人为制止侵权行为所支付的合理费用。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：侵犯专利权的赔偿数额按照权利人因被侵权所受到的实际损失或者侵权人因侵权所获得的利益确定；权利人的损失或者侵权人获得的利益难以确定的，参照该专利许可使用费的倍数合理确定。对故意侵犯专利权，情节严重的，可以在按照上述方法确定数额的一倍以上五倍以下确定赔偿数额。权利人的损失、侵权人获得的利益和专利许可使用费均难以确定的，人民法院可以根据专利权的类型、侵权行为的性质和情节等因素，确定给予三万元以上五百万元以下的赔偿。赔偿数额还应当包括权利人为制止侵权行为所支付的合理开支。人民法院为确定赔偿数额，在权利人已经尽力举证，而与侵权行为相关的账簿、资料主要由侵权人掌握的情况下，可以责令侵权人提供与侵权行为相关的账簿、资料；侵权人不提供或者提供虚假的账簿、资料的，人民法院可以参考权利人的主张和提供的证据判定赔偿数额。
 
 ### 《增值税法》第十一条
 - 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
@@ -194,11 +194,11 @@
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
 ### 《增值税法》第十二条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：原文：“小规模纳税人发生应税销售行为，实行按照销售额和征收率计算应纳税额的简易办法，并不得抵扣进项税额。小规模纳税人的标准由国务院规定。”
 
 但针对“销售额未达到起征点”的具体情况，《增值税法》中并未直接给出具体条文说明如何处理或定义起征点。因此，依据所给六部法律无法回答关于起征点的具体规则以及当销售额未达到起征点时如何征收增值税的问题。对于起征点的具体规定及相应税收政策，可能需要参考其他相关法规或财政部、国家税务总局发布的文件。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：纳税人发生两项以上应税交易涉及不同税率、征收率的，应当分别核算适用不同税率、征收率的销售额；未分别核算的，从高适用税率。
 
 ### 《增值税法》
 - 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
@@ -206,7 +206,7 @@
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
 ### 《增值税法》第十九条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：规定：“下列进项税额不得从销项税额中抵扣：
 （一）用于简易计税方法计税项目、免征增值税项目、集体福利或者个人消费的购进货物、劳务、服务、无形资产和不动产；
 （二）非正常损失的购进货物，以及相关的劳务和交通运输服务；
@@ -214,7 +214,7 @@
 （四）国务院规定的其他项目。”
 
 该条文明确规定了哪些进项税额不得从销项税额中抵扣。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：发生本法\l"_Z1T5"第五条规定的视同应税交易以及销售额为非货币形式的，纳税人应当按照市场价格确定销售额。
 
 ### 增值税
 - 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00

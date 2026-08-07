@@ -1,14 +1,14 @@
 # 审计报告：DeepSeek-R1
 
 - 引注数：42
-- 引注幻觉率 HVI(hr_statutory)：50.0% （bootstrap 95% CI 33.3%–64.3%；仅统计存在性/时序性幻觉）
+- 引注幻觉率 HVI(hr_statutory)：47.6% （bootstrap 95% CI 35.7%–66.7%；仅统计存在性/时序性幻觉）
 - 内容级幻觉率 HR_content：100.0%（仅逐字 diff 子集；反映是否照抄法条）
 - 张冠李戴率 CRFI：0.0%（逐字 diff 子集中 MISATTRIBUTED 占比；专抓'条号对、内容错'）
 - 时序幻觉率 rate_deprecated：2.4%
 - 不可验率 rate_unverifiable：0.0%
 - 分域 HR：
   - ：100.0%
-  - CIVIL_CODE：50.0%
+  - CIVIL_CODE：25.0%
   - COMPANY_LAW：50.0%
   - CRIMINAL_LAW：0.0%
   - EIT_LAW：42.9%
@@ -22,15 +22,15 @@
 | 题号 | 引注 | 判定 | 子类 | 级别 | 得分 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | Q1 | 《民法典》第584条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
-| Q2 | 《刑法》第232条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
+| Q2 | 《刑法》第232条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION | SOFT_MISATTRIBUTED: text also partially matches same-law article 112 (cov=50%) — possible paraphrased 张冠李戴 |
 | Q3 | 《公司法》第10条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
 | Q4 | 《公司法》 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q4 | 第15条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q5 | 《专利法》第二十二条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
-| Q6 | 《税收征收管理法》第63条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 67% of ground clauses present; counts as HALLUCINATION |
+| Q6 | 《税收征收管理法》第63条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 67% of ground clauses present; counts as HALLUCINATION | SOFT_MISATTRIBUTED: text also partially matches same-law article 65 (cov=50%) — possible paraphrased 张冠李戴 |
 | Q7 | 《民法典》第584条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
 | Q7 | 《合同法》第113条 | HALLUCINATION | TEMPORAL_DEPRECATED | - | 0.00 | temporal hallucination: abolished-law name used after repeal |
-| Q8 | 《中华人民共和国民法典》第1019条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q8 | 《中华人民共和国民法典》第1019条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
 | Q9 | 《公司法》第23条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q9 | 公司法 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q10 | 《专利法》第65条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
@@ -42,7 +42,7 @@
 | Q15 | 第六十五条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q16 | 《增值税法》第九条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q16 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
-| Q17 | 《增值税法》第二十三条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
+| Q17 | 《增值税法》第二十三条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
 | Q17 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q17 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q17 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
@@ -138,13 +138,13 @@
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
 ### 《中华人民共和国民法典》第1019条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：PARTIAL ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：条文原文：
 
 > 任何组织或者个人不得以丑化、污损，或者利用信息技术手段伪造等方式侵害他人的肖像权。未经肖像权人同意，不得制作、使用、公开肖像权人的肖像，但是法律另有规定的除外。未经肖像权人同意，肖像作品权利人不得以发表、复制、发行、出租、展览等方式使用或者公开肖像权人的肖像。
 
 适用简要说明：App 在用户未同意的情况下，将其上传的肖像用于 AI 模型训练，属于未经肖像权人同意“使用”肖像，直接构成对用户肖像权的侵害，应依据上述条文予以规制。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：任何组织或者个人不得以丑化、污损，或者利用信息技术手段伪造等方式侵害他人的肖像权。未经肖像权人同意，不得制作、使用、公开肖像权人的肖像，但是法律另有规定的除外。未经肖像权人同意，肖像作品权利人不得以发表、复制、发行、出租、展览等方式使用或者公开肖像权人的肖像。
 
 ### 《公司法》第23条
 - 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
@@ -225,7 +225,7 @@
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
 ### 《增值税法》第二十三条
-- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：PARTIAL ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：“纳税人发生应税交易，销售额未达到国务院规定的增值税起征点的，免征增值税；达到起征点的，依照本法规定计算缴纳增值税。”
 
 说明：该条是增值税起征点规则，小规模纳税人亦适用。因此，小规模纳税人销售额未达起征点的，免征增值税；达到起征点的，则需依法全额计算缴纳增值税。

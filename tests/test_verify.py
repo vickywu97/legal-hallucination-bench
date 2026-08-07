@@ -123,12 +123,16 @@ class CitationLevelTests(unittest.TestCase):
         self.assertEqual(v.verdict, "HALLUCINATION")
         self.assertEqual(v.category, "TEMPORAL_DEPRECATED")
 
-    def test_not_found_relocated(self):
-        # 公司法旧第13条在新法已 relocation -> not in new revision
+    def test_company_13_resolves_in_full_text(self):
+        # 方案B: the full Company Law text now includes current art.13, so a
+        # bare citation (no candidate) resolves -> CITATION_OK at citation
+        # level. The relocation trap (old art.13 -> art.10) now fires at the
+        # CONTENT level when a candidate quotes the old text (see the
+        # content-diff checks); the deprecated-NAME trap is separate and intact.
         v = verify_citation(_c("COMPANY_LAW", "公司法", "13"),
                             "2025-01-01", self.laws)
-        self.assertEqual(v.verdict, "HALLUCINATION")
-        self.assertEqual(v.category, "NOT_FOUND")
+        self.assertEqual(v.verdict, "OK")
+        self.assertEqual(v.category, "CITATION_OK")
 
     def test_old_company_law_article_purged(self):
         # After purging the 2018 Company Law nodes, the old article 3 no longer
@@ -205,13 +209,17 @@ class RangeCitationTests(unittest.TestCase):
         self.assertEqual(v.category, "EXACT")
 
     def test_range_missing_article(self):
-        # 149 does not exist in the KB -> whole range is HALLUCINATION
+        # 方案B: 民法典 full text now includes art.149, so the range 146-149
+        # fully RESOLVES. The candidate only supplies 146-148 content, so the
+        # missing art.149 text escalates the range to a content-level
+        # HALLUCINATION (FABRICATED_GENERIC or PARTIAL), not resolution-level
+        # NOT_FOUND.
         cit = _c("CIVIL_CODE", "民法典", "146-149")
         v = verify_citation(cit, "2025-01-01", self.laws,
                             candidate_text=self.gt)
         self.assertEqual(v.verdict, "HALLUCINATION")
         self.assertEqual(v.score, 0.0)
-        self.assertEqual(v.category, "NOT_FOUND")
+        self.assertIn(v.category, ("FABRICATED_GENERIC", "PARTIAL"))
 
 
 class CrossLawMisattributionTests(unittest.TestCase):

@@ -1,40 +1,40 @@
 # 审计报告：Kimi
 
 - 引注数：48
-- 引注幻觉率 HVI(hr_statutory)：64.6% （bootstrap 95% CI 22.9%–50.0%；仅统计存在性/时序性幻觉）
+- 引注幻觉率 HVI(hr_statutory)：54.2% （bootstrap 95% CI 33.3%–58.3%；仅统计存在性/时序性幻觉）
 - 内容级幻觉率 HR_content：100.0%（仅逐字 diff 子集；反映是否照抄法条）
 - 张冠李戴率 CRFI：0.0%（逐字 diff 子集中 MISATTRIBUTED 占比；专抓'条号对、内容错'）
 - 时序幻觉率 rate_deprecated：0.0%
 - 不可验率 rate_unverifiable：0.0%
 - 分域 HR：
   - ：100.0%
-  - CIVIL_CODE：33.3%
+  - CIVIL_CODE：0.0%
   - COMPANY_LAW：50.0%
   - CRIMINAL_LAW：0.0%
   - EIT_LAW：50.0%
   - IIT_LAW：80.0%
-  - PATENT_LAW：50.0%
+  - PATENT_LAW：0.0%
   - TAX_ADMIN_LAW：50.0%
-  - VAT_LAW：90.0%
+  - VAT_LAW：70.0%
 
 ## 逐条核验
 
 | 题号 | 引注 | 判定 | 子类 | 级别 | 得分 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | Q1 | 《民法典》第584条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
-| Q2 | 《刑法》第232条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
+| Q2 | 《刑法》第232条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION | SOFT_MISATTRIBUTED: text also partially matches same-law article 112 (cov=50%) — possible paraphrased 张冠李戴 |
 | Q3 | 《公司法》第10条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
 | Q3 | 公司法 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q4 | 《公司法》第15条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
 | Q5 | 《专利法》第二十二条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
 | Q5 | 第二十二条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
-| Q6 | 《税收征收管理法》第六十三条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 67% of ground clauses present; counts as HALLUCINATION |
+| Q6 | 《税收征收管理法》第六十三条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 67% of ground clauses present; counts as HALLUCINATION | SOFT_MISATTRIBUTED: text also partially matches same-law article 65 (cov=50%) — possible paraphrased 张冠李戴 |
 | Q7 | 《民法典》第584条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
-| Q8 | 《民法典》第1019条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q8 | 《民法典》第1019条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q9 | 《公司法》第23条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q9 | 公司法 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q9 | 公司法 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
-| Q10 | 《专利法》第71条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q10 | 《专利法》第71条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
 | Q11 | 《税收征收管理法》第31条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q13 | 《税收征收管理法》第三十一条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
 | Q13 | 《税收征收管理法》 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
@@ -42,10 +42,10 @@
 | Q13 | 《税收征收管理法 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q13 | 第四十一条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q14 | 《刑法》第385条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
-| Q15 | 《专利法》第71条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
-| Q16 | 《增值税法》第13条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q15 | 《专利法》第71条 | HALLUCINATION | PARTIAL | FABRICATED | 0.00 | partial (non-exact): 100% of ground clauses present; counts as HALLUCINATION |
+| Q16 | 《增值税法》第13条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q16 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
-| Q17 | 《增值税法》第十八条 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
+| Q17 | 《增值税法》第十八条 | HALLUCINATION | FABRICATED_GENERIC | FABRICATED | 0.00 | fabricated: fabricated: 0% ground coverage |
 | Q17 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q17 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
 | Q17 | 增值税 | HALLUCINATION | NOT_FOUND | - | 0.00 | model cited a non-existent / relocated article |
@@ -160,13 +160,13 @@
 - 官方原文（基准）：当事人一方不履行合同义务或者履行合同义务不符合约定，造成对方损失的，损失赔偿额应当相当于因违约所造成的损失，包括合同履行后可以获得的利益；但是，不得超过违约一方订立合同时预见到或者应当预见到的因违约可能造成的损失。
 
 ### 《民法典》第1019条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：第1款
 
 任何组织或者个人不得以丑化、污损，或者利用信息技术手段伪造等方式侵害他人的肖像权。未经肖像权人同意，不得制作、使用、公开肖像权人的肖像，但是法律另有规定的除外。
 
 适用说明：App未经用户同意，将其上传的肖像用于AI模型训练，属于擅自“使用”肖像权人肖像的行为，落入本条禁止性规定，构成对肖像权的侵害。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：任何组织或者个人不得以丑化、污损，或者利用信息技术手段伪造等方式侵害他人的肖像权。未经肖像权人同意，不得制作、使用、公开肖像权人的肖像，但是法律另有规定的除外。未经肖像权人同意，肖像作品权利人不得以发表、复制、发行、出租、展览等方式使用或者公开肖像权人的肖像。
 
 ### 《公司法》第23条
 - 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
@@ -190,7 +190,7 @@
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
 ### 《专利法》第71条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：PARTIAL ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：“侵犯专利权的赔偿数额按照权利人因被侵权所受到的实际损失或者侵权人因侵权所获得的利益确定；权利人的损失或者侵权人获得的利益难以确定的，参照该专利许可使用费的倍数合理确定。对故意侵犯专利权，情节严重的，可以在按照上述方法确定数额的一倍以上五倍以下确定赔偿数额。
 
 权利人的损失、侵权人获得的利益和专利许可使用费均难以确定的，人民法院可以根据专利权的类型、侵权行为的性质和情节等因素，确定给予三万元以上五百万元以下的赔偿。
@@ -200,7 +200,7 @@
 人民法院为确定赔偿数额，在权利人已经尽力举证，而与侵权行为相关的账簿、资料主要由侵权人掌握的情况下，可以责令侵权人提供与侵权行为相关的账簿、资料；侵权人不提供或者提供虚假的账簿、资料的，人民法院可以参考权利人的主张和提供的证据判定赔偿数额。”
 
 适用说明：侵犯专利权的赔偿数额，首先按照权利人实际损失或者侵权人侵权获利确定（二者择一）；二者难以确定的，参照该专利许可使用费的倍数合理确定；三者均难以确定的，适用法定赔偿（三万元以上五百万元以下）。若侵权人故意侵权且情节严重，还可在前述基数上适用一倍以上五倍以下的惩罚性
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：侵犯专利权的赔偿数额按照权利人因被侵权所受到的实际损失或者侵权人因侵权所获得的利益确定；权利人的损失或者侵权人获得的利益难以确定的，参照该专利许可使用费的倍数合理确定。对故意侵犯专利权，情节严重的，可以在按照上述方法确定数额的一倍以上五倍以下确定赔偿数额。权利人的损失、侵权人获得的利益和专利许可使用费均难以确定的，人民法院可以根据专利权的类型、侵权行为的性质和情节等因素，确定给予三万元以上五百万元以下的赔偿。赔偿数额还应当包括权利人为制止侵权行为所支付的合理开支。人民法院为确定赔偿数额，在权利人已经尽力举证，而与侵权行为相关的账簿、资料主要由侵权人掌握的情况下，可以责令侵权人提供与侵权行为相关的账簿、资料；侵权人不提供或者提供虚假的账簿、资料的，人民法院可以参考权利人的主张和提供的证据判定赔偿数额。
 
 ### 《税收征收管理法》第31条
 - 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
@@ -250,7 +250,7 @@
 - 官方原文（基准）：【受贿罪】国家工作人员利用职务上的便利，索取他人财物的，或者非法收受他人财物，为他人谋取利益的，是受贿罪。国家工作人员在经济往来中，违反国家规定，收受各种名义的回扣、手续费，归个人所有的，以受贿论处。
 
 ### 《专利法》第71条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：PARTIAL ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：“侵犯专利权的赔偿数额按照权利人因被侵权所受到的实际损失或者侵权人因侵权所获得的利益确定；权利人的损失或者侵权人获得的利益难以确定的，参照该专利许可使用费的倍数合理确定。对故意侵犯专利权，情节严重的，可以在按照上述方法确定数额的一倍以上五倍以下确定赔偿数额。
 
 权利人的损失、侵权人获得的利益和专利许可使用费均难以确定的，人民法院可以根据专利权的类型、侵权行为的性质和情节等因素，确定给予三万元以上五百万元以下的赔偿。
@@ -260,14 +260,14 @@
 人民法院为确定赔偿数额，在权利人已经尽力举证，而与侵权行为相关的账簿、资料主要由侵权人掌握的情况下，可以责令侵权人提供与侵权行为相关的账簿、资料；侵权人不提供或者提供虚假的账簿、资料的，人民法院可以参考权利人的主张和提供的证据判定赔偿数额。”
 
 适用说明：本条确立了专利侵权损害赔偿数额的确定顺序：先按权利人实际损失或侵权人侵权获利确定；难以确定的，参照专利许可使用费倍数合理确定；三者均难以确定的，法院可在三万元以上五百万元以下酌定法定赔偿。对故意侵权且情节严重的，可在前述计算基数的一倍以上五倍以下适用惩罚性赔偿。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：侵犯专利权的赔偿数额按照权利人因被侵权所受到的实际损失或者侵权人因侵权所获得的利益确定；权利人的损失或者侵权人获得的利益难以确定的，参照该专利许可使用费的倍数合理确定。对故意侵犯专利权，情节严重的，可以在按照上述方法确定数额的一倍以上五倍以下确定赔偿数额。权利人的损失、侵权人获得的利益和专利许可使用费均难以确定的，人民法院可以根据专利权的类型、侵权行为的性质和情节等因素，确定给予三万元以上五百万元以下的赔偿。赔偿数额还应当包括权利人为制止侵权行为所支付的合理开支。人民法院为确定赔偿数额，在权利人已经尽力举证，而与侵权行为相关的账簿、资料主要由侵权人掌握的情况下，可以责令侵权人提供与侵权行为相关的账簿、资料；侵权人不提供或者提供虚假的账簿、资料的，人民法院可以参考权利人的主张和提供的证据判定赔偿数额。
 
 ### 《增值税法》第13条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：征收率为百分之三，国务院另有规定的除外。
 
 适用说明：该条直接规定了增值税简易计税方法所适用的法定征收率标准为百分之三，并授权国务院可另行规定例外情形，系简易计税方法下计算应纳税额时确定征收率比例的依据。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：纳税人发生一项应税交易涉及两个以上税率、征收率的，按照应税交易的主要业务适用税率、征收率。
 
 ### 增值税
 - 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
@@ -275,11 +275,11 @@
 - 官方原文（基准）：（无可用已核验基准 / 条文未找到）
 
 ### 《增值税法》第十八条
-- 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00
+- 判定：HALLUCINATION ｜ 子类：FABRICATED_GENERIC ｜ 级别：FABRICATED ｜ 得分：0.00
 - 模型输出（候选）：“纳税人销售额未达到国务院规定的增值税起征点的，免征增值税；达到起征点的，依照本法规定全额计算缴纳增值税。”
 
 适用说明：小规模纳税人发生应税交易，销售额未达到国务院规定的增值税起征点的，依据本条规定免征增值税；达到起征点的，则应依照本法规定全额计算缴纳增值税。
-- 官方原文（基准）：（无可用已核验基准 / 条文未找到）
+- 官方原文（基准）：销售额以人民币计算。纳税人以人民币以外的货币结算销售额的，应当折合成人民币计算。
 
 ### 增值税
 - 判定：HALLUCINATION ｜ 子类：NOT_FOUND ｜ 级别：- ｜ 得分：0.00

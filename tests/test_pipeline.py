@@ -92,8 +92,14 @@ class PipelineTests(unittest.TestCase):
                "\n《公司法》第13条，法定代表人由董事会选举产生。")
         vs = run_answer(ans, "2025-01-01", laws=self.laws)
         cats = {v.category for v in vs}
+        # 旧公司法 is a repealed-law name -> TEMPORAL_DEPRECATED trap preserved.
         self.assertIn("TEMPORAL_DEPRECATED", cats)
-        self.assertIn("NOT_FOUND", cats)
+        # 方案B: the full Company Law text now includes current art.13, so the
+        # citation RESOLVES (no longer resolution-level NOT_FOUND); the quoted
+        # old-art.13 content mismatches the current article -> a content-level
+        # HALLUCINATION is still raised.
+        self.assertNotIn("NOT_FOUND", cats)
+        self.assertTrue(any(v.verdict == "HALLUCINATION" for v in vs))
 
     def test_audit_and_report(self):
         records = [

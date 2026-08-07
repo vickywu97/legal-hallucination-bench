@@ -58,12 +58,16 @@ class TestAdapterEquivalence(unittest.TestCase):
         self.assertFalse(r.found)
         self.assertEqual(r.note, "LAW_NOT_IN_FORCE_AT_DATE")
 
-    def test_relocated_article_absent_in_new_revision(self):
-        # Old art.13 relocated to art.10; citing art.13 against the new law
-        # must NOT silently resolve — it is "not in this revision".
+    def test_company_law_13_present_in_full_text(self):
+        # 方案B: the full Company Law text (266 articles) now includes the
+        # CURRENT art.13, so it resolves at 2025-01-01 (no longer a
+        # resolution-level gap). The old relocation trap (old art.13 -> art.10)
+        # now surfaces at the CONTENT level: a model quoting the old art.13
+        # text mismatches the current art.13 -> FABRICATED. See content-diff
+        # checks in test_pipeline / test_verify.
         r = resolve_article(self.laws, "公司法", "13", "2025-01-01")
-        self.assertFalse(r.found)
-        self.assertEqual(r.note, "ARTICLE_NOT_IN_THIS_REVISION")
+        self.assertTrue(r.found)
+        self.assertEqual(r.revision_id, "COMPANY_LAW@2024-07-01")
 
     def test_new_company_law_in_force_2025(self):
         r = resolve_article(self.laws, "公司法", "10", "2025-01-01")

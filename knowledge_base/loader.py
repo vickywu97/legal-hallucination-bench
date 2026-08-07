@@ -181,8 +181,14 @@ def _build_law_from_index_and_nodes(meta: dict, nodes: List[dict]) -> Law:
                     break
             if not is_latest:
                 continue
-            articles[str(sk)] = Article(
-                article_no=str(sk),
+            # Key whole-number articles with an integer-string ("232") so the
+            # engine's resolve_article / run.py lookups (which pass numeric
+            # article strings like "584") match. Sub-articles keep their decimal
+            # key ("234.001"). This is independent of whether the underlying
+            # article_sort_key is stored as int or float.
+            key = str(int(sk)) if float(sk).is_integer() else str(sk)
+            articles[key] = Article(
+                article_no=key,
                 article_no_alt=n.get("article_number"),
                 chapter=None,
                 section=None,

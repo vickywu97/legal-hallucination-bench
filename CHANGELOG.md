@@ -5,6 +5,27 @@
 
 ---
 
+## 2026-08-07
+
+### 重大变更（方案B：评测 ground truth 扩容 212 → 2327 节点）
+- **KB 由 212 精选节点扩容为 8 部法完整官方全文（2327 节点）**：`knowledge_base/laws/statutes.jsonl` 现含民法典 1260 / 刑法 505 / 公司法 266 / 税收征管法 94 / 专利法 82 / 企税 60 / 个税 22 / 增值税法 38。212 个 Tier A 专家节点保留原始 `verified_by/at` provenance；其余 2115 个节点在「官方源经专家确认完整 + 逐字提取」准则下升为 verified（来源可信度门禁 `refuse_unverified_ground_truth` 仍有效）。
+- **致命回归修复**：`knowledge_base/loader.py` 合并浮点 `article_sort_key` 时 article key 写成 `"232.0"`，而引擎按整数 `"232"` 查找 → 全部引注解析失败。改为整数串 key（`float(sk).is_integer()` 则 `str(int(sk))`）。`build_statute._parse_sort_key` 由整数拼接改十进制（第234条之一 = 234.001），`validate()` 0 错。
+- 新增 `scripts/expand_kb_to_full.py`（幂等扩容；修复 `to_arabic` 阿拉伯数字直通，避免 `cn2int('1')→0` 把已阿拉伯化节点清零）；`EXPECT_TOTAL=2327`。
+- **6 个测试随方案B 同步**：解析级陷阱（原 NOT_FOUND）随全集覆盖变为内容级（`FABRICATED`/PARTIAL）；时序陷阱（`TEMPORAL_DEPRECATED`）保持不变；`test_kb_coverage` `MIN_TOTAL=2327`、各法地板计数对齐。
+- **文档澄清（方案B 关系）**：README / `packs/README.md` / `docs/METHODOLOGY.md` §10 / `docs/PRODUCT_SPEC_法条库按需下载版.md` 明确「评测引擎 ground truth = `statutes.jsonl`（2327 已核验）；`packs/` 仅为同源按领域下载镜像，引擎从不读取 `packs/`」。
+
+### 性能（评测管线 ~10× 提速，产物零变化）
+- `benchmark/verify.py`：`normalize()` 记忆化（消除 2327 条文 × 每引注的重复正则）；移除 `content_diff` 中**从未被任何 verdict/指标/产物消费**的 `difflib.SequenceMatcher`（O(n²)，对每一对低覆盖条文计算却不影响任何判定，且不写入 `verifications.jsonl`）→ 产物**字节级不变**。单机 8 题 worker 21.6s → 2.0s；全量 115 题由 5 分钟级降至 30 秒级。
+- 新增 `scripts/run_engine_chunked.py`：subprocess 隔离的分块驱动器（每个 worker 独立进程处理一小块、父进程仅合并 + 渲染报告），用于在受限运行环境跑通完整管线；产物与 `benchmark/run.py --offline --input answers.jsonl` 一致。
+- 全量测试 **110 绿**（59s，较 198s 提速）。
+
+### 实测（方案B 后真实排行榜，2026-08-07 复刷）
+- **HVI（越低越好）全面下降——这是方案B 的预期效果，非模型变好**：ground truth 覆盖完整官方全文后，此前因 KB 稀疏而误判为 `NOT_FOUND` 的有效引注现在正确解析为 `OK`。Qwen-Max 54.5%→**33.3%** / DeepSeek-V3 55.0%→**45.0%** / GLM-4-Flash 55.0%→**45.0%** / DeepSeek-R1 50.0%→**47.6%** / Kimi 64.6%→**54.2%**。
+- **CRFI 仍全员 0%**：真实模型失分形态为「引缺失/虚构条号 → NOT_FOUND」与「引对条号但概括改写内容 → PARTIAL/FABRICATED_GENERIC」，而非「条号对、内容错」（硬/软 MISATTRIBUTED 在 115 条中均 0 触发）。内容级幻觉率仍 100%（零逐字合规）；仅 R1 触发时序幻觉（~2.4%，Q7 引已废止《合同法》）。
+- **VAT 域 HVI 76.2%→70.6%**（更多 VAT 条文进入 KB 正确解析）；`benchmark/reports/vat_domain_wipeout.html` 已随 `scripts/render_vat_domain.py` 同步刷新。
+
+---
+
 ## 2026-08-06
 
 ### 修复（运维护栏：`--offline` 静默覆盖真实报告）

@@ -554,6 +554,6 @@ legal-kb verify M3
 ## 仓库对齐备注（由 AI 于 2026-08-07 添加，待用户修订）
 - **脚本路径**：仓库内为 `knowledge_base/verify_kb.py` 与 `knowledge_base/build_statute.py`，运行方式为 `python -S -m knowledge_base.verify_kb ...` / `python -S -m knowledge_base.build_statute ...`（非规格书正文里的 `knowledge_base.verify_kb` 包导入写法）。
 - **当前节点数（与正文 5.1 表略有出入）**：民法典 27（正文写 26）、公司法 16（正文写 15）、专利法 30（一致）；企业所得税法 60 / 个人所得税法 22 按条数看**已是全文覆盖**。
-- **信任分级**：本规格书默认"全部 verified"。实际落地采用两级——`Tier A 专家核验`（现有 212，继续作 Bench 评测 ground truth）+ `Tier B 官方全文提取`（从官方 .doc 逐字提取、未逐条签核，先以 Tier B 发布全集包，再逐步升 A）。详见项目 MEMORY.md「产品方向转折」段。
+- **信任分级**：本规格书默认"全部 verified"。实际落地采用两级——`Tier A 专家核验`（现有 212 节点保留原始 provenance，是 2327 节点 ground truth 的子集）+ `Tier B 官方全文提取`（从官方 .doc 逐字提取、未逐条签核）。**方案 B 已落地**：Bench 的 `statutes.jsonl` 已扩容为 **2327 个已核验节点 = 8 部法完整官方全文**（212 专家节点保留溯源 + 2115 节点在「官方源确认完整」准则下升 verified），评测引擎的 ground truth 即是它（`loader.load_laws()` 单一来源，引擎不读 `packs/`）。`packs/` 是这份同一份已核验语料的按领域下载镜像。来源可信度门禁（`refuse_unverified_ground_truth`）仍有效，未来任何真正未核验节点都会被引擎拒绝当事实依据。
 - **失效法模块**：已对应 Bench 的 `DEPRECATED_LAW_NAMES` 机制（单真相源，KB 不存旧法节点）。
-- **全集包落地形态**：以 `packs/{law_code}_full.jsonl`（+ 派生 `.md`/`.csv`）独立存放，不污染 Bench 的 212 节点 `statutes.jsonl` 及其覆盖测试。
+- **全集包落地形态**：以 `packs/{law_code}_full.jsonl`（+ 派生 `.md`/`.csv`）独立存放，作为 Bench `statutes.jsonl`（2327 节点）的按领域下载镜像，二者同源、可相互校验。

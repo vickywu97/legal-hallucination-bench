@@ -1,21 +1,9 @@
 [
   {
     "rank": 1,
-    "model": "DeepSeek-R1",
-    "metrics": {
-      "hr_statutory": 0.5,
-      "hr_content": 1.0,
-      "crfi": 0.0,
-      "rate_deprecated": 0.023809523809523808,
-      "rate_unverifiable": 0.0
-    },
-    "n_citations": 42
-  },
-  {
-    "rank": 2,
     "model": "Qwen-Max",
     "metrics": {
-      "hr_statutory": 0.5454545454545454,
+      "hr_statutory": 0.3333333333333333,
       "hr_content": 1.0,
       "crfi": 0.0,
       "rate_deprecated": 0.0,
@@ -24,10 +12,22 @@
     "n_citations": 33
   },
   {
-    "rank": 3,
+    "rank": 2,
     "model": "DeepSeek-V3",
     "metrics": {
-      "hr_statutory": 0.55,
+      "hr_statutory": 0.45,
+      "hr_content": 1.0,
+      "crfi": 0.0,
+      "rate_deprecated": 0.0,
+      "rate_unverifiable": 0.0
+    },
+    "n_citations": 40
+  },
+  {
+    "rank": 3,
+    "model": "GLM-4-Flash",
+    "metrics": {
+      "hr_statutory": 0.45,
       "hr_content": 1.0,
       "crfi": 0.0,
       "rate_deprecated": 0.0,
@@ -37,21 +37,21 @@
   },
   {
     "rank": 4,
-    "model": "GLM-4-Flash",
+    "model": "DeepSeek-R1",
     "metrics": {
-      "hr_statutory": 0.55,
+      "hr_statutory": 0.47619047619047616,
       "hr_content": 1.0,
       "crfi": 0.0,
-      "rate_deprecated": 0.0,
+      "rate_deprecated": 0.023809523809523808,
       "rate_unverifiable": 0.0
     },
-    "n_citations": 40
+    "n_citations": 42
   },
   {
     "rank": 5,
     "model": "Kimi",
     "metrics": {
-      "hr_statutory": 0.6458333333333334,
+      "hr_statutory": 0.5416666666666666,
       "hr_content": 1.0,
       "crfi": 0.0,
       "rate_deprecated": 0.0,

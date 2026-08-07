@@ -19,19 +19,23 @@ from knowledge_base.build_statute import (  # noqa: E402
     STATUTES_FILE,
 )
 
-# Floor thresholds (nodes per law). Raise as curation grows toward ~200/250.
-# v1.2: +EIT_LAW(60) +IIT_LAW(22) +PATENT_LAW 补强(16->30) => 212 nodes / 8 laws.
+# Floor thresholds (nodes per law). Exact counts after 方案 B: the eval ground
+# truth was expanded from the 212 expert-verified nodes to the full official
+# text (2327 unique articles across 8 laws), promoted via
+# scripts/expand_kb_to_full.py. These floors now guard against accidentally
+# dropping any article on a future re-extract.
+# 方案 B (2026-08-07): full text => 2327 nodes / 8 laws.
 MIN_NODES = {
-    "CIVIL_CODE": 20,
-    "COMPANY_LAW": 16,
-    "CRIMINAL_LAW": 20,
-    "PATENT_LAW": 30,
-    "TAX_ADMIN_LAW": 12,
+    "CIVIL_CODE": 1260,
+    "COMPANY_LAW": 266,
+    "CRIMINAL_LAW": 505,
+    "PATENT_LAW": 82,
+    "TAX_ADMIN_LAW": 94,
     "IIT_LAW": 22,
     "EIT_LAW": 60,
-    "VAT_LAW": 15,
+    "VAT_LAW": 38,
 }
-MIN_TOTAL = 200
+MIN_TOTAL = 2327
 
 
 class TestCoverage(unittest.TestCase):

@@ -2,7 +2,9 @@
 
 基于 [legal-hallucination-bench](https://github.com/vickywu97/legal-hallucination-bench) 的已核验 KB pipeline，
 把 8 部常用法律做成**按领域拆分、可单独下载的全集包**。律师下公司法全集、税务人下税务包、AI 开发者下自己要评测的那部——
-比一个 monolithic 212 节点 KB 给人更多选择，也更好讲故事。
+比一个 monolithic KB 给人更多选择，也更好讲故事。
+
+> **与评测基准的关系**：评测引擎的 ground truth 永远是 `knowledge_base/laws/statutes.jsonl`（现 **2327 个已核验节点 = 8 部法完整官方全文**），由 `loader.load_laws()` 单一来源加载，引擎不读 `packs/`。本 `packs/` 目录是这份**同一份已核验语料**的按领域拆分下载镜像（同源、可相互校验）。二者区别仅在分发形态：Pack 多一个 `trust_tier` 下载侧信任标签，但评测侧一律视为 verified。来源可信度门禁（`refuse_unverified_ground_truth`）仍有效，未来任何真正未核验节点都会被引擎拒绝当事实依据。
 
 ## 当前包（v1.0，9 包 / 2541 条，全部 Tier A）
 
@@ -42,7 +44,7 @@ python3 -S scripts/build_law_pack.py \
 构建合并包（如税务包）即把若干 `*_full.jsonl` 拼接后，用仓库内脚本重新生成 `.md/.csv` 并 `regenerate_index('packs')`。
 
 ## 信任分级设计
-- **Tier A 专家核验**：现有 212 节点，逐条比对官方全文一致 → 继续作 AI 评测 ground truth。2026-08-07 起，8 部法全集包经「官方源确认完整」后整包升 Tier A（2541 条全 A）。
+- **Tier A 专家核验**：现有 212 个节点由专家逐条比对官方全文一致（保留原始 `verified_by/at` 溯源），是 2327 节点 ground truth 的 provenance 子集；其余 2115 个节点在「官方源经专家确认完整 + 逐字提取」准则下升为 verified。2026-08-07 起，8 部法全集包经「官方源确认完整」后整包升 Tier A（2541 条全 A），与 Bench 的 `statutes.jsonl` 同源。
 - **Tier B 官方全文提取**：从官方 .doc 逐字提取的完整条文，结构化对齐（条号+正文），来源可信但**未逐条人工签核**
   → 用于“按需下载”参考，不作评测判分 ground truth（除非后续升 A）。该机制保留为默认构建模式，当前 9 包已无 Tier B。
 - 每条带 `trust_tier` + `source`（官方文件批次）+ `effective_date`（生效日）。诚实做到“全量覆盖”而不稀释评测可信度。

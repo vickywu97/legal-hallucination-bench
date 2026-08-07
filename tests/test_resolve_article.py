@@ -31,12 +31,14 @@ class TestResolveArticle(unittest.TestCase):
         self.assertFalse(r.found)
         self.assertEqual(r.note, "LAW_NOT_IN_FORCE_AT_DATE")
 
-    def test_company_13_relocated_after_2024(self):
-        # Old art.13 was relocated to art.10 in the 2023 revision; it no
-        # longer exists as art.13 in the current revision -> not found.
+    def test_company_13_current_exists_2025(self):
+        # 方案B: the full Company Law text includes the CURRENT art.13, so it
+        # resolves under the 2023 revision (art.13 is now a different provision
+        # than the pre-2024 art.13). Relocation traps now fire at content level
+        # (old art.13 text quoted -> FABRICATED), not resolution level.
         r = resolve_article(self.laws, "公司法", "13", "2025-01-01")
-        self.assertFalse(r.found)
-        self.assertEqual(r.note, "ARTICLE_NOT_IN_THIS_REVISION")
+        self.assertTrue(r.found)
+        self.assertEqual(r.revision_id, "COMPANY_LAW@2024-07-01")
 
     def test_company_new_10_in_force_2025(self):
         r = resolve_article(self.laws, "公司法", "10", "2025-01-01")
@@ -51,12 +53,15 @@ class TestResolveArticle(unittest.TestCase):
 
     # --- Deprecated-law-name trap (temporal hallucination detection) -------- #
     def test_deprecated_contract_law_flagged_post_2021(self):
-        # 合同法 was repealed 2021-01-01. Citing it in 2023 must be flagged
-        # as a repealed-name citation even though article resolution fails.
+        # 合同法 was repealed 2021-01-01. Citing it in 2023 must still be
+        # flagged as a repealed-name citation (TEMPORAL_DEPRECATED signal).
+        # 方案B: the full 民法典 now carries art.113, so the citation ALSO
+        # resolves to the current 民法典 text (found=True) — the trap is the
+        # deprecated NAME, preserved independently of resolution.
         r = resolve_article(self.laws, "合同法", "113", "2023-01-01")
         self.assertTrue(r.used_deprecated_alias)
         self.assertEqual(r.deprecated_repealed_date, "2021-01-01")
-        self.assertEqual(r.note, "ARTICLE_NOT_IN_THIS_REVISION")
+        self.assertTrue(r.found)  # 民法典 art.113 now covered by full text
 
     def test_current_alias_not_flagged(self):
         r = resolve_article(self.laws, "民法典", "584", "2023-01-01")
