@@ -1,6 +1,8 @@
 [![CI](https://github.com/vickywu97/legal-hallucination-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/vickywu97/legal-hallucination-bench/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%20%7C%203.11%20%7C%203.12-brightgreen.svg)](https://www.python.org)
+> 📦 **双仓库作品集 · 地基篇** —— 配套产品 [`compliance-triangle`](https://github.com/vickywu97/compliance-triangle)（用同一套 verify 引擎给每条 AI 引注盖 🟢🟡🔴 章）。完整叙事 / 电梯演讲见 [`docs/PORTFOLIO.md`](docs/PORTFOLIO.md)。
+
 # legal-hallucination-bench · 中文法律引注幻觉基准
 
 > **Chinese Legal Citation Hallucination Benchmark** — an offline, expert-verified
@@ -306,6 +308,22 @@ DeepSeek-V3 / GLM-4-Flash（45.0%）几近持平——**主流法律 AI 在"引�
 - [`docs/KB_EXPANSION_PLAN.md`](docs/KB_EXPANSION_PLAN.md) — KB 扩容路线图。
 - [`CHANGELOG.md`](CHANGELOG.md) — 版本变更记录。
 - 历史设计文档（早期 MVP 设计、六周计划、核验报告）已归档至 [`archive/`](archive/)，供追溯，不再反映当前设计。
+
+---
+
+## 作品集联动（Portfolio）
+
+本项目是**双仓库作品集**的地基部分。配套产品 [`compliance-triangle`](https://github.com/vickywu97/compliance-triangle)
+复用本仓库的 `statutes.jsonl` 与 `benchmark/verify.py` 校验引擎，把"量化幻觉"升级为"实时拦截每条 AI 引注的 🟢🟡🔴 章"。
+
+![作品集架构](docs/portfolio_architecture.svg)
+
+- 🖼️ 产品侧预览（合规三角仪表盘）：![合规三角仪表盘](https://raw.githubusercontent.com/vickywu97/compliance-triangle/master/docs/dashboard_preview.svg)
+- 完整叙事 / 电梯演讲：[`docs/PORTFOLIO.md`](docs/PORTFOLIO.md)
+- 面试应答卡：[`docs/INTERVIEW_QA.md`](docs/INTERVIEW_QA.md)（9 个尖锐问题 + 应答逻辑）
+- 推广草稿（公众号 / 知乎）：[`docs/PROMOTION_DRAFTS.md`](docs/PROMOTION_DRAFTS.md)
+
+> 作者具备 **律师 + 税务师 + 专利代理师** 三重资质——同一人设计校验规则、定义陷阱、签署每一条 KB，这是任何纯工程 / 纯算法团队无法复制的壁垒。
 
 ---
 

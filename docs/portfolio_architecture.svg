@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 600" font-family="-apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <style>
+    .bg { fill: #f8fafc; }
+    .card { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; }
+    .title { fill: #0f172a; }
+    .label { fill: #334155; }
+    .sub { fill: #64748b; }
+    .accent-kb { fill: #2563eb; }
+    .accent-engine { fill: #7c3aed; }
+    .accent-bench { fill: #0d9488; }
+    .accent-ct { fill: #ea580c; }
+    .accent-moat { fill: #d97706; }
+    .arrow { stroke: #94a3b8; stroke-width: 2; fill: none; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0b1120; }
+      .card { fill: #111827; stroke: #374151; }
+      .title { fill: #f8fafc; }
+      .label { fill: #cbd5e1; }
+      .sub { fill: #94a3b8; }
+      .arrow { stroke: #64748b; }
+    }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="980" height="600" rx="18"/>
+  <text class="title" x="490" y="42" text-anchor="middle" font-size="22" font-weight="700">作品集架构 · 从「量化基准」到「合规产品」</text>
+  <text class="sub" x="490" y="66" text-anchor="middle" font-size="13">legal-hallucination-bench（地基）→ compliance-triangle（产品）·  同一套 verify 引擎 ·  三证合一护城河</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="8" refY="3.2" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3.2 L0,6.4 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <!-- ① KB -->
+  <rect class="card" x="340" y="84" width="300" height="112" rx="12"/>
+  <rect class="accent-kb" x="340" y="84" width="9" height="112" rx="4"/>
+  <text class="title" x="366" y="112" font-size="16" font-weight="700">① 法条知识库 KB</text>
+  <text class="label" x="366" y="136" font-size="12.5">2327 节点 · 8 部法完整官方全文</text>
+  <text class="label" x="366" y="156" font-size="12.5">100% verified · 专家逐条具名核验</text>
+  <text class="label" x="366" y="176" font-size="12.5">来源可信度门禁 · 零 unverified</text>
+
+  <!-- ② Engine -->
+  <rect class="card" x="340" y="224" width="300" height="112" rx="12"/>
+  <rect class="accent-engine" x="340" y="224" width="9" height="112" rx="4"/>
+  <text class="title" x="366" y="252" font-size="16" font-weight="700">② 共享校验引擎</text>
+  <text class="label" x="366" y="276" font-size="12.5">resolve_article + content_diff</text>
+  <text class="label" x="366" y="296" font-size="12.5">旧法陷阱 · 二元判定（逐字=1.0 / 否则=0）</text>
+  <text class="label" x="366" y="316" font-size="12.5">纯标准库 · 离线 · 可复现</text>
+
+  <!-- arrows -->
+  <line class="arrow" x1="490" y1="196" x2="490" y2="222" marker-end="url(#arrow)"/>
+  <line class="arrow" x1="430" y1="336" x2="200" y2="372" marker-end="url(#arrow)"/>
+  <line class="arrow" x1="550" y1="336" x2="780" y2="372" marker-end="url(#arrow)"/>
+
+  <!-- ③-a Bench -->
+  <rect class="card" x="40" y="374" width="300" height="142" rx="12"/>
+  <rect class="accent-bench" x="40" y="374" width="9" height="142" rx="4"/>
+  <text class="title" x="66" y="402" font-size="16" font-weight="700">③-a 量化基准</text>
+  <text class="label" x="66" y="426" font-size="12.5">legal-hallucination-bench</text>
+  <text class="label" x="66" y="450" font-size="12.5">5 国产模型 × 23 陷阱题</text>
+  <text class="label" x="66" y="474" font-size="12.5">HVI 33%–54% · CRFI 0%</text>
+  <text class="label" x="66" y="498" font-size="12.5">8 法域逐字 EXACT 全军覆没</text>
+
+  <!-- ③-b CT -->
+  <rect class="card" x="640" y="374" width="300" height="142" rx="12"/>
+  <rect class="accent-ct" x="640" y="374" width="9" height="142" rx="4"/>
+  <text class="title" x="666" y="402" font-size="16" font-weight="700">③-b 合规三角</text>
+  <text class="label" x="666" y="426" font-size="12.5">compliance-triangle</text>
+  <text class="label" x="666" y="450" font-size="12.5">每条 AI 引注 → 🟢🟡🔴</text>
+  <text class="label" x="666" y="474" font-size="12.5">法律·税务·IP 三域合规</text>
+  <text class="label" x="666" y="498" font-size="12.5">离线零依赖 · 可粘贴实时校验</text>
+
+  <!-- Moat band -->
+  <rect class="card" x="40" y="532" width="900" height="52" rx="12"/>
+  <rect class="accent-moat" x="40" y="532" width="9" height="52" rx="4"/>
+  <text class="title" x="66" y="554" font-size="14" font-weight="700">🛡️ 作者护城河（三证合一）</text>
+  <text class="label" x="66" y="575" font-size="12.5">律师 · 税务师 · 专利代理师 —— 同一人设计校验规则、定义陷阱、签署每一条 KB，这是任何纯工程 / 纯算法团队无法复制的资质壁垒。</text>
+</svg>
