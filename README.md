@@ -318,7 +318,7 @@ DeepSeek-V3 / GLM-4-Flash（45.0%）几近持平——**主流法律 AI 在"引�
 
 ![作品集架构](docs/portfolio_architecture.svg)
 
-- 🖼️ 产品侧预览（合规三角仪表盘）：![合规三角仪表盘](https://raw.githubusercontent.com/vickywu97/compliance-triangle/master/docs/dashboard_preview.svg)
+- 🖼️ 产品侧预览（合规三角仪表盘）：![合规三角仪表盘](https://raw.githubusercontent.com/vickywu97/compliance-triangle/master/docs/dashboard_preview.png)
 - 完整叙事 / 电梯演讲：[`docs/PORTFOLIO.md`](docs/PORTFOLIO.md)
 - 面试应答卡：[`docs/INTERVIEW_QA.md`](docs/INTERVIEW_QA.md)（9 个尖锐问题 + 应答逻辑）
 - 推广草稿（公众号 / 知乎）：[`docs/PROMOTION_DRAFTS.md`](docs/PROMOTION_DRAFTS.md)
