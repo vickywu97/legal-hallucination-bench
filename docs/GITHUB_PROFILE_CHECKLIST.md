@@ -15,7 +15,7 @@
   `llm-evaluation` `hallucination` `legal-ai` `benchmark` `chinese-law` `law` `tax-law` `patent` `ai-safety` `open-source` `python` `reproducible-research` `prompt-engineering` `ai-product` `legal-tech`
 
 **Social preview 图（Settings → General → Social preview → Upload）**
-- 用 `docs/portfolio_architecture.svg` 导出 PNG（架构图，含 KB→引擎→双消费者+三证护城河），最完整地代表"这是个作品集地基"。
+- 用 `docs/portfolio_architecture.png`（已生成，1280×640 架构图，含 KB→引擎→双消费者+三证护城河），最完整地代表"这是个作品集地基"。
 - 备选：用 `benchmark/reports/vat_domain_wipeout.html` 渲染的"5 模型全灭"图（钩子更强，但只讲基准不讲产品）。
 
 **Pinned**：在自己 profile 主页把本仓库 Pin 为第一个（见第 4 节）。
