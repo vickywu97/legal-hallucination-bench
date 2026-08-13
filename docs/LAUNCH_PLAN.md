@@ -1,6 +1,6 @@
 # 作品集对外发布总策划（Launch Plan）
 
-> 目标：把"律师+税务师+专利代理师 → AI 法律 PM"的作品集，精准推到 **对的那 5–20 个人**（AI 公司招聘官、法务科技/合规团队、技术社区 KOL）。
+> 目标：把"律师+税务师+专利代理师 ｜ 在做 AI 法律产品"的作品集，精准推到 **对的那 5–20 个人**（AI 公司招聘官、法务科技/合规团队、技术社区 KOL）。
 > 原则：**star / 下载不是指标**，触达质量 > 数量。先立住"可信主页"，再向外分发，最后互相导流形成闭环。
 > 配套文件：`wechat_post_v1.3.md` / `zhihu_article_v1.3.md` / `linkedin_post_v1.3.md` / `promo_maimai_cn.md` / `GITHUB_PROFILE_CHECKLIST.md`。
 
@@ -33,7 +33,7 @@
 **One-liner (EN)**
 > Lawyer + tax agent + patent attorney pivoting to AI legal product management. I build open-source work that defines, measures, and ships AI-quality evaluation for Chinese legal citations (benchmark + 🟢🟡🔴 compliance product). Portfolio: github.com/vickywu97
 
-**三证护城河叙事（遇到"你凭什么做 AI 法律 PM"时必讲）**
+**三证护城河叙事（遇到"你凭什么做 AI 法律产品"时必讲）**
 > 法律/税务/IP 是三个强监管、强专业壁垒的领域，绝大多数 AI 产品经理不懂其中任一个的合规红线。我一个人持三证，意味着我能独立定义"什么叫法律上正确"，而不必依赖他人转述——这正是评测基准和合规产品能成立的根。
 
 ---

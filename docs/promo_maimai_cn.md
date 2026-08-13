@@ -13,7 +13,7 @@
 > ① legal-hallucination-bench：离线零依赖的中文法律引注幻觉基准，2327 条专家核验法条，实测 5 个国产模型在 2026 新《增值税法》上 42 次引注 0 次逐字正确；
 > ② compliance-triangle：把同一套校验引擎做成法律/税务/IP 三域 🟢🟡🔴 合规助手。
 >
-> 作品集主页：github.com/vickywu97 ｜ 招聘 AI 法律 PM / 合规岗的伙伴，欢迎私信。
+> 作品集主页：github.com/vickywu97 ｜ 在做 AI 法律产品，寻求 AI 法律 PM / 合规岗方向机会，欢迎交流。
 
 ---
 

@@ -41,7 +41,7 @@
 - Name：`Vicky Wu`（或中文名，保持一致）
 - Pronouns：可选
 - Bio（一句话人设）：
-  `律师 · 税务师 · 专利代理师 → AI 法律产品经理 ｜ 定义并量化 AI 质量（评测基准 + 合规产品）｜ 开源作品集👇`
+  `律师 · 税务师 · 专利代理师 ｜ 在做 AI 法律产品 ｜ 定义并量化 AI 质量（评测基准 + 合规产品）｜ 开源作品集👇`
 - Location：`China`（或城市）
 - Company / Website：可填 `legal-hallucination-bench` 或留空
 - Link（加一个）：`https://github.com/vickywu97/legal-hallucination-bench`
