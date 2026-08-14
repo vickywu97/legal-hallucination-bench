@@ -16,11 +16,14 @@ IMPORTANT
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import time
 import urllib.error
 import urllib.request
+
+from .run import load_tasks
 
 # Provider registry — OpenAI-compatible chat/completions JSON.
 MODELS = [
@@ -119,3 +122,32 @@ def generate_answers(tasks: list, models=None, out_path: str = "answers_ifb.json
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
     print(f"[done] {len(records)} records -> {out_path}")
     return records
+
+
+def main(argv=None):
+    """CLI: generate real model answers.
+
+    Requires API keys in the environment (see ``MODELS`` for the exact env-var
+    names). A model with no key is skipped, so you can run with only some keys
+    set. Output is a jsonl compatible with ``run.py --score-answers``.
+    """
+    ap = argparse.ArgumentParser(
+        description="Generate real model answers for the instruction-following bench")
+    ap.add_argument("--out", default="answers_ifb.jsonl",
+                    help="output jsonl path (default: answers_ifb.jsonl)")
+    ap.add_argument("--tasks", default=None,
+                    help="tasks json path (default: bundled config/tasks.json)")
+    ap.add_argument("--models", nargs="*", default=None,
+                    help="subset of model labels, e.g. DeepSeek-V3 GLM-4-Flash "
+                         "(default: all models whose API key env var is set)")
+    args = ap.parse_args(argv)
+
+    tasks_path = args.tasks or os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "config", "tasks.json")
+    tasks = load_tasks(tasks_path)
+    generate_answers(tasks, models=args.models or None, out_path=args.out)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
