@@ -60,15 +60,27 @@ python -S -m projects.instruction_following_bench.run --offline
 #     HTML 会多出"隐藏集综合"列，但绝不展示隐藏题的逐题内容（TH1… 不出现）。
 python -S -m projects.instruction_following_bench.run --offline --include-hidden
 
-# 2) 接真实模型（需设置环境变量 API key，否则该模型被跳过）
-export DEEPSEEK_API_KEY=sk-xxx
-export ZHIPU_API_KEY=zk-xxx
+# 2) 接真实模型（需设置环境变量 API key；未设置的模型自动跳过，不会中断运行）
+#    支持 4 家 OpenAI 兼容国产模型，env 变量名如下：
+#      DEEPSEEK_API_KEY   -> DeepSeek-V3 (deepseek-chat)
+#      ZHIPU_API_KEY      -> GLM-4-Flash (glm-4-flash)
+#      DASHSCOPE_API_KEY  -> Qwen-Max   (qwen-max)
+#      MOONSHOT_API_KEY   -> Kimi       (kimi-k2.6)
+export DEEPSEEK_API_KEY=sk-xxxx
+export ZHIPU_API_KEY=zk-xxxx
+# 只跑已设 key 的模型；或显式指定子集：--models DeepSeek-V3 GLM-4-Flash
 python -S -m projects.instruction_following_bench.models \
-    --out answers_ifb.jsonl          # 真实调用 DeepSeek / GLM / Qwen / Kimi
+    --out answers_ifb.jsonl          # 真实调用已配置 key 的模型
+
+# 2b) 仅先验证 pipeline（不设任何 key 也会干净跳过，写空 jsonl，不报错）
+python -S -m projects.instruction_following_bench.models --out answers_ifb.jsonl
 
 # 3) 用真实答案产出可复现排行榜（html 带"真实排行榜"横幅）
 python -S -m projects.instruction_following_bench.run \
     --score-answers answers_ifb.jsonl
+# 3b) 若本地存有隐藏集，可一并评分（产出"隐藏集综合"列，防刷分信号）
+python -S -m projects.instruction_following_bench.run \
+    --score-answers answers_ifb.jsonl --include-hidden
 ```
 
 > 两种模式都会同时写出 `leaderboard.csv` 与 `leaderboard.html`（单文件自包含，
