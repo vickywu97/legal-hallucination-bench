@@ -32,7 +32,13 @@ def _esc(value) -> str:
     return _html.escape(str(value))
 
 
-def _row_cells(r: dict) -> str:
+def _row_cells(r: dict, hidden_count: int = 0) -> str:
+    hidden_cell = ""
+    if hidden_count > 0:
+        if "hidden_total" in r:
+            hidden_cell = f"<td>{r['hidden_total']:.3f}</td>"
+        else:
+            hidden_cell = "<td>—</td>"
     return (
         f"<td>{_esc(r['model'])}</td>"
         f"<td>{_esc(r['tasks'])}</td>"
@@ -41,6 +47,7 @@ def _row_cells(r: dict) -> str:
         f"<td>{r['avg_closure']:.3f}</td>"
         f"<td><b>{r['avg_total']:.3f}</b></td>"
         f"<td>{r['instruction_violation_rate']:.3f}</td>"
+        f"{hidden_cell}"
     )
 
 
@@ -59,12 +66,20 @@ def _bar(violation_rate: float) -> str:
     )
 
 
-def build_html(rows: list, mode: str = "demo") -> str:
+def build_html(rows: list, mode: str = "demo", hidden_count: int = 0) -> str:
     banner = _DEMO_BANNER if mode == "demo" else _REAL_BANNER
+    hidden_th = '<th>隐藏集综合(防刷分)</th>' if hidden_count > 0 else ""
     body_rows = "\n".join(
-        f"<tr>{_row_cells(r)}<td>{_bar(r['instruction_violation_rate'])}</td></tr>"
+        f"<tr>{_row_cells(r, hidden_count)}<td>{_bar(r['instruction_violation_rate'])}</td></tr>"
         for r in rows
     )
+    hidden_note = ""
+    if hidden_count > 0:
+        hidden_note = (
+            f'<div class="banner hidden">⛨ 防刷分：本排行榜含 {hidden_count} 道'
+            "隐藏题（题目不公开、不随仓库发布），仅用于验证模型是否针对公开题过拟合。"
+            "隐藏题的逐题内容不会出现在任何对外页面，此处仅展示各模型的隐藏集综合得分。</div>"
+        )
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -77,6 +92,7 @@ def build_html(rows: list, mode: str = "demo") -> str:
   .banner {{ padding: .75rem 1rem; border-radius: 8px; margin: 1rem 0; font-size: .92rem; line-height: 1.5; }}
   .banner.demo {{ background: #fff3e0; border: 1px solid #ffb74d; color: #e65100; }}
   .banner.real {{ background: #e8f5e9; border: 1px solid #81c784; color: #1b5e20; }}
+  .banner.hidden {{ background: #ede7f6; border: 1px solid #9575cd; color: #4527a0; }}
   table {{ border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .9rem; }}
   th, td {{ border: 1px solid #ddd; padding: .5rem .6rem; text-align: center; }}
   th {{ background: #f5f5f5; }}
@@ -89,10 +105,12 @@ def build_html(rows: list, mode: str = "demo") -> str:
 <body>
 <h1>企业封闭指令遵循评测基准 · 指令违背率排行榜</h1>
 <div class="banner {mode}">{banner}</div>
+{hidden_note}
 <table>
   <thead><tr>
     <th>模型</th><th>题数</th><th>格式(30%)</th><th>内容(40%)</th><th>封闭性(30%)</th>
-    <th>综合</th><th>指令违背率</th><th>违背率可视化</th>
+    <th>综合</th><th>指令违背率</th>
+    {hidden_th}
   </tr></thead>
   <tbody>
 {body_rows}
@@ -103,8 +121,8 @@ def build_html(rows: list, mode: str = "demo") -> str:
 </html>"""
 
 
-def write_html(rows: list, mode: str, csv_path: str) -> str:
+def write_html(rows: list, mode: str, csv_path: str, hidden_count: int = 0) -> str:
     out_path = os.path.splitext(csv_path)[0] + ".html"
     with open(out_path, "w", encoding="utf-8") as f:
-        f.write(build_html(rows, mode))
+        f.write(build_html(rows, mode, hidden_count=hidden_count))
     return out_path

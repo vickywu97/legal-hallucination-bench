@@ -6,6 +6,7 @@ Covers:
 * the offline dummy pipeline runs and emits a leaderboard with the demo note
 * closure dimension is triggered by extra explanatory text (no LLM judge involved)
 """
+import json
 import os
 import tempfile
 import unittest
@@ -178,6 +179,81 @@ class OfflinePipelineTests(unittest.TestCase):
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0]["model"], "DemoModel")
             self.assertEqual(rows[0]["avg_total"], 1.0)
+
+
+class HiddenSetTests(unittest.TestCase):
+    _SAMPLE_HIDDEN = [
+        {"id": "TH1", "type": "format_extraction",
+         "expected": {"supplier": "瀚海精密机械有限公司", "quantity": "240", "result": "合格"}},
+        {"id": "TH2", "type": "condition_rule",
+         "expected": {"eligible": True, "reason": "应代扣代缴增值税"}},
+    ]
+
+    def _write_temp_hidden(self, d):
+        p = os.path.join(d, "tasks_hidden.json")
+        with open(p, "w", encoding="utf-8") as f:
+            json.dump(self._SAMPLE_HIDDEN, f, ensure_ascii=False)
+        return p
+
+    def test_load_hidden_absent_returns_empty(self):
+        self.assertEqual(run.load_hidden("/no/such/file.json"), [])
+
+    def test_hidden_excluded_by_default(self):
+        public_n = len(run.load_tasks())
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "lb.csv")
+            rows = run.run_offline(out_path=out)
+            for r in rows:
+                self.assertNotIn("hidden_total", r)
+                self.assertEqual(r["tasks"], public_n)
+
+    def test_hidden_included_with_flag(self):
+        public_n = len(run.load_tasks())
+        with tempfile.TemporaryDirectory() as d:
+            hidden_path = self._write_temp_hidden(d)
+            out = os.path.join(d, "lb.csv")
+            rows = run.run_offline(out_path=out, hidden=True, hidden_path=hidden_path)
+            for r in rows:
+                self.assertIn("hidden_total", r)
+                self.assertEqual(r["tasks"], public_n)
+                self.assertEqual(r["hidden_tasks"], len(self._SAMPLE_HIDDEN))
+
+    def test_score_answers_splits_public_and_hidden(self):
+        with tempfile.TemporaryDirectory() as d:
+            hidden_path = self._write_temp_hidden(d)
+            ans = os.path.join(d, "a.jsonl")
+            # one public answer (T1 perfect) + one hidden answer (TH1 perfect)
+            with open(ans, "w", encoding="utf-8") as f:
+                f.write('{"task_id":"T1","model":"M","answer":"{\\"company_name\\":\\"云岬智能装备股份有限公司\\",\\"amount\\":\\"1,280,000\\",\\"date\\":\\"2026-07-15\\"}"}\n')
+                f.write('{"task_id":"TH1","model":"M","answer":"{\\"supplier\\":\\"瀚海精密机械有限公司\\",\\"quantity\\":\\"240\\",\\"result\\":\\"合格\\"}"}\n')
+            out = os.path.join(d, "lb.csv")
+            rows = run.score_answers(ans, out_path=out, hidden=True, hidden_path=hidden_path)
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["model"], "M")
+            self.assertEqual(rows[0]["avg_total"], 1.0)
+            self.assertIn("hidden_total", rows[0])
+            self.assertEqual(rows[0]["hidden_total"], 1.0)  # TH1 also perfect
+
+    def test_html_anonymizes_hidden(self):
+        rows = [
+            {"model": "M", "tasks": 3, "avg_format": 0.9, "avg_content": 0.8,
+             "avg_closure": 1.0, "avg_total": 0.89, "instruction_violation_rate": 0.11,
+             "hidden_total": 0.55, "hidden_tasks": 2},
+        ]
+        h = report.build_html(rows, "real", hidden_count=2)
+        self.assertIn("隐藏集", h)
+        self.assertIn("防刷分", h)
+        # hidden task ids must NEVER appear in the public HTML
+        self.assertNotIn("TH1", h)
+        self.assertNotIn("TH2", h)
+
+    def test_html_no_hidden_column_when_absent(self):
+        rows = [
+            {"model": "M", "tasks": 3, "avg_format": 0.9, "avg_content": 0.8,
+             "avg_closure": 1.0, "avg_total": 0.89, "instruction_violation_rate": 0.11},
+        ]
+        h = report.build_html(rows, "real", hidden_count=0)
+        self.assertNotIn("隐藏集综合", h)
 
 
 if __name__ == "__main__":

@@ -39,11 +39,13 @@ violation rate）双指标，离线零依赖。区别于 IFEval：聚焦**中文
 projects/instruction_following_bench/
 ├── README.md
 ├── __init__.py
-├── config/tasks.json          # 18 个任务（虚构演示数据，含 difficulty 字段）
+├── config/tasks.json          # 18 个公开任务（虚构演示数据，含 difficulty 字段）
+├── config/hidden/             # ⛨ 隐藏测试集（防刷分，已被 .gitignore 忽略，不随仓库发布）
+│   └── tasks_hidden.json        # 5 个隐藏题（TH1–TH5），本地存在但永不提交
 ├── score.py                   # 规则化评分（无 LLM judge）
-├── report.py                  # 生成自包含 HTML 排行榜（离线、零依赖）
+├── report.py                  # 生成自包含 HTML 排行榜（离线、零依赖；含隐藏集综合列）
 ├── models.py                  # 真实模型适配层（复用 scripts/generate_answers.py 模式）
-├── run.py                     # 离线运行 / 真实答案评分
+├── run.py                     # 离线运行 / 真实答案评分（支持 --include-hidden）
 └── (tests/test_instruction_following_bench.py)   # 见仓库 tests/ 目录
 ```
 
@@ -53,6 +55,10 @@ projects/instruction_following_bench/
 # 1) 离线 demo：用两个哑巴基线（随机 / 空输出）跑通整条 pipeline
 #    同时输出 leaderboard.csv 与 leaderboard.html（DEMO 脚手架，非真实排名）
 python -S -m projects.instruction_following_bench.run --offline
+
+# 1b) 含隐藏集：额外评分 config/hidden/ 中的题目（防刷分验证）。
+#     HTML 会多出"隐藏集综合"列，但绝不展示隐藏题的逐题内容（TH1… 不出现）。
+python -S -m projects.instruction_following_bench.run --offline --include-hidden
 
 # 2) 接真实模型（需设置环境变量 API key，否则该模型被跳过）
 export DEEPSEEK_API_KEY=sk-xxx
@@ -86,4 +92,22 @@ python -S -m projects.instruction_following_bench.run \
 1. 接入真实模型 API（适配层已就绪，复用 `scripts/generate_answers.py` 的零依赖 REST 模式）。
 2. **难度门量化**：用 DeepSeek-V3 / GLM-4 实测验证"模型一≤35% / 模型二≤60%"，回填到各题。
 3. ~~输出 HTML 排行榜~~ ✅ 已完成（`report.py`，两种模式均产出 `leaderboard.html`）。
-4. 隐藏测试集（防刷分，部分题目不入默认集）。
+4. ~~隐藏测试集~~ ✅ 已完成（防刷分机制）：
+   - 隐藏题放在 `config/hidden/tasks_hidden.json`，**已被 `.gitignore` 忽略，不随仓库发布**。
+   - `run.py --include-hidden` 会额外评分隐藏集；公开排行榜只展示各模型"隐藏集综合"得分，
+     **绝不泄露隐藏题的 id 或内容**（HTML 中不含 `TH1…`）。
+   - 公开题仍走 `config/tasks.json`（18 题）。真实评测时，隐藏集由评测方私存，模型训练方
+     无法据此过拟合，从而保护排行榜公信力。
+   - 注：当前 `config/hidden/` 仅含 5 题本地样本用于验证 pipeline；正式发布前应扩充并加密保管。
+
+## 隐藏测试集机制（防刷分）
+
+| 维度 | 公开集 `tasks.json` | 隐藏集 `config/hidden/tasks_hidden.json` |
+|------|--------------------|------------------------------------------|
+| 是否随仓库发布 | 是 | **否**（gitignore） |
+| 题量（当前） | 18 | 5（本地样本） |
+| 用途 | 练习 / 公开可复现 | 防过拟合、验证榜单公信力 |
+| 对外可见内容 | 全公开 | 仅"隐藏集综合"聚合分，不展示逐题 |
+
+接入真实模型后，用 `--include-hidden` 跑出的"隐藏集综合"列，是判断模型是否只背公开题的
+关键信号——若公开集高、隐藏集低，则说明存在针对公开集的过拟合，榜单可信度下降。

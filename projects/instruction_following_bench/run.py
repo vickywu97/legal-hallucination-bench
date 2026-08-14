@@ -26,6 +26,7 @@ from . import report
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TASKS_PATH = os.path.join(HERE, "config", "tasks.json")
+HIDDEN_PATH = os.path.join(HERE, "config", "hidden", "tasks_hidden.json")
 LEADERBOARD_PATH = os.path.join(HERE, "leaderboard.csv")
 
 
@@ -56,40 +57,72 @@ def load_tasks(path: str = TASKS_PATH) -> list:
     return data if isinstance(data, list) else data.get("tasks", [])
 
 
-def _aggregate(models: dict, tasks: list) -> list:
+def load_hidden(path: str = HIDDEN_PATH) -> list:
+    """Load the held-out (non-public) task set used to prevent leaderboard
+    gaming. Returns [] when the file is absent (e.g. not published), so the
+    pipeline still runs without it."""
+    if not os.path.exists(path):
+        return []
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    tasks = data if isinstance(data, list) else data.get("tasks", [])
+    for t in tasks:
+        t["hidden"] = True
+    return tasks
+
+
+def _score_pairs(pairs: list) -> dict:
+    agg = {"format": 0.0, "content": 0.0, "closure": 0.0, "total": 0.0}
+    for t, out in pairs:
+        s = score_task(t, out)
+        for k in agg:
+            agg[k] += s[k]
+    n = max(len(pairs), 1)
+    return {k: round(agg[k] / n, 4) for k in agg}
+
+
+def _row_from(model: str, public_pairs: list, hidden_pairs=None) -> dict:
+    pub = _score_pairs(public_pairs)
+    row = {
+        "model": model,
+        "tasks": len(public_pairs),
+        "avg_format": pub["format"],
+        "avg_content": pub["content"],
+        "avg_closure": pub["closure"],
+        "avg_total": pub["total"],
+        "instruction_violation_rate": round(1 - pub["total"], 4),
+    }
+    if hidden_pairs:
+        hid = _score_pairs(hidden_pairs)
+        row["hidden_tasks"] = len(hidden_pairs)
+        row["hidden_total"] = hid["total"]
+        row["hidden_violation"] = round(1 - hid["total"], 4)
+    return row
+
+
+def run_offline(tasks_path: str = TASKS_PATH, out_path: str = LEADERBOARD_PATH,
+                hidden: bool = False, hidden_path: str = HIDDEN_PATH) -> list:
+    public = load_tasks(tasks_path)
+    hidden_tasks = load_hidden(hidden_path) if hidden else []
     rows = []
-    for name, fn in models.items():
-        agg = {"format": 0.0, "content": 0.0, "closure": 0.0, "total": 0.0}
-        for t in tasks:
-            s = score_task(t, fn(t))
-            for k in ("format", "content", "closure", "total"):
-                agg[k] += s[k]
-        n = len(tasks) or 1
-        rows.append({
-            "model": name,
-            "tasks": len(tasks),
-            "avg_format": round(agg["format"] / n, 4),
-            "avg_content": round(agg["content"] / n, 4),
-            "avg_closure": round(agg["closure"] / n, 4),
-            "avg_total": round(agg["total"] / n, 4),
-            "instruction_violation_rate": round(1 - agg["total"] / n, 4),
-        })
+    for name, fn in DUMMY_MODELS.items():
+        pub_pairs = [(t, fn(t)) for t in public]
+        hid_pairs = [(t, fn(t)) for t in hidden_tasks] or None
+        rows.append(_row_from(name, pub_pairs, hid_pairs))
     rows.sort(key=lambda r: r["avg_total"], reverse=True)
-    return rows
-
-
-def run_offline(tasks_path: str = TASKS_PATH, out_path: str = LEADERBOARD_PATH) -> list:
-    tasks = load_tasks(tasks_path)
-    rows = _aggregate(DUMMY_MODELS, tasks)
     _write(rows, out_path)
-    html_path = report.write_html(rows, "demo", out_path)
+    html_path = report.write_html(rows, "demo", out_path, hidden_count=len(hidden_tasks))
     print(f"[written] {out_path}\n[written] {html_path}  (DEMO: not a real ranking)")
     return rows
 
 
 def score_answers(answers_path: str, tasks_path: str = TASKS_PATH,
-                  out_path: str = LEADERBOARD_PATH) -> list:
-    tasks = {t["id"]: t for t in load_tasks(tasks_path)}
+                  out_path: str = LEADERBOARD_PATH, hidden: bool = False,
+                  hidden_path: str = HIDDEN_PATH) -> list:
+    public = load_tasks(tasks_path)
+    public_by_id = {t["id"]: t for t in public}
+    hidden_tasks = load_hidden(hidden_path) if hidden else []
+    hidden_by_id = {t["id"]: t for t in hidden_tasks}
     by_model: dict = {}
     with open(answers_path, encoding="utf-8") as f:
         for line in f:
@@ -100,29 +133,17 @@ def score_answers(answers_path: str, tasks_path: str = TASKS_PATH,
             by_model.setdefault(r["model"], []).append(r)
     rows = []
     for model, recs in by_model.items():
-        agg = {"format": 0.0, "content": 0.0, "closure": 0.0, "total": 0.0}
-        n = 0
+        pub_pairs, hid_pairs = [], []
         for r in recs:
-            t = tasks.get(r["task_id"])
-            if not t:
-                continue
-            s = score_task(t, r.get("answer", ""))
-            for k in ("format", "content", "closure", "total"):
-                agg[k] += s[k]
-            n += 1
-        n = max(n, 1)
-        rows.append({
-            "model": model,
-            "tasks": n,
-            "avg_format": round(agg["format"] / n, 4),
-            "avg_content": round(agg["content"] / n, 4),
-            "avg_closure": round(agg["closure"] / n, 4),
-            "avg_total": round(agg["total"] / n, 4),
-            "instruction_violation_rate": round(1 - agg["total"] / n, 4),
-        })
+            tid = r["task_id"]
+            if tid in public_by_id:
+                pub_pairs.append((public_by_id[tid], r.get("answer", "")))
+            elif tid in hidden_by_id:
+                hid_pairs.append((hidden_by_id[tid], r.get("answer", "")))
+        rows.append(_row_from(model, pub_pairs, hid_pairs or None))
     rows.sort(key=lambda r: r["avg_total"], reverse=True)
     _write(rows, out_path)
-    html_path = report.write_html(rows, "real", out_path)
+    html_path = report.write_html(rows, "real", out_path, hidden_count=len(hidden_tasks))
     print(f"[written] {out_path}\n[written] {html_path}  (REAL: reproducible from answers)")
     return rows
 
@@ -151,14 +172,19 @@ def main(argv=None):
                     help="score a real answers jsonl (from models.generate_answers)")
     ap.add_argument("--tasks", default=TASKS_PATH)
     ap.add_argument("--out", default=LEADERBOARD_PATH)
+    ap.add_argument("--include-hidden", action="store_true",
+                    help="also score the held-out hidden set (config/hidden/); "
+                         "used to prevent leaderboard gaming. The hidden tasks "
+                         "file is NOT published, so this only works where it exists.")
     args = ap.parse_args(argv)
 
     if args.score_answers:
-        rows = score_answers(args.score_answers, args.tasks, args.out)
+        rows = score_answers(args.score_answers, args.tasks, args.out,
+                             hidden=args.include_hidden)
         _print(rows, "REAL leaderboard from the provided answers file. "
                      "Scores are reproducible given the same answers.")
     else:
-        rows = run_offline(args.tasks, args.out)
+        rows = run_offline(args.tasks, args.out, hidden=args.include_hidden)
         _print(rows, "DEMO scaffold: scores come from DUMMY baselines "
                      "(random/empty). NOT a real model ranking. Plug real "
                      "models via projects.instruction_following_bench.models.")
