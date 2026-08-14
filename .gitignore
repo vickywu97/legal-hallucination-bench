@@ -30,3 +30,6 @@ answers.jsonl.bak.*
 
 # ---- Ephemeral SAMPLE-demo output (--offline demo / CI smoke; real reports are separate) ----
 sample_demo_reports/
+
+# project C demo artifacts (generated, not real rankings)
+projects/instruction_following_bench/leaderboard.csv
