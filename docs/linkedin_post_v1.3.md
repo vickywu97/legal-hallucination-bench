@@ -14,7 +14,7 @@
 >
 > The standout: China's new **VAT Law (effective 2026-01-01)**. 42 citations across all 5 models, **0 verbatim-correct**. The models don't misquote it — they fabricate article numbers, exposing a training-data recency blind spot on a law that's now in force.
 >
-> As a **lawyer + tax agent + patent attorney** pivoting to AI legal product management, I didn't stop at the benchmark. I shipped **compliance-triangle** — a legal / tax / IP compliance assistant that reuses the same verification engine to flag every AI citation with 🟢 / 🟡 / 🔴 (exists / repealed / content-mismatch) checks. 100% offline, zero-dependency, reproducible.
+> As a **lawyer + tax agent + patent attorney building AI legal products**, I didn't stop at the benchmark. I shipped **compliance-triangle** — a legal / tax / IP compliance assistant that reuses the same verification engine to flag every AI citation with 🟢 / 🟡 / 🔴 (exists / repealed / content-mismatch) checks. 100% offline, zero-dependency, reproducible.
 >
 > My portfolio (github.com/vickywu97) ties it together: the benchmark that *proves* the problem, and the product that *catches* it.
 >

@@ -12,11 +12,11 @@
 >
 > > ⚠️ **免责声明**：本基准（legal-hallucination-bench）仅供研究与教育用途，**不构成法律意见**。法条文本来自公开官方来源（flk.npc.gov.cn 等），评测结论为自动化判分结果，可能因法条更新或提取误差存在偏差，请以官方最新公布文本为准。
 
-> **TL;DR (English)** — I'm a lawyer + tax agent + patent attorney pivoting to AI legal product management. This repo is my portfolio proof that I can *define, quantify, and ship* AI-quality evaluation:
+> **TL;DR (English)** — I'm a lawyer + tax agent + patent attorney **building AI legal products**. This repo is my portfolio proof that I can *define, quantify, and ship* AI-quality evaluation (and, if I later pursue an AI legal PM / compliance role, serves as backing evidence):
 > - **Offline & zero-dependency**: scores how faithfully LLMs quote Chinese statute text — `python -S`, no `pip install`.
 > - **Expert-verified KB**: every article signed against the official `flk.npc.gov.cn` source — 100% current-law, 0 unverified nodes.
 > - **Strict binary evaluator**: verbatim = 1.0, anything else = 0.0; plus a **repealed-law trap** (citing a repealed statute = automatic fail).
-> - **Real-model results**: 5 domestic LLMs on 23 traps across 8 laws — 50.0–64.6% citation hallucination even on the most forgiving metric; on China's new **VAT Law (2026-01-01)**, 42 citations, **0 correct**.
+> - **Real-model results**: 5 domestic LLMs on 23 traps across 8 laws — 45.0–54.2% citation hallucination (HVI) even on the most forgiving metric; on China's new **VAT Law (2026-01-01)**, 42 citations, **0 verbatim-correct (EXACT 0%)**.
 > - Reproducible with no API keys: `python -S -m benchmark.run --offline --out-dir sample_demo_reports`.
 
 ---

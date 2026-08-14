@@ -1,7 +1,7 @@
 # 作品集总览 · 从法律执业到 AI 法律产品
 
-> **TL;DR (English)** — I'm **Vicky Wu**, a lawyer + tax agent + patent attorney pivoting to
-> **AI legal product management**. This two-repo portfolio proves I can *define, quantify, and ship*
+> **TL;DR (English)** — I'm **Vicky Wu**, a lawyer + tax agent + patent attorney **building AI legal products**.
+> This two-repo portfolio proves I can *define, quantify, and ship*
 > AI-quality evaluation for the Chinese legal/tax/IP domain:
 > [`legal-hallucination-bench`](https://github.com/vickywu97/legal-hallucination-bench) is the
 > offline, expert-verified benchmark; [`compliance-triangle`](https://github.com/vickywu97/compliance-triangle)

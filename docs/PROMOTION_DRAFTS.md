@@ -50,7 +50,7 @@
 > 我是一个有律师、税务师、专利代理师三重资质的法律科技从业者，正在转向 AI 法律产品。我做了两个开源作品：① 离线零依赖的中文法律引注幻觉基准（2327 条专家核验法条，实测 5 个国产模型在 2026 新《增值税法》上 42 次引注 0 次逐字正确）；② 合规三角（把同一套校验引擎做成法律/税务/IP 三域 🟢🟡🔴 合规助手）。它们证明我能定义、量化并交付 AI 质量评测。
 
 **English**：
-> I'm a lawyer, tax agent, and patent attorney pivoting into AI legal product management. I built two open-source repos that prove I can define, measure, and ship AI-quality evaluation — not just prompt a model: (1) legal-hallucination-bench, an offline benchmark on 5 domestic LLMs across 8 Chinese laws (2,327 verified statute nodes; 42 VAT-law citations, 0 verbatim-correct); (2) compliance-triangle, a 🟢🟡🔴 legal/tax/IP citation checker reusing the same engine. Portfolio: github.com/vickywu97
+> I'm a lawyer, tax agent, and patent attorney building AI legal products. I built two open-source repos that prove I can define, measure, and ship AI-quality evaluation — not just prompt a model: (1) legal-hallucination-bench, an offline benchmark on 5 domestic LLMs across 8 Chinese laws (2,327 verified statute nodes; 42 VAT-law citations, 0 verbatim-correct); (2) compliance-triangle, a 🟢🟡🔴 legal/tax/IP citation checker reusing the same engine. Portfolio: github.com/vickywu97
 
 ---
 
