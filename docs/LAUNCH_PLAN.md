@@ -28,7 +28,7 @@
 ## 二、统一人设口径（所有平台必须一致，避免人设分裂）
 
 **一句话 boilerplate（中文）**
-> 我是有律师、税务师、专利代理师三重资质的法律科技从业者，正在转向 AI 法律产品。我做了两个开源作品：① legal-hallucination-bench（离线零依赖的中文法律引注幻觉基准，2327 条专家核验法条，实测 5 个国产模型在 2026 新《增值税法》上 42 次引注 0 次逐字正确）；② compliance-triangle（把同一套校验引擎做成法律/税务/IP 三域 🟢🟡🔴 合规助手）。它们证明我能定义、量化并交付 AI 质量评测。
+> 我是有律师、税务师、专利代理师三重资质的法律科技从业者，在做 AI 法律产品。我做了两个开源作品：① legal-hallucination-bench（离线零依赖的中文法律引注幻觉基准，2327 条专家核验法条，实测 5 个国产模型在 2026 新《增值税法》上 42 次引注 0 次逐字正确）；② compliance-triangle（把同一套校验引擎做成法律/税务/IP 三域 🟢🟡🔴 合规助手）。它们证明我能定义、量化并交付 AI 质量评测。
 
 **One-liner (EN)**
 > Lawyer + tax agent + patent attorney building AI legal products. I build open-source work that defines, measures, and ships AI-quality evaluation for Chinese legal citations (benchmark + 🟢🟡🔴 compliance product). Portfolio: github.com/vickywu97
@@ -45,7 +45,7 @@
 - 互动钩子："你最常用的法律 AI 工具，在'引用法条'这件事上，你敢直接信吗？评论区聊聊。"
 
 **主动 outreach 私信模板（脉脉/LinkedIn/邮件，发给招聘官）**
-> 您好，我是 [名字]，律师+税务师+专利代理师，正在转向 AI 法律产品方向。我开源了两个作品：一个中文法律引注幻觉基准（2327 条核验法条、5 模型 42/0 实测），和一个三域合规校验产品，离线零依赖可复现。作品集：github.com/vickywu97 。贵司在招 AI 法律 PM / 合规岗，方便聊聊吗？
+> 您好，我是 [名字]，律师+税务师+专利代理师，在做 AI 法律产品。我开源了两个作品：一个中文法律引注幻觉基准（2327 条核验法条、5 模型 42/0 实测），和一个三域合规校验产品，离线零依赖可复现。作品集：github.com/vickywu97 。贵司在招 AI 法律 PM / 合规岗，方便聊聊吗？
 
 ---
 
