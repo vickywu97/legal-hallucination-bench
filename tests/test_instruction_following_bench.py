@@ -109,6 +109,20 @@ class ScorerMultiTurnTests(unittest.TestCase):
         self.assertEqual(r["closure"], 0.0)
 
 
+class TasksFileTests(unittest.TestCase):
+    def test_coverage_minimums(self):
+        tasks = run.load_tasks()
+        self.assertGreaterEqual(len(tasks), 15)
+        types = {t["type"] for t in tasks}
+        self.assertEqual(types, {
+            "format_extraction", "condition_rule",
+            "fewshot_classify", "multi_turn_constraint",
+        })
+        # every task must carry an explicit difficulty label
+        for t in tasks:
+            self.assertIn("difficulty", t)
+
+
 class OfflinePipelineTests(unittest.TestCase):
     def test_offline_emits_two_dummy_rows(self):
         with tempfile.TemporaryDirectory() as d:

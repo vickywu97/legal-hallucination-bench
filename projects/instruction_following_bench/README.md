@@ -39,7 +39,7 @@ violation rate）双指标，离线零依赖。区别于 IFEval：聚焦**中文
 projects/instruction_following_bench/
 ├── README.md
 ├── __init__.py
-├── config/tasks.json          # 5 个初始任务（虚构演示数据）
+├── config/tasks.json          # 18 个任务（虚构演示数据，含 difficulty 字段）
 ├── score.py                   # 规则化评分（无 LLM judge）
 ├── models.py                  # 真实模型适配层（复用 scripts/generate_answers.py 模式）
 ├── run.py                     # 离线运行 / 真实答案评分
@@ -67,10 +67,19 @@ python -S -m projects.instruction_following_bench.run \
 > **保护红线**：`--offline` 的随机/空基线分数**不得**作为真实模型排名对外发布；
 > 只有 `--score-answers` 配合真实模型输出才产生可复现的真实排行榜。
 
+## 任务规模与难度门
+
+当前 `config/tasks.json` 含 **18 题**（四类任务各 4–5 题），每题带 `difficulty` 字段
+（`easy` / `medium` / `hard`）。难度门量化（"模型一 ≤ 35% / 模型二 ≤ 60%"）需在接真实模型
+后，用 DeepSeek-V3 / GLM-4 等实测各题通过率来标定——**离线哑巴基线无法验证难度门**。
+
+> ⚠️ 任务中的规则型 expected 答案（如预提所得税率、试用期上限）仅作**演示设计**，
+> 发布为真实公开基准前，须经作者（税务师/律师）逐题核验并做法规版本轴标注，避免
+> 因法规变动或不准确导致的专业责任风险。
+
 ## 下一步（按优先级，尚未实现）
 
 1. 接入真实模型 API（适配层已就绪，复用 `scripts/generate_answers.py` 的零依赖 REST 模式）。
-2. 任务数量 5 → 15–20，四类各 3–5 题，确保榜单区分度。
-3. 难度门量化：用 DeepSeek-V3 / GLM-4 实测验证"模型一≤35% / 模型二≤60%"。
-4. 输出 HTML 排行榜（借鉴 Legal AI Watch Dashboard）。
-5. 隐藏测试集（防刷分，部分题目不入默认集）。
+2. **难度门量化**：用 DeepSeek-V3 / GLM-4 实测验证"模型一≤35% / 模型二≤60%"，回填到各题。
+3. 输出 HTML 排行榜（借鉴 Legal AI Watch Dashboard）。
+4. 隐藏测试集（防刷分，部分题目不入默认集）。
