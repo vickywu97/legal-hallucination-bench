@@ -41,7 +41,7 @@
 <div class="page">
 
   <h1>增值税法域「全灭」<br>8 法域法条引注可靠性实测</h1>
-  <p class="sub">legal-hallucination-bench · v1.2 · 23 题 / 203 条真实模型回答 · 采集日期 2026-08-06</p>
+  <p class="sub">legal-hallucination-bench · v1.3 · 23 题 × 5 模型 = 115 条真实回答 · 提取 203 条硬法条引注 · 采集日期 2026-08-06</p>
 
   <div class="stats">
     <div class="stat"><div class="num">42</div><div class="lab">增值税法域引注次数</div></div>
@@ -53,7 +53,7 @@
   <h2>一、分域 HVI（存在/时效幻觉率）对比（8 法域）</h2>
   <p class="cap">HVI = 硬引注中 NOT_FOUND / TEMPORAL_DEPRECATED 占比（引擎原生 <code>per_domain</code> 指标）。
   逐字 EXACT 在<b>全部 8 域均为 0%</b>（模型从不照抄法条原文），故"谁更准"无从区分，改用 HVI 看"谁更容易编造/引用失效法条"。
-  增值税法 70.6% 几乎全为 NOT_FOUND（新法未知），是时效盲区的直接证据；
+  增值税法 64.3% 几乎全为 NOT_FOUND（新法未知），是时效盲区的直接证据；
   v1.2 新增的<b>个人所得税法域（70.6%）</b>与<b>企业所得税法域（45.5%）</b>同样高位，
   实体税法整体是模型可靠性洼地。</p>
   <div class="chart">
@@ -124,7 +124,7 @@
   </div>
 
   <footer>
-    <b>方法论</b>：数据源 benchmark/reports/verifications.jsonl——203 条真实模型回答（5 模型 × 23 题，temp=0 单轮采集）经抽取得 203 条硬法条引注。
+    <b>方法论</b>：数据源 benchmark/reports/verifications.jsonl——115 条真实模型回答（5 模型 × 23 题，temp=0 单轮采集）提取得 203 条硬法条引注。
     判定为绝对二元：逐字归一化相等 = EXACT(1.0)，任何非逐字偏离 = FABRICATED(0.0)；VAT 域 as_of_date = 2026-01-01（增值税法生效日，否则解析为 NOT_FOUND）。
     HVI 为本图对比维度（引擎原生 <code>per_domain</code>）。所有数值由该真实数据计算得出，可复现。<br>
     <b>项目</b>：github.com/&lt;owner&gt;/legal-hallucination-bench · MIT License

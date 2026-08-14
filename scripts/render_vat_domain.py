@@ -25,7 +25,7 @@ LAWS_INDEX = os.path.join(ROOT, "knowledge_base", "laws", "laws_index.json")
 OUT = os.path.join(ROOT, "benchmark", "reports", "vat_domain_wipeout.html")
 
 # --- editorial metadata (stable, not auto-derived) ------------------------- #
-VERSION = "v1.2"
+VERSION = "v1.3"
 COLLECT_DATE = "2026-08-06"
 # model display order + tier label for the VAT cards
 MODEL_TIERS = [
@@ -113,6 +113,7 @@ def compute():
         "vat_total_exact": vat_total_exact,
         "vat_hvi_num": vat_hvi_num,
         "vat_nf": vat_nf,
+        "vat_hvi": (vat_hvi_num / len(vat_hard)) if vat_hard else 0.0,
         "vat_models_zero": all(v["exact"] == 0 for v in vat.values()),
     }
 
@@ -217,7 +218,7 @@ def render(data):
 <div class="page">
 
   <h1>增值税法域「全灭」<br>{n_dom} 法域法条引注可靠性实测</h1>
-  <p class="sub">legal-hallucination-bench · {VERSION} · 23 题 / {data['total_rows']} 条真实模型回答 · 采集日期 {COLLECT_DATE}</p>
+  <p class="sub">legal-hallucination-bench · {VERSION} · 23 题 × 5 模型 = 115 条真实回答 · 提取 {data['total_hard']} 条硬法条引注 · 采集日期 {COLLECT_DATE}</p>
 
   <div class="stats">
     <div class="stat"><div class="num">{vat_n}</div><div class="lab">增值税法域引注次数</div></div>
@@ -229,7 +230,7 @@ def render(data):
   <h2>一、分域 HVI（存在/时效幻觉率）对比（{n_dom} 法域）</h2>
   <p class="cap">HVI = 硬引注中 NOT_FOUND / TEMPORAL_DEPRECATED 占比（引擎原生 <code>per_domain</code> 指标）。
   逐字 EXACT 在<b>全部 {n_dom} 域均为 0%</b>（模型从不照抄法条原文），故"谁更准"无从区分，改用 HVI 看"谁更容易编造/引用失效法条"。
-  增值税法 {data['per_domain'][0]['hvi']:.1%} 几乎全为 NOT_FOUND（新法未知），是时效盲区的直接证据；
+  增值税法 {data['vat_hvi']:.1%} 几乎全为 NOT_FOUND（新法未知），是时效盲区的直接证据；
   v1.2 新增的<b>个人所得税法域（{_iit_hvi(data)}）</b>与<b>企业所得税法域（{_eit_hvi(data)}）</b>同样高位，
   实体税法整体是模型可靠性洼地。</p>
   <div class="chart">
@@ -253,7 +254,7 @@ def render(data):
   </div>
 
   <footer>
-    <b>方法论</b>：数据源 benchmark/reports/verifications.jsonl——{data['total_rows']} 条真实模型回答（5 模型 × 23 题，temp=0 单轮采集）经抽取得 {data['total_hard']} 条硬法条引注。
+    <b>方法论</b>：数据源 benchmark/reports/verifications.jsonl——115 条真实模型回答（5 模型 × 23 题，temp=0 单轮采集）提取得 {data['total_hard']} 条硬法条引注。
     判定为绝对二元：逐字归一化相等 = EXACT(1.0)，任何非逐字偏离 = FABRICATED(0.0)；VAT 域 as_of_date = 2026-01-01（增值税法生效日，否则解析为 NOT_FOUND）。
     HVI 为本图对比维度（引擎原生 <code>per_domain</code>）。所有数值由该真实数据计算得出，可复现。<br>
     <b>项目</b>：github.com/&lt;owner&gt;/legal-hallucination-bench · MIT License
@@ -286,8 +287,9 @@ def main():
         f.write(html)
     print(f"[render_vat_domain] wrote {OUT}")
     print(f"  domains={len(data['per_domain'])} "
+          f"top={data['per_domain'][0]['code']} HVI={data['per_domain'][0]['hvi']:.1%} "
           f"VAT n={data['vat_total_n']} EXACT={data['vat_total_exact']} "
-          f"VAT HVI={data['per_domain'][0]['hvi']:.1%}")
+          f"VAT HVI={data['vat_hvi']:.1%}")
 
 
 if __name__ == "__main__":
