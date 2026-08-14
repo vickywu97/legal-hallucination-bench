@@ -16,7 +16,7 @@
 > - **Offline & zero-dependency**: scores how faithfully LLMs quote Chinese statute text — `python -S`, no `pip install`.
 > - **Expert-verified KB**: every article signed against the official `flk.npc.gov.cn` source — 100% current-law, 0 unverified nodes.
 > - **Strict binary evaluator**: verbatim = 1.0, anything else = 0.0; plus a **repealed-law trap** (citing a repealed statute = automatic fail).
-> - **Real-model results**: 5 domestic LLMs on 23 traps across 8 laws — 45.0–54.2% citation hallucination (HVI) even on the most forgiving metric; on China's new **VAT Law (2026-01-01)**, 42 citations, **0 verbatim-correct (EXACT 0%)**.
+> - **Real-model results**: 5 domestic LLMs on 23 traps across 8 laws — 33.3–54.2% citation hallucination (HVI) even on the most forgiving metric; on China's new **VAT Law (2026-01-01)**, 42 citations, **0 verbatim-correct (EXACT 0%)**.
 > - Reproducible with no API keys: `python -S -m benchmark.run --offline --out-dir sample_demo_reports`.
 
 ---
