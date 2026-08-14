@@ -9,6 +9,8 @@
 > benchmark that scores how faithfully LLMs quote Chinese statute text, with
 > zero tolerance for repealed-law citations and a strict binary (verbatim-or-zero)
 > content evaluator.
+>
+> > ⚠️ **免责声明**：本基准（legal-hallucination-bench）仅供研究与教育用途，**不构成法律意见**。法条文本来自公开官方来源（flk.npc.gov.cn 等），评测结论为自动化判分结果，可能因法条更新或提取误差存在偏差，请以官方最新公布文本为准。
 
 > **TL;DR (English)** — I'm a lawyer + tax agent + patent attorney pivoting to AI legal product management. This repo is my portfolio proof that I can *define, quantify, and ship* AI-quality evaluation:
 > - **Offline & zero-dependency**: scores how faithfully LLMs quote Chinese statute text — `python -S`, no `pip install`.
