@@ -26,7 +26,11 @@ from . import report
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TASKS_PATH = os.path.join(HERE, "config", "tasks.json")
-HIDDEN_PATH = os.path.join(HERE, "config", "hidden", "tasks_hidden.json")
+# Held-out anti-gaming set. Lives at the project root, PHYSICALLY ISOLATED from
+# the public tasks.json, and is git-ignored so it is NEVER published. The public
+# leaderboard must not reveal these tasks; only the aggregated "hidden_total"
+# column (when --include-hidden is passed) is shown internally.
+HIDDEN_PATH = os.path.join(HERE, "hidden_tasks.json")
 LEADERBOARD_PATH = os.path.join(HERE, "leaderboard.csv")
 
 
@@ -111,7 +115,8 @@ def run_offline(tasks_path: str = TASKS_PATH, out_path: str = LEADERBOARD_PATH,
         rows.append(_row_from(name, pub_pairs, hid_pairs))
     rows.sort(key=lambda r: r["avg_total"], reverse=True)
     _write(rows, out_path)
-    html_path = report.write_html(rows, "demo", out_path, hidden_count=len(hidden_tasks))
+    html_path = report.write_html(rows, "demo", out_path, hidden_count=len(hidden_tasks),
+                                  with_hidden_label=hidden)
     print(f"[written] {out_path}\n[written] {html_path}  (DEMO: not a real ranking)")
     return rows
 
@@ -143,7 +148,8 @@ def score_answers(answers_path: str, tasks_path: str = TASKS_PATH,
         rows.append(_row_from(model, pub_pairs, hid_pairs or None))
     rows.sort(key=lambda r: r["avg_total"], reverse=True)
     _write(rows, out_path)
-    html_path = report.write_html(rows, "real", out_path, hidden_count=len(hidden_tasks))
+    html_path = report.write_html(rows, "real", out_path, hidden_count=len(hidden_tasks),
+                                  with_hidden_label=hidden)
     print(f"[written] {out_path}\n[written] {html_path}  (REAL: reproducible from answers)")
     return rows
 

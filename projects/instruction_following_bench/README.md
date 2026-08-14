@@ -39,9 +39,9 @@ violation rate）双指标，离线零依赖。区别于 IFEval：聚焦**中文
 projects/instruction_following_bench/
 ├── README.md
 ├── __init__.py
-├── config/tasks.json          # 18 个公开任务（虚构演示数据，含 difficulty 字段）
-├── config/hidden/             # ⛨ 隐藏测试集（防刷分，已被 .gitignore 忽略，不随仓库发布）
-│   └── tasks_hidden.json        # 5 个隐藏题（TH1–TH5），本地存在但永不提交
+├── config/tasks.json          # 21 个公开任务（虚构演示数据，含 difficulty 字段）
+├── hidden_tasks.json          # ⛨ 隐藏测试集（防刷分，已被 .gitignore 忽略，不随仓库发布）
+│                               #   5 个隐藏题（TH1–TH5），与公开集物理隔离，永不提交
 ├── score.py                   # 规则化评分（无 LLM judge）
 ├── report.py                  # 生成自包含 HTML 排行榜（离线、零依赖；含隐藏集综合列）
 ├── models.py                  # 真实模型适配层（复用 scripts/generate_answers.py 模式）
@@ -54,10 +54,12 @@ projects/instruction_following_bench/
 ```bash
 # 1) 离线 demo：用两个哑巴基线（随机 / 空输出）跑通整条 pipeline
 #    同时输出 leaderboard.csv 与 leaderboard.html（DEMO 脚手架，非真实排名）
+#    默认只包含公开 tasks.json（21 题），不含任何隐藏题。
 python -S -m projects.instruction_following_bench.run --offline
 
-# 1b) 含隐藏集：额外评分 config/hidden/ 中的题目（防刷分验证）。
-#     HTML 会多出"隐藏集综合"列，但绝不展示隐藏题的逐题内容（TH1… 不出现）。
+# 1b) 含隐藏集：额外评分 hidden_tasks.json 中的题目（防刷分验证）。
+#     HTML 标题旁会出现 "[含隐藏集]" 标记，并多出"隐藏集综合"列，
+#     但绝不展示隐藏题的逐题内容（TH1… 不出现）。本地合并为 21+5=26 题。
 python -S -m projects.instruction_following_bench.run --offline --include-hidden
 
 # 2) 接真实模型（需设置环境变量 API key；未设置的模型自动跳过，不会中断运行）
@@ -66,6 +68,7 @@ python -S -m projects.instruction_following_bench.run --offline --include-hidden
 #      ZHIPU_API_KEY      -> GLM-4-Flash (glm-4-flash)
 #      DASHSCOPE_API_KEY  -> Qwen-Max   (qwen-max)
 #      MOONSHOT_API_KEY   -> Kimi       (kimi-k2.6)
+#    ⚠️ .env 已内置上述 key（自动加载，无需手动 export）；本仓库 .env 被 gitignore，不会泄露。
 export DEEPSEEK_API_KEY=sk-xxxx
 export ZHIPU_API_KEY=zk-xxxx
 # 只跑已设 key 的模型；或显式指定子集：--models DeepSeek-V3 GLM-4-Flash
@@ -91,35 +94,68 @@ python -S -m projects.instruction_following_bench.run \
 
 ## 任务规模与难度门
 
-当前 `config/tasks.json` 含 **18 题**（四类任务各 4–5 题），每题带 `difficulty` 字段
-（`easy` / `medium` / `hard`）。难度门量化（"模型一 ≤ 35% / 模型二 ≤ 60%"）需在接真实模型
-后，用 DeepSeek-V3 / GLM-4 等实测各题通过率来标定——**离线哑巴基线无法验证难度门**。
+当前 `config/tasks.json` 含 **公开 21 题**（格式提取 8 / 条件规则 7 / Few-shot 3 / 多轮 3），
+另有 **隐藏集 5 题**（`hidden_tasks.json`，不随仓库发布），合计本地可评 26 题。
+v2 任务集已重设计：format 题强制规范化/派生计算、condition 题改为外部知识记忆型（不给出规则）、
+新增对抗/约束陷阱题，目标是把强锚点压到 ≤0.60、弱锚点压到 ≤0.35（详见 `difficulty_gate_report.md`）。
+每题带 `difficulty` 字段（`easy` / `medium` / `hard`）。难度门量化（"模型一 ≤ 35% / 模型二 ≤ 60%"）
+需在接真实模型后，用实测各题得分率来标定——**离线哑巴基线无法验证难度门**。
 
 > ⚠️ 任务中的规则型 expected 答案（如预提所得税率、试用期上限）仅作**演示设计**，
 > 发布为真实公开基准前，须经作者（税务师/律师）逐题核验并做法规版本轴标注，避免
-> 因法规变动或不准确导致的专业责任风险。
+> 因法规变动或不准确导致的专业责任风险。带 `demo_note` 字段的新题已显式标注"需核验"。
 
-## 下一步（按优先级，尚未实现）
+## 难度门锚点与评分口径冻结（发布前必读）
 
-1. 接入真实模型 API（适配层已就绪，复用 `scripts/generate_answers.py` 的零依赖 REST 模式）。
-2. **难度门量化**：用 DeepSeek-V3 / GLM-4 实测验证"模型一≤35% / 模型二≤60%"，回填到各题。
-3. ~~输出 HTML 排行榜~~ ✅ 已完成（`report.py`，两种模式均产出 `leaderboard.html`）。
-4. ~~隐藏测试集~~ ✅ 已完成（防刷分机制）：
-   - 隐藏题放在 `config/hidden/tasks_hidden.json`，**已被 `.gitignore` 忽略，不随仓库发布**。
-   - `run.py --include-hidden` 会额外评分隐藏集；公开排行榜只展示各模型"隐藏集综合"得分，
+为保证每次跑分的门槛**可比、可复现**，以下两项在 `score.py` 中冻结，非经评审不得改动：
+
+1. **锚点模型（"模型一 / 模型二"）绑定固定 id**
+   - **模型二（强锚点，须 ≤ 0.60）**：固定为当前最强前沿模型，实测取 `DeepSeek-V3` 与 `Qwen-Max`
+     （二者得分一致时并列）。
+   - **模型一（弱锚点，须 ≤ 0.35）**：固定为相对较弱模型，实测取 `GLM-4-Flash`。
+   - 锚点随模型代际更新，但**每次正式发布必须显式写明所用 id 与版本**，禁止用"跑分最高的模型"
+     这种漂移定义，否则门槛不可比。
+   - 真实跑分命令见 `difficulty_gate.py` 的 `GATE_M1 / GATE_M2` 常量与报告。
+
+2. **封闭性（closure, 30%）零容忍口径冻结**
+   - JSON 类任务：只要模型在目标 JSON **之外**残留任何字符（含 ```` ```json ```` 围栏、
+     前后导文字、解释性句子），`closure` 即判 0（见 `score.py` 的 `_closure_broken`）。
+   - 标签 / token 类任务：输出必须是**精确**的目标标签 / token，多一个字即判 0。
+   - 该口径刻意严格——它测的就是"封闭指令遵循"，不容忍任何自由发挥；改动需评审。
+
+## 下一步（按优先级）
+
+1. ~~接入真实模型 API~~ ✅ 已完成（适配层就绪，Mac 实测 DeepSeek-V3 / GLM-4-Flash / Qwen-Max）。
+2. ~~难度门量化~~ ✅ 已完成（见 `difficulty_gate_report.md`；关键结论：0.806 含评分伪影，需先修口径）。
+3. ~~加固（先修伪影 → 删漏分题 → 扩 condition_rule hard）~~ ✅ 已完成：
+   - 修格式题伪影：5 道 `format_extraction` 的 `expected` 改为中文键名 + 照原文值，消除齐平 0.3 伪影。
+   - 删 5 道漏分题（S2/S4/T3/M2/T4，全模型 ≥0.9）。
+   - 扩 8 道 `condition_rule` 真·hard（CR1–CR8，自含规则、带 `demo_note` 需核验）。
+   - 当前 21 题；待 Mac 真实重跑以重新标定难度门。
+4. ~~输出 HTML 排行榜~~ ✅ 已完成（`report.py`，两种模式均产出 `leaderboard.html`）。
+5. ~~隐藏测试集~~ ✅ 已完成（防刷分机制）：
+   - 隐藏题放在 `hidden_tasks.json`（项目根），与公开 `config/tasks.json` **物理隔离**，
+     **已被 `.gitignore` 忽略，永不随仓库发布**。
+   - 默认 `run.py` 只加载公开 21 题；`leaderboard.csv / html` **均不含隐藏题**。
+   - `--include-hidden` 才合并隐藏集（本地 21+5=26 题），且生成的报告标题旁加
+     **`[含隐藏集]`** 标记，便于内部刷分监控；公开排行榜只展示各模型"隐藏集综合"得分，
      **绝不泄露隐藏题的 id 或内容**（HTML 中不含 `TH1…`）。
-   - 公开题仍走 `config/tasks.json`（18 题）。真实评测时，隐藏集由评测方私存，模型训练方
-     无法据此过拟合，从而保护排行榜公信力。
-   - 注：当前 `config/hidden/` 仅含 5 题本地样本用于验证 pipeline；正式发布前应扩充并加密保管。
+   - 真实评测时，隐藏集由评测方私存，模型训练方无法据此过拟合，从而保护排行榜公信力。
+   - 已有 `HiddenTaskTests`（4 项）校验：隐藏题数 ≥5、四类至少三类、每题 `hidden:true`
+     且不在公开集、默认加载不含隐藏题、`--include-hidden` 后合并数量正确。
+   - 注：当前 `hidden_tasks.json` 仅含 5 题本地样本用于验证 pipeline；正式发布前应扩充并加密保管。
+6. ⬜ 待办：正式发布前扩充隐藏集、加密保管；对全部规则型 expected 做法规版本轴核验。
 
 ## 隐藏测试集机制（防刷分）
 
-| 维度 | 公开集 `tasks.json` | 隐藏集 `config/hidden/tasks_hidden.json` |
-|------|--------------------|------------------------------------------|
-| 是否随仓库发布 | 是 | **否**（gitignore） |
-| 题量（当前） | 18 | 5（本地样本） |
+| 维度 | 公开集 `config/tasks.json` | 隐藏集 `hidden_tasks.json` |
+|------|---------------------------|----------------------------|
+| 是否随仓库发布 | 是 | **否**（gitignore，物理隔离） |
+| 题量（当前） | 21 | 5（本地样本，TH1–TH5） |
+| 类型分布 | 格式提取 8 / 条件规则 7 / Few-shot 3 / 多轮 3 | 格式提取 2 / 条件规则 2 / 多轮 1 |
 | 用途 | 练习 / 公开可复现 | 防过拟合、验证榜单公信力 |
 | 对外可见内容 | 全公开 | 仅"隐藏集综合"聚合分，不展示逐题 |
 
 接入真实模型后，用 `--include-hidden` 跑出的"隐藏集综合"列，是判断模型是否只背公开题的
-关键信号——若公开集高、隐藏集低，则说明存在针对公开集的过拟合，榜单可信度下降。
+关键信号——若公开集高、隐藏集低，则说明存在针对公开集的过拟合，榜单可信度下降。默认
+（不带 `--include-hidden`）排行榜完全不含隐藏题，确保对外发布版本无可泄露内容。

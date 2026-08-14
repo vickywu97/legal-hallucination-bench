@@ -173,7 +173,7 @@ class OfflinePipelineTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             ans = os.path.join(d, "a.jsonl")
             with open(ans, "w", encoding="utf-8") as f:
-                f.write('{"task_id":"T1","model":"DemoModel","answer":"{\\"company_name\\":\\"云岬智能装备股份有限公司\\",\\"amount\\":\\"1,280,000\\",\\"date\\":\\"2026-07-15\\"}"}\n')
+                f.write('{"task_id":"T1","model":"DemoModel","answer":"{\\"公司名称\\":\\"云岬智能装备股份有限公司\\",\\"合同金额\\":\\"1280000\\",\\"签订日期\\":\\"2026-07-15\\"}"}\n')
             out = os.path.join(d, "lb.csv")
             rows = run.score_answers(ans, out_path=out)
             self.assertEqual(len(rows), 1)
@@ -224,7 +224,7 @@ class HiddenSetTests(unittest.TestCase):
             ans = os.path.join(d, "a.jsonl")
             # one public answer (T1 perfect) + one hidden answer (TH1 perfect)
             with open(ans, "w", encoding="utf-8") as f:
-                f.write('{"task_id":"T1","model":"M","answer":"{\\"company_name\\":\\"云岬智能装备股份有限公司\\",\\"amount\\":\\"1,280,000\\",\\"date\\":\\"2026-07-15\\"}"}\n')
+                f.write('{"task_id":"T1","model":"M","answer":"{\\"公司名称\\":\\"云岬智能装备股份有限公司\\",\\"合同金额\\":\\"1280000\\",\\"签订日期\\":\\"2026-07-15\\"}"}\n')
                 f.write('{"task_id":"TH1","model":"M","answer":"{\\"supplier\\":\\"瀚海精密机械有限公司\\",\\"quantity\\":\\"240\\",\\"result\\":\\"合格\\"}"}\n')
             out = os.path.join(d, "lb.csv")
             rows = run.score_answers(ans, out_path=out, hidden=True, hidden_path=hidden_path)
@@ -276,6 +276,54 @@ class ModelsCLITests(unittest.TestCase):
             tasks, models=["NotARealModel"], out_path="/tmp/_ifb_filter.jsonl")
         self.assertEqual(recs, [])
         os.remove("/tmp/_ifb_filter.jsonl")
+
+
+class HiddenTaskTests(unittest.TestCase):
+    """Validation of the REAL held-out set (hidden_tasks.json), not the
+    pipeline mechanism (that is covered by HiddenSetTests above).
+
+    The hidden file is git-ignored and only exists locally; on a fresh clone
+    without it the suite must not hard-fail, so we skip when the file is absent.
+    """
+    HIDDEN_PATH = os.path.join(run.HERE, "hidden_tasks.json")
+
+    def _load(self):
+        if not os.path.exists(self.HIDDEN_PATH):
+            self.skipTest(f"hidden_tasks.json absent (git-ignored local file): {self.HIDDEN_PATH}")
+        with open(self.HIDDEN_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else data.get("tasks", [])
+
+    def test_hidden_count_and_type_coverage(self):
+        hidden = self._load()
+        self.assertGreaterEqual(len(hidden), 5)
+        types = {t["type"] for t in hidden}
+        self.assertGreaterEqual(len(types), 3)  # at least 3 of the 4 task types
+
+    def test_every_hidden_marked_and_has_difficulty(self):
+        hidden = self._load()
+        for t in hidden:
+            self.assertTrue(t.get("hidden"), f"{t.get('id')} missing hidden:true")
+            self.assertIn("difficulty", t, f"{t.get('id')} missing difficulty")
+            self.assertIn("demo_note", t, f"{t.get('id')} missing demo_note")
+
+    def test_hidden_ids_disjoint_from_public(self):
+        hidden = self._load()
+        public = run.load_tasks()
+        public_ids = {t["id"] for t in public}
+        hidden_ids = {t["id"] for t in hidden}
+        self.assertTrue(hidden_ids, "hidden set is empty")
+        overlap = public_ids & hidden_ids
+        self.assertEqual(overlap, set(), f"hidden ids leaked into public set: {overlap}")
+
+    def test_default_load_excludes_hidden(self):
+        # Default load_tasks() must only read config/tasks.json and never touch
+        # the hidden file (physical isolation).
+        public = run.load_tasks()
+        self.assertFalse(any(t.get("hidden") for t in public),
+                         "public tasks.json must not carry any hidden flag")
+        ids = {t["id"] for t in public}
+        self.assertNotIn("TH1", ids)  # a known hidden id must not appear publicly
 
 
 if __name__ == "__main__":

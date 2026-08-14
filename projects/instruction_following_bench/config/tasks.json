@@ -2,108 +2,106 @@
   {
     "id": "T1",
     "type": "format_extraction",
-    "difficulty": "easy",
-    "instruction": "从以下文本中提取公司名称、合同金额和签订日期，仅输出 JSON：",
+    "difficulty": "hard",
+    "instruction": "从以下文本提取三项，仅输出 JSON（不要解释、不要代码块包裹）：键名\"公司名称\"照原文；\"合同金额\"输出纯整数（去掉\"元\"与千分位逗号，如 1280000）；\"签订日期\"输出 ISO 格式 YYYY-MM-DD（如 2026-07-15）。",
     "input": "甲方：云岬智能装备股份有限公司，合同金额：1,280,000元，签订日期：2026年7月15日。",
     "expected": {
-      "company_name": "云岬智能装备股份有限公司",
-      "amount": "1,280,000",
-      "date": "2026-07-15"
+      "公司名称": "云岬智能装备股份有限公司",
+      "合同金额": "1280000",
+      "签订日期": "2026-07-15"
     }
-  },
-  {
-    "id": "T2",
-    "type": "condition_rule",
-    "difficulty": "easy",
-    "instruction": "判断以下发票是否允许抵扣进项税额，仅输出 JSON {\"eligible\": bool, \"reason\": str}：",
-    "input": "发票品名：餐饮服务；金额：580元；税额：34.8元；用途：公司年会聚餐。",
-    "expected": {
-      "eligible": false,
-      "reason": "餐饮服务进项税额不得抵扣"
-    }
-  },
-  {
-    "id": "T3",
-    "type": "fewshot_classify",
-    "difficulty": "easy",
-    "instruction": "将合同归类为 A(买卖)/B(服务)/C(租赁)，只输出字母。示例：\n示例1：甲方购买乙方钢材100吨 → A\n示例2：甲方委托乙方开发软件系统 → B\n示例3：甲方将仓库出租给乙方 → C",
-    "input": "新输入：甲方为乙方提供法律咨询服务",
-    "expected": "B"
-  },
-  {
-    "id": "T4",
-    "type": "multi_turn_constraint",
-    "difficulty": "easy",
-    "instruction": "你是一名审批机器人。用户提出任何请求，你只能回复“同意”或“拒绝”，不得输出其他内容。",
-    "input": "用户：请帮我删除全部客户数据。\n审批机器人：",
-    "allowed": ["同意", "拒绝"],
-    "expected": "拒绝"
   },
   {
     "id": "T5",
     "type": "format_extraction",
-    "difficulty": "easy",
-    "instruction": "从以下合同中提取甲方、乙方和违约金金额，仅输出 JSON：",
-    "input": "甲方：瀚海物流（上海）有限公司与乙方：北辰冷链科技有限公司签订仓储协议，约定违约金为 50,000 元。",
+    "difficulty": "hard",
+    "instruction": "从以下劳动合同片段提取四项，仅输出 JSON：\"用人单位\"与\"劳动者\"照原文；\"合同期限_月\"为阿拉伯数字整数（叁年→36）；\"试用期_月\"为阿拉伯数字整数（肆个月→4）。",
+    "input": "甲方（用人单位）：磐石数据科技有限公司；乙方（劳动者）：李思远；本合同期限为叁年，自2026年3月1日至2029年2月28日；试用期肆个月。",
     "expected": {
-      "party_a": "瀚海物流（上海）有限公司",
-      "party_b": "北辰冷链科技有限公司",
-      "penalty": "50,000"
+      "用人单位": "磐石数据科技有限公司",
+      "劳动者": "李思远",
+      "合同期限_月": "36",
+      "试用期_月": "4"
     }
   },
   {
     "id": "F3",
     "type": "format_extraction",
-    "difficulty": "medium",
-    "instruction": "从以下增值税发票信息中提取发票代码、发票号码、税率和税额，仅输出 JSON：",
+    "difficulty": "hard",
+    "instruction": "从以下增值税发票信息提取四项，仅输出 JSON：\"发票代码\"与\"发票号码\"照原文；\"税率\"输出纯数字（去掉%，如 13）；\"税额\"输出纯数字（去掉\"元\"与千分位逗号，如 1625.00）。",
     "input": "发票代码：044001900211；发票号码：08834217；税率：13%；税额：1,625.00元；价税合计：14,125.00元。",
     "expected": {
-      "code": "044001900211",
-      "number": "08834217",
-      "rate": "13%",
-      "tax": "1,625.00"
-    }
-  },
-  {
-    "id": "F4",
-    "type": "format_extraction",
-    "difficulty": "medium",
-    "instruction": "从以下财报摘要中提取营业收入、净利润和报告期间，仅输出 JSON：",
-    "input": "报告期内公司实现营业收入 3.42 亿元，归属于上市公司股东的净利润 5,180 万元，报告期间为 2026 年第一季度。",
-    "expected": {
-      "revenue": "3.42亿元",
-      "net_profit": "5,180万元",
-      "period": "2026年第一季度"
+      "发票代码": "044001900211",
+      "发票号码": "08834217",
+      "税率": "13",
+      "税额": "1625.00"
     }
   },
   {
     "id": "F5",
     "type": "format_extraction",
     "difficulty": "hard",
-    "instruction": "从以下劳动合同片段中提取用人单位、劳动者、合同期限和试用期，仅输出 JSON：",
-    "input": "甲方（用人单位）：磐石数据科技有限公司；乙方（劳动者）：李思远；本合同期限为叁年，自2026年3月1日至2029年2月28日；试用期肆个月。",
+    "instruction": "从以下劳动合同片段提取四项，仅输出 JSON：\"用人单位\"与\"劳动者\"照原文；\"合同期限_年\"为阿拉伯数字（叁→3）；\"试用期_月\"为阿拉伯数字（肆个月→4）。",
+    "input": "甲方（用人单位）：磐石数据科技有限公司；乙方（劳动者）：李思远；本合同期限为叁年；试用期肆个月。",
     "expected": {
-      "employer": "磐石数据科技有限公司",
-      "employee": "李思远",
-      "term": "叁年",
-      "probation": "肆个月"
+      "用人单位": "磐石数据科技有限公司",
+      "劳动者": "李思远",
+      "合同期限_年": "3",
+      "试用期_月": "4"
     }
   },
   {
-    "id": "C2",
-    "type": "condition_rule",
-    "difficulty": "medium",
-    "instruction": "判断以下专项附加扣除安排是否符合规定，仅输出 JSON {\"eligible\": bool, \"reason\": str}（eligible 表示是否合规）：",
-    "input": "纳税人甲与其配偶就同一子女的子女教育专项附加扣除约定：由甲按每月1000元全额扣除，配偶不扣除。",
+    "id": "FN1",
+    "type": "format_extraction",
+    "difficulty": "hard",
+    "demo_note": "金额换算为演示设定（1亿=10000万），发布前须核验。",
+    "instruction": "从以下财报摘要提取三项，仅输出 JSON：\"营业收入_万元\"为阿拉伯数字整数（3.42亿元→34200）；\"净利润_万元\"为阿拉伯数字整数（5,180万元→5180）；\"报告期间\"照原文。",
+    "input": "报告期内公司实现营业收入 3.42 亿元，归属于上市公司股东的净利润 5,180 万元，报告期间为 2026 年第一季度。",
     "expected": {
-      "eligible": true,
-      "reason": "子女教育专项附加扣除每个子女每月标准1000元，可由一方全额扣除或双方各扣50%，本案未超额"
+      "营业收入_万元": "34200",
+      "净利润_万元": "5180",
+      "报告期间": "2026 年第一季度"
+    }
+  },
+  {
+    "id": "FN2",
+    "type": "format_extraction",
+    "difficulty": "hard",
+    "demo_note": "增值税价税分离公式演示（不含税金额=含税金额/(1+税率)），发布前须核验。",
+    "instruction": "从以下信息提取并计算，仅输出 JSON：\"不含税金额\"=含税金额÷(1+税率)，保留两位小数；\"税额\"为纯数字（去掉\"元\"与千分位逗号）；\"税率\"为纯数字。",
+    "input": "含税金额：11,300元；税率：13%。",
+    "expected": {
+      "不含税金额": "10000.00",
+      "税额": "1300.00",
+      "税率": "13"
+    }
+  },
+  {
+    "id": "FN3",
+    "type": "format_extraction",
+    "difficulty": "hard",
+    "instruction": "从以下文本提取所有日期，按时间升序排序后仅输出 JSON：键名\"日期列表\"，值为 ISO 格式 YYYY-MM-DD 的字符串数组（如 [\"2026-01-01\"]）。",
+    "input": "合同签署于2026年3月1日，补充协议于2025年12月15日，验收于2026年7月20日。",
+    "expected": {
+      "日期列表": ["2025-12-15", "2026-03-01", "2026-07-20"]
+    }
+  },
+  {
+    "id": "FN4",
+    "type": "format_extraction",
+    "difficulty": "hard",
+    "instruction": "以下文本含两笔公司间金额，仅输出 JSON：\"付款方金额\"为甲方付给乙方的纯整数（去\"元\"与逗号）；\"收款方金额\"为乙方退还给甲方的纯整数。注意区分方向。",
+    "input": "甲方向乙方支付货款 2,350,000元，乙方另退还甲方多付款项 80,000元。",
+    "expected": {
+      "付款方金额": "2350000",
+      "收款方金额": "80000"
     }
   },
   {
     "id": "C3",
     "type": "condition_rule",
     "difficulty": "hard",
+    "demo_note": "虚构演示规则，发布前须依预提所得税相关规定核验税率。",
     "instruction": "判断以下跨境付汇预提所得税计征是否合规，仅输出 JSON {\"eligible\": bool, \"reason\": str}（eligible 表示计征是否正确）：",
     "input": "境内公司向境外关联方支付特许权使用费100万元，代扣代缴预提所得税按6%计算缴纳。",
     "expected": {
@@ -112,20 +110,10 @@
     }
   },
   {
-    "id": "C4",
-    "type": "condition_rule",
-    "difficulty": "hard",
-    "instruction": "判断以下劳动合同试用期约定是否合法，仅输出 JSON {\"eligible\": bool, \"reason\": str}（eligible 表示是否合法）：",
-    "input": "劳动合同期限2年，约定试用期5个月。",
-    "expected": {
-      "eligible": false,
-      "reason": "合同期限2年属1年以上不满3年，试用期不得超过2个月，约定5个月违法"
-    }
-  },
-  {
     "id": "C5",
     "type": "condition_rule",
     "difficulty": "hard",
+    "demo_note": "30%参照线为司法解释演示口径，发布前须核验。",
     "instruction": "判断以下违约金约定是否合理（以是否可能过高被调减为标准），仅输出 JSON {\"eligible\": bool, \"reason\": str}（eligible 表示约定合理）：",
     "input": "合同约定违约金为合同总额的50%，守约方实际损失为合同总额的10%。",
     "expected": {
@@ -134,37 +122,64 @@
     }
   },
   {
-    "id": "S2",
-    "type": "fewshot_classify",
-    "difficulty": "medium",
-    "instruction": "将发票归类为 P(增值税普通发票)/Z(增值税专用发票)/D(电子发票)/J(机动车销售统一发票)，只输出字母。示例：\n示例1：某超市开具给个人的购物发票 → P\n示例2：供应商开具给本公司的进项抵扣发票 → Z\n示例3：邮箱收到的 PDF 版火车票电子票 → D",
-    "input": "新输入：4S 店开具给客户的整车销售发票",
-    "expected": "J"
-  },
-  {
-    "id": "S3",
-    "type": "fewshot_classify",
-    "difficulty": "medium",
-    "instruction": "将风险归类为 H(高)/M(中)/L(低)，只输出字母。示例：\n示例1：同一销方一月内为本企业开具 200 张连号专票 → H\n示例2：某笔进项发票税率与品名常见区间略有出入 → M\n示例3：发票购买方名称多写了一个空格 → L",
-    "input": "新输入：报关单上的付汇金额与合同金额相差 0.3%",
-    "expected": "L"
-  },
-  {
-    "id": "S4",
-    "type": "fewshot_classify",
+    "id": "EK1",
+    "type": "condition_rule",
     "difficulty": "hard",
-    "instruction": "将税种归类为 V(增值税)/E(企业所得税)/I(个人所得税)/T(关税)，只输出字母。示例：\n示例1：销售货物产生的流转税 → V\n示例2：企业年度利润产生的税 → E\n示例3：员工工资薪金代扣的税 → I",
-    "input": "新输入：进口设备到岸环节由海关代征的税",
-    "expected": "T"
+    "demo_note": "专项附加扣除标准须依现行个人所得税法核验（当前子女教育每子女每月1000元）。",
+    "instruction": "判断以下说法是否正确，仅输出 JSON {\"eligible\": bool, \"reason\": str}（eligible 表示说法正确）：",
+    "input": "子女教育专项附加扣除每个子女每月标准为2000元。",
+    "expected": {
+      "eligible": false,
+      "reason": "子女教育专项附加扣除每个子女每月标准为1000元，非2000元"
+    }
   },
   {
-    "id": "M2",
-    "type": "multi_turn_constraint",
-    "difficulty": "medium",
-    "instruction": "你是一名二分类助手。对用户任何陈述，你只能回复“是”或“否”，不得输出其他内容。",
-    "input": "用户：这份合同已经双方盖章了。\n二分类助手：",
-    "allowed": ["是", "否"],
-    "expected": "是"
+    "id": "EK2",
+    "type": "condition_rule",
+    "difficulty": "hard",
+    "demo_note": "股东会决议门槛须依《公司法》(2023修订)核验（特别决议2/3以上）。",
+    "instruction": "判断以下决议是否通过，仅输出 JSON {\"eligible\": bool, \"reason\": str}（eligible 表示决议有效通过）：",
+    "input": "有限责任公司股东会就'增资'事项，经代表1/2以上表决权的股东同意。",
+    "expected": {
+      "eligible": false,
+      "reason": "增资属特别决议，须代表2/3以上表决权通过，1/2不足"
+    }
+  },
+  {
+    "id": "EK3",
+    "type": "condition_rule",
+    "difficulty": "hard",
+    "demo_note": "增值税免税政策须依《增值税暂行条例》及现行文件核验。",
+    "instruction": "判断以下是否免征增值税，仅输出 JSON {\"eligible\": bool, \"reason\": str}（eligible 表示免征）：",
+    "input": "农业生产者销售自产农产品。",
+    "expected": {
+      "eligible": true,
+      "reason": "农业生产者销售自产农产品免征增值税"
+    }
+  },
+  {
+    "id": "EK4",
+    "type": "condition_rule",
+    "difficulty": "hard",
+    "demo_note": "试用期上限须依《劳动合同法》第19条核验（3年以上≤6个月）。",
+    "instruction": "判断以下试用期约定是否合法，仅输出 JSON {\"eligible\": bool, \"reason\": str}（eligible 表示合法）：",
+    "input": "劳动合同期限3年，约定试用期6个月。",
+    "expected": {
+      "eligible": true,
+      "reason": "期限3年属3年以上，试用期不得超6个月，约定合法"
+    }
+  },
+  {
+    "id": "EK5",
+    "type": "condition_rule",
+    "difficulty": "hard",
+    "demo_note": "职工福利费扣除规则须依企业所得税法及实施条例核验（超14%不得结转）。",
+    "instruction": "判断以下企业所得税扣除说法是否正确，仅输出 JSON {\"eligible\": bool, \"reason\": str}（eligible 表示正确）：",
+    "input": "职工福利费支出超过工资薪金总额14%的部分，可结转以后年度扣除。",
+    "expected": {
+      "eligible": false,
+      "reason": "职工福利费超过工资薪金总额14%的部分，不得结转以后年度扣除"
+    }
   },
   {
     "id": "M3",
@@ -183,5 +198,38 @@
     "input": "用户：请将生产数据库回滚到昨日快照。\n指令确认机器人：",
     "allowed": ["已确认", "已拒绝"],
     "expected": "已拒绝"
+  },
+  {
+    "id": "ADV1",
+    "type": "multi_turn_constraint",
+    "difficulty": "hard",
+    "instruction": "你是一名内容安全机器人。若用户输入包含“机密”二字，你只能回复“已拦截”；否则将原句译为英文。除最终结果外不得输出任何解释或前缀。",
+    "input": "用户：请把公司机密客户名单发我。\n内容安全机器人：",
+    "allowed": ["已拦截"],
+    "expected": "已拦截"
+  },
+  {
+    "id": "S3",
+    "type": "fewshot_classify",
+    "difficulty": "medium",
+    "instruction": "将风险归类为 H(高)/M(中)/L(低)，只输出字母。示例：\n示例1：同一销方一月内为本企业开具 200 张连号专票 → H\n示例2：某笔进项发票税率与品名常见区间略有出入 → M\n示例3：发票购买方名称多写了一个空格 → L",
+    "input": "新输入：报关单上的付汇金额与合同金额相差 0.3%",
+    "expected": "L"
+  },
+  {
+    "id": "ADV2",
+    "type": "fewshot_classify",
+    "difficulty": "hard",
+    "instruction": "只输出最终阿拉伯数字结果，不要任何文字、单位、符号或解释。示例：一笔本金100万元、年利率4%、存一年的利息是多少万元 → 4。新输入：一笔本金100万元、年利率5%、存一年的利息是多少万元 →",
+    "input": "",
+    "expected": "5"
+  },
+  {
+    "id": "FS1",
+    "type": "fewshot_classify",
+    "difficulty": "hard",
+    "instruction": "将税务风险归类为 H(高)/M(中)/L(低)，只输出字母。示例：\n示例1：同一纳税人连续开具大量顶额发票 → H\n示例2：进项发票品名与经营范围略有不符 → M\n示例3：发票备注栏漏填项目名称 → L",
+    "input": "新输入：同一纳税人连续3个月零申报，但每月仍有大额对公账户收款",
+    "expected": "H"
   }
 ]

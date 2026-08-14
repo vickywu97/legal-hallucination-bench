@@ -66,8 +66,10 @@ def _bar(violation_rate: float) -> str:
     )
 
 
-def build_html(rows: list, mode: str = "demo", hidden_count: int = 0) -> str:
+def build_html(rows: list, mode: str = "demo", hidden_count: int = 0,
+               with_hidden_label: bool = False) -> str:
     banner = _DEMO_BANNER if mode == "demo" else _REAL_BANNER
+    title_tag = " [含隐藏集]" if with_hidden_label else ""
     hidden_th = '<th>隐藏集综合(防刷分)</th>' if hidden_count > 0 else ""
     body_rows = "\n".join(
         f"<tr>{_row_cells(r, hidden_count)}<td>{_bar(r['instruction_violation_rate'])}</td></tr>"
@@ -85,7 +87,7 @@ def build_html(rows: list, mode: str = "demo", hidden_count: int = 0) -> str:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>企业封闭指令遵循评测基准 · 指令违背率排行榜</title>
+<title>企业封闭指令遵循评测基准 · 指令违背率排行榜{title_tag}</title>
 <style>
   body {{ font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; margin: 2rem; color: #222; }}
   h1 {{ font-size: 1.4rem; }}
@@ -103,7 +105,7 @@ def build_html(rows: list, mode: str = "demo", hidden_count: int = 0) -> str:
 </style>
 </head>
 <body>
-<h1>企业封闭指令遵循评测基准 · 指令违背率排行榜</h1>
+<h1>企业封闭指令遵循评测基准 · 指令违背率排行榜{title_tag}</h1>
 <div class="banner {mode}">{banner}</div>
 {hidden_note}
 <table>
@@ -121,8 +123,10 @@ def build_html(rows: list, mode: str = "demo", hidden_count: int = 0) -> str:
 </html>"""
 
 
-def write_html(rows: list, mode: str, csv_path: str, hidden_count: int = 0) -> str:
+def write_html(rows: list, mode: str, csv_path: str, hidden_count: int = 0,
+               with_hidden_label: bool = False) -> str:
     out_path = os.path.splitext(csv_path)[0] + ".html"
     with open(out_path, "w", encoding="utf-8") as f:
-        f.write(build_html(rows, mode, hidden_count=hidden_count))
+        f.write(build_html(rows, mode, hidden_count=hidden_count,
+                           with_hidden_label=with_hidden_label))
     return out_path

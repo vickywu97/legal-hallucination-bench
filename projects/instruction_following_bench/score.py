@@ -49,6 +49,12 @@ def _residual(text: str, start: int, end: int) -> str:
 
 
 def _closure_broken(residual: str) -> bool:
+    # FROZEN SCORING RULE (see README "难度门锚点与评分口径冻结"):
+    # closure is zero-tolerance. Any residual text outside the target JSON
+    # (including ```json fences, leading/trailing prose, explanatory sentences)
+    # breaks closure -> this dimension scores 0. Intentional: the benchmark
+    # measures *closed* instruction following and tolerates no free elaboration.
+    # Do not relax without review.
     if residual:
         return True
     if _EXPLAIN_RE.search(residual):
