@@ -41,6 +41,7 @@ projects/instruction_following_bench/
 ├── __init__.py
 ├── config/tasks.json          # 18 个任务（虚构演示数据，含 difficulty 字段）
 ├── score.py                   # 规则化评分（无 LLM judge）
+├── report.py                  # 生成自包含 HTML 排行榜（离线、零依赖）
 ├── models.py                  # 真实模型适配层（复用 scripts/generate_answers.py 模式）
 ├── run.py                     # 离线运行 / 真实答案评分
 └── (tests/test_instruction_following_bench.py)   # 见仓库 tests/ 目录
@@ -50,7 +51,7 @@ projects/instruction_following_bench/
 
 ```bash
 # 1) 离线 demo：用两个哑巴基线（随机 / 空输出）跑通整条 pipeline
-#    输出 leaderboard.csv 是 DEMO 脚手架，不是真实模型排名
+#    同时输出 leaderboard.csv 与 leaderboard.html（DEMO 脚手架，非真实排名）
 python -S -m projects.instruction_following_bench.run --offline
 
 # 2) 接真实模型（需设置环境变量 API key，否则该模型被跳过）
@@ -59,10 +60,13 @@ export ZHIPU_API_KEY=zk-xxx
 python -S -m projects.instruction_following_bench.models \
     --out answers_ifb.jsonl          # 真实调用 DeepSeek / GLM / Qwen / Kimi
 
-# 3) 用真实答案产出可复现排行榜
+# 3) 用真实答案产出可复现排行榜（html 带"真实排行榜"横幅）
 python -S -m projects.instruction_following_bench.run \
     --score-answers answers_ifb.jsonl
 ```
+
+> 两种模式都会同时写出 `leaderboard.csv` 与 `leaderboard.html`（单文件自包含，
+> 内联 CSS、无外部依赖）。HTML 顶部横幅区分 DEMO / REAL，底部含材料性质声明。
 
 > **保护红线**：`--offline` 的随机/空基线分数**不得**作为真实模型排名对外发布；
 > 只有 `--score-answers` 配合真实模型输出才产生可复现的真实排行榜。
@@ -81,5 +85,5 @@ python -S -m projects.instruction_following_bench.run \
 
 1. 接入真实模型 API（适配层已就绪，复用 `scripts/generate_answers.py` 的零依赖 REST 模式）。
 2. **难度门量化**：用 DeepSeek-V3 / GLM-4 实测验证"模型一≤35% / 模型二≤60%"，回填到各题。
-3. 输出 HTML 排行榜（借鉴 Legal AI Watch Dashboard）。
+3. ~~输出 HTML 排行榜~~ ✅ 已完成（`report.py`，两种模式均产出 `leaderboard.html`）。
 4. 隐藏测试集（防刷分，部分题目不入默认集）。

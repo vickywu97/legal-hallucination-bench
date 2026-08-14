@@ -10,7 +10,7 @@ import os
 import tempfile
 import unittest
 
-from projects.instruction_following_bench import score, run
+from projects.instruction_following_bench import score, run, report
 
 
 # ---- fixtures (fictional demo data, mirrors config/tasks.json) ----
@@ -121,6 +121,37 @@ class TasksFileTests(unittest.TestCase):
         # every task must carry an explicit difficulty label
         for t in tasks:
             self.assertIn("difficulty", t)
+
+
+class ReportTests(unittest.TestCase):
+    _ROWS = [
+        {"model": "DemoA", "tasks": 3, "avg_format": 0.9, "avg_content": 0.8,
+         "avg_closure": 1.0, "avg_total": 0.89, "instruction_violation_rate": 0.11},
+        {"model": "DemoB", "tasks": 3, "avg_format": 0.2, "avg_content": 0.1,
+         "avg_closure": 0.3, "avg_total": 0.18, "instruction_violation_rate": 0.82},
+    ]
+
+    def test_demo_html_has_banner_and_models(self):
+        h = report.build_html(self._ROWS, "demo")
+        self.assertIn("DEMO", h)
+        self.assertIn("DemoA", h)
+        self.assertIn("DemoB", h)
+        self.assertIn("不构成", h)  # disclaimer footer present
+        self.assertIn("<html", h)
+
+    def test_real_html_banner(self):
+        h = report.build_html(self._ROWS, "real")
+        self.assertIn("真实排行榜", h)
+        self.assertNotIn("DEMO 脚手架", h)
+
+    def test_write_html_creates_file(self):
+        with tempfile.TemporaryDirectory() as d:
+            csv_path = os.path.join(d, "lb.csv")
+            html_path = report.write_html(self._ROWS, "demo", csv_path)
+            self.assertTrue(os.path.exists(html_path))
+            self.assertTrue(html_path.endswith(".html"))
+            with open(html_path, encoding="utf-8") as f:
+                self.assertIn("DemoA", f.read())
 
 
 class OfflinePipelineTests(unittest.TestCase):

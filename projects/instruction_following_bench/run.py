@@ -22,6 +22,7 @@ import os
 import random
 
 from .score import score_task
+from . import report
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TASKS_PATH = os.path.join(HERE, "config", "tasks.json")
@@ -81,6 +82,8 @@ def run_offline(tasks_path: str = TASKS_PATH, out_path: str = LEADERBOARD_PATH) 
     tasks = load_tasks(tasks_path)
     rows = _aggregate(DUMMY_MODELS, tasks)
     _write(rows, out_path)
+    html_path = report.write_html(rows, "demo", out_path)
+    print(f"[written] {out_path}\n[written] {html_path}  (DEMO: not a real ranking)")
     return rows
 
 
@@ -119,6 +122,8 @@ def score_answers(answers_path: str, tasks_path: str = TASKS_PATH,
         })
     rows.sort(key=lambda r: r["avg_total"], reverse=True)
     _write(rows, out_path)
+    html_path = report.write_html(rows, "real", out_path)
+    print(f"[written] {out_path}\n[written] {html_path}  (REAL: reproducible from answers)")
     return rows
 
 
