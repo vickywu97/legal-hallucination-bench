@@ -3,8 +3,10 @@
 
 Reuses the proven zero-dependency, OpenAI-compatible REST pattern from
 ``scripts/generate_answers.py`` (Python stdlib ``urllib`` only). API keys are
-read from the environment; a model with no key is skipped rather than failing
-the whole run.
+read from the environment, or from a local ``.env`` file via
+``load_dotenv_local`` (stdlib-only, no python-dotenv); an explicit shell
+``export`` always wins over the file. A model with no key is skipped rather
+than failing the whole run.
 
 IMPORTANT
 ---------
@@ -24,6 +26,38 @@ import urllib.error
 import urllib.request
 
 from .run import load_tasks
+
+
+def load_dotenv_local(path: str | None = None) -> dict:
+    """Minimal stdlib-only ``.env`` loader (no third-party dependency).
+
+    Reads ``KEY=value`` lines from a local ``.env`` file and injects them into
+    ``os.environ``. Existing environment variables are NOT overridden, so an
+    explicit ``export`` in the shell always wins over the file.
+
+    Returns the dict of variables that were actually added (for logging).
+    """
+    if path is None:
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if not os.path.exists(path):
+        return {}
+    added = {}
+    with open(path, encoding="utf-8") as f:
+        for raw in f:
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            key, val = key.strip(), val.strip()
+            if len(val) >= 2 and val[0] in "\"'" and val[-1] == val[0]:
+                val = val[1:-1]
+            if key and key not in os.environ:
+                os.environ[key] = val
+                added[key] = val
+    return added
+
 
 # Provider registry — OpenAI-compatible chat/completions JSON.
 MODELS = [
@@ -141,6 +175,10 @@ def main(argv=None):
                     help="subset of model labels, e.g. DeepSeek-V3 GLM-4-Flash "
                          "(default: all models whose API key env var is set)")
     args = ap.parse_args(argv)
+
+    loaded = load_dotenv_local()
+    if loaded:
+        print(f"[env ] loaded {len(loaded)} key(s) from local .env")
 
     tasks_path = args.tasks or os.path.join(
         os.path.dirname(os.path.abspath(__file__)), "config", "tasks.json")

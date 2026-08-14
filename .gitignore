@@ -35,3 +35,6 @@ sample_demo_reports/
 projects/instruction_following_bench/leaderboard.csv
 projects/instruction_following_bench/leaderboard.html
 projects/instruction_following_bench/config/hidden/
+
+# project C: never commit real API keys (keep .env.example tracked)
+projects/instruction_following_bench/.env
