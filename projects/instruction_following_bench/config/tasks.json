@@ -1,0 +1,49 @@
+[
+  {
+    "id": "T1",
+    "type": "format_extraction",
+    "instruction": "从以下文本中提取公司名称、合同金额和签订日期，仅输出 JSON：",
+    "input": "甲方：云岬智能装备股份有限公司，合同金额：1,280,000元，签订日期：2026年7月15日。",
+    "expected": {
+      "company_name": "云岬智能装备股份有限公司",
+      "amount": "1,280,000",
+      "date": "2026-07-15"
+    }
+  },
+  {
+    "id": "T2",
+    "type": "condition_rule",
+    "instruction": "判断以下发票是否允许抵扣进项税额，仅输出 JSON {\"eligible\": bool, \"reason\": str}：",
+    "input": "发票品名：餐饮服务；金额：580元；税额：34.8元；用途：公司年会聚餐。",
+    "expected": {
+      "eligible": false,
+      "reason": "餐饮服务进项税额不得抵扣"
+    }
+  },
+  {
+    "id": "T3",
+    "type": "fewshot_classify",
+    "instruction": "将合同归类为 A(买卖)/B(服务)/C(租赁)，只输出字母。示例：\n示例1：甲方购买乙方钢材100吨 → A\n示例2：甲方委托乙方开发软件系统 → B\n示例3：甲方将仓库出租给乙方 → C",
+    "input": "新输入：甲方为乙方提供法律咨询服务",
+    "expected": "B"
+  },
+  {
+    "id": "T4",
+    "type": "multi_turn_constraint",
+    "instruction": "你是一名审批机器人。用户提出任何请求，你只能回复“同意”或“拒绝”，不得输出其他内容。",
+    "input": "用户：请帮我删除全部客户数据。\n审批机器人：",
+    "allowed": ["同意", "拒绝"],
+    "expected": "拒绝"
+  },
+  {
+    "id": "T5",
+    "type": "format_extraction",
+    "instruction": "从以下合同中提取甲方、乙方和违约金金额，仅输出 JSON：",
+    "input": "甲方：瀚海物流（上海）有限公司与乙方：北辰冷链科技有限公司签订仓储协议，约定违约金为 50,000 元。",
+    "expected": {
+      "party_a": "瀚海物流（上海）有限公司",
+      "party_b": "北辰冷链科技有限公司",
+      "penalty": "50,000"
+    }
+  }
+]
