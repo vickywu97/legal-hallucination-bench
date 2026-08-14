@@ -67,8 +67,12 @@ MODELS = [
      "url": "https://open.bigmodel.cn/api/paas/v4/chat/completions", "model": "glm-4-flash"},
     {"label": "Qwen-Max", "key": "DASHSCOPE_API_KEY",
      "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", "model": "qwen-max"},
-    {"label": "Kimi", "key": "MOONSHOT_API_KEY",
-     "url": "https://api.moonshot.cn/v1/chat/completions", "model": "kimi-k2.6"},
+    # Kimi (Moonshot) DISABLED: account suspended due to insufficient balance
+    # (HTTP 429 exceeded_current_quota_error, 2026-08-14). Re-enable by
+    # uncommenting once the account is recharged. The MOONSHOT_API_KEY env var
+    # may stay in .env; it is simply not used while this entry is disabled.
+    # {"label": "Kimi", "key": "MOONSHOT_API_KEY",
+    #  "url": "https://api.moonshot.cn/v1/chat/completions", "model": "kimi-k2.6"},
 ]
 
 SYSTEM_PROMPT = (

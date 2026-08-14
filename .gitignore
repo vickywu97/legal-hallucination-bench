@@ -38,3 +38,5 @@ projects/instruction_following_bench/config/hidden/
 
 # project C: never commit real API keys (keep .env.example tracked)
 projects/instruction_following_bench/.env
+# project C: real model answer files (generated, not committed)
+answers_ifb*.jsonl
