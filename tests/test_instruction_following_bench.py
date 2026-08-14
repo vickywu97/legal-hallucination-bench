@@ -11,7 +11,7 @@ import os
 import tempfile
 import unittest
 
-from projects.instruction_following_bench import score, run, report
+from projects.instruction_following_bench import score, run, report, models
 
 
 # ---- fixtures (fictional demo data, mirrors config/tasks.json) ----
@@ -254,6 +254,28 @@ class HiddenSetTests(unittest.TestCase):
         ]
         h = report.build_html(rows, "real", hidden_count=0)
         self.assertNotIn("隐藏集综合", h)
+
+
+class ModelsCLITests(unittest.TestCase):
+    def test_generate_answers_skips_without_keys(self):
+        # No API keys in env -> every model skipped, empty records returned.
+        tasks = [{"id": "T1", "type": "format_extraction", "instruction": "x",
+                  "input": "y", "expected": {}}]
+        recs = models.generate_answers(tasks, out_path="/tmp/_ifb_none.jsonl")
+        self.assertEqual(recs, [])
+        self.assertTrue(os.path.exists("/tmp/_ifb_none.jsonl"))
+        with open("/tmp/_ifb_none.jsonl", encoding="utf-8") as f:
+            self.assertEqual(f.read().strip(), "")
+        os.remove("/tmp/_ifb_none.jsonl")
+
+    def test_generate_answers_respects_model_filter(self):
+        # Filter to a non-existent label -> selected set empty, no calls/no keys.
+        tasks = [{"id": "T1", "type": "format_extraction", "instruction": "x",
+                  "input": "y", "expected": {}}]
+        recs = models.generate_answers(
+            tasks, models=["NotARealModel"], out_path="/tmp/_ifb_filter.jsonl")
+        self.assertEqual(recs, [])
+        os.remove("/tmp/_ifb_filter.jsonl")
 
 
 if __name__ == "__main__":
