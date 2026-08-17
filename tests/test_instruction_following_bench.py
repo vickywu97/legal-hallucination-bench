@@ -48,11 +48,12 @@ class ScorerFormatExtractionTests(unittest.TestCase):
         self.assertEqual(r["total"], 1.0)
         self.assertEqual(r["violation_rate"], 0.0)
 
-    def test_missing_field_lowers_format_and_content(self):
+    def test_missing_field_lowers_content_not_format(self):
         out = '{"company_name":"云岬智能装备股份有限公司"}'  # amount/date missing
         r = score.score_task(_T_FORMAT, out)
-        # 1 of 3 fields present -> 1/3, rounded to 4 decimals by the scorer
-        self.assertEqual(r["format"], round(1 / 3, 4))
+        # format = structural compliance (valid JSON object present) -> 1.0,
+        # regardless of which keys are present; only 1 of 3 VALUES matched -> content 1/3.
+        self.assertEqual(r["format"], 1.0)
         self.assertEqual(r["content"], round(1 / 3, 4))
         self.assertEqual(r["closure"], 1.0)
 

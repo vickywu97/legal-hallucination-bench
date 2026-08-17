@@ -155,9 +155,13 @@ def generate_answers(tasks: list, models=None, out_path: str = "answers_ifb.json
                 print(f"    [fail] {m['label']} {t['id']}: {e}")
             records.append(rec)
             time.sleep(0.3)
-    with open(out_path, "w", encoding="utf-8") as f:
+    # Atomic write: stage to a .tmp file then replace, so an interrupted run
+    # leaves the previous good answers_ifb.jsonl intact instead of truncating it.
+    tmp_path = out_path + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
         for r in records:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    os.replace(tmp_path, out_path)
     print(f"[done] {len(records)} records -> {out_path}")
     return records
 

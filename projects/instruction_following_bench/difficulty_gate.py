@@ -96,22 +96,10 @@ def emp_bucket(mean_total: float) -> str:
     return "hard"
 
 
-def fair_format_total(task: dict, answer: str) -> float:
-    """Conservative 'fair' rescore for format_extraction: if the model emitted
-    the required VALUES (regardless of JSON key name), credit format+content
-    fully and keep the actual closure score.
-
-    This isolates the *key-name mismatch artifact*: current scoring keys the
-    expected schema, so models that emit differently-named keys get flat-capped.
-    """
-    expected = task.get("expected", {})
-    values = [str(v).strip() for v in expected.values()]
-    if not values:
-        return 0.0
-    present = sum(1 for v in values if v and v in (answer or ""))
-    content = present / len(values)
-    closure = 1.0 if score_task(task, answer)["closure"] == 1.0 else 0.0
-    return round(0.3 * 1.0 + 0.4 * content + 0.3 * closure, 4)
+# NOTE (v3): primary scoring in score.py is now KEY-NAME-AGNOSTIC value match
+# with numeric tolerance, so the old "fair format scenario B" diagnostic is
+# moot -- the primary score already credits value-correct outputs. No separate
+# fair rescore is computed. See score.py: _content_json_value_match.
 
 
 def main(argv=None):
@@ -133,13 +121,16 @@ def main(argv=None):
     scored_ids = config_ids & answered_ids
     coverage_ok = (not missing_answer_ids)
 
-    # raw answer map (model, tid) -> answer text
-    raw: dict = {}
-    for model, recs in by_model.items():
-        for r in recs:
-            raw[(model, r["task_id"])] = r.get("answer", "")
+    # ---- data-quality check (trust-but-verify: flag empty/errored answers) ----
+    # A transient API failure yields an empty answer that scores 0 and silently
+    # depresses a model's average; surface it instead of letting it masquerade
+    # as a genuine instruction-following failure.
+    empty_or_error = sum(
+        1 for recs in by_model.values() for r in recs
+        if not str(r.get("answer", "")).strip() or bool(r.get("_error"))
+    )
 
-    # ---- per-task scores ----
+    # ---- per-task scores (primary scoring, now key-name-agnostic value match) ----
     task_scores: dict = {tid: {} for tid in tasks}
     for model, recs in by_model.items():
         for r in recs:
@@ -149,7 +140,7 @@ def main(argv=None):
             s = score_task(tasks[tid], r.get("answer", ""))
             task_scores[tid][model] = s["total"]
 
-    # ---- artifact detection + fair-format scenario B ----
+    # ---- artifact detection (flat-capped format tasks = no discrimination) ----
     artifact_tasks = []
     for tid, t in tasks.items():
         if t.get("type") != "format_extraction":
@@ -157,20 +148,6 @@ def main(argv=None):
         vals = [task_scores[tid][m] for m in models if m in task_scores[tid]]
         if vals and max(vals) <= 0.35:  # flat-capped, no discrimination
             artifact_tasks.append(tid)
-    fair_scores: dict = {tid: {} for tid in tasks}
-    for (model, tid), ans in raw.items():
-        if tid in tasks and tasks[tid].get("type") == "format_extraction":
-            fair_scores[tid][model] = fair_format_total(tasks[tid], ans)
-        elif tid in tasks:
-            fair_scores[tid][model] = task_scores[tid].get(model, 0.0)
-
-    # per-model avg under fair-format scenario B
-    model_fair = []
-    for model in models:
-        vals = [fair_scores[tid][model] for tid in tasks if model in fair_scores[tid]]
-        mt = sum(vals) / len(vals)
-        model_fair.append({"model": model, "avg_total": round(mt, 4),
-                           "violation": round(1 - mt, 4)})
 
     per_task = []
     for tid, t in tasks.items():
@@ -323,16 +300,14 @@ def main(argv=None):
     lines.append("- **任务演进**：经修伪影、删漏分题（CR1-8/T2/F4 等给强模型送分）、"
                  "扩 condition_rule 外部知识题（C3/C5/EK1-EK5/FS1）、格式题改派生计算/方向/年份推断"
                  "（T1/F3/FN3 等）、ADV1 改复合约束+例外，任务集已显著变难且具区分度。")
-    lines.append("- **ADV1 已知边缘题**：当前为复合约束+例外题（含机密但不含外发→需审批），"
-                 "三模型均输出正确 token（1.000），属已知漏分题；但在复合门槛下不影响判定"
-                 "（弱锚点 0.525 仍明显低于 0.60 结构地板、分离与强非满分均达标）。"
-                 "保留为冻结版本边缘样本。")
-    lines.append(f"- **公平格式情景（B）**（仅作口径参照）：")
-    lines.append("| 模型 | 情景A(严格) | 情景B(公平格式) |")
-    lines.append("|---|---|---|")
-    for r, rf in zip(sorted(model_rows, key=lambda x: -x["avg_total"]),
-                     sorted(model_fair, key=lambda x: -x["avg_total"])):
-        lines.append(f"| {r['model']} | {r['avg_total']:.3f} | {rf['avg_total']:.3f} |")
+    lines.append(f"- **ADV1 已知边缘题**：当前为复合约束+例外题（含机密但不含外发→需审批），"
+                 f"三模型均输出正确 token（1.000），属已知漏分题；但在复合门槛下不影响判定"
+                 f"（弱锚点 {weakest['avg_total']:.3f} 仍明显低于 {GATE_WEAK_FLOOR:.2f} 结构地板、分离与强非满分均达标）。"
+                 f"保留为冻结版本边缘样本。")
+    lines.append(f"- **评分口径 v3**：format_extraction 的 content 已改为「值匹配（不卡键名）+ 数值容错」、"
+                 f"format 改为「输出合法 JSON 对象即合规」；因此原「公平格式情景 B」诊断已无必要"
+                 f"（主键名差异不再导致 content 被清零）。结构地板 0.60 仍由 format0.3+closure0.3 "
+                 f"构成，难度门逻辑不变。")
     lines.append("")
     lines.append("## 3. 难度桶聚合（标注 difficulty × 真实表现）\n")
     lines.append("| 标注难度 | 题数 | 桶内 mean_total | 桶内 mean_违背率 |")
@@ -388,6 +363,9 @@ def main(argv=None):
     if not coverage_ok:
         print(f"  [WARN] coverage: {len(scored_ids)}/{len(config_ids)} tasks scored; "
               f"missing={missing_answer_ids}; orphan={orphan_answer_ids}")
+    if empty_or_error:
+        print(f"  [WARN] data quality: {empty_or_error} record(s) empty or errored "
+              f"(scored as 0; check API keys / network before trusting the gate)")
     print(f"  gate: weak_ok={weak_ok} sep_ok={sep_ok} strong_discrim={strong_discrim} "
           f"-> {'PASS ✅' if gate_pass else 'FAIL ❌'}")
     print(f"  leaking tasks ({len(leaking)}): {', '.join(leaking) if leaking else 'none'}")
