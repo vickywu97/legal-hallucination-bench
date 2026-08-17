@@ -5,6 +5,32 @@
 
 ---
 
+## 2026-08-17 — 新增子项目：中文 To B 指令遵循评测基准（难度门收口）
+
+> 模块位置：`projects/instruction_following_bench/`，与主 `benchmark/` 法条幻觉引擎并列，
+> 把作品集从「法律幻觉评测」扩展到「指令遵循质量评测」双评测维度。纯标准库、离线、规则化评分，28 单测全绿。
+
+### 新增（指令遵循基准 + 难度门）
+- **中文企业 To B 封闭指令场景**：覆盖格式提取 / 条件规则 / Few-shot 归类 / 多轮约束四类；
+  公开 21 题（hard/medium 标注）+ 隐藏 5 题（`hidden_tasks.json`，**gitignored 不入库**，防刷分）。
+- **规则化三维评分（无 LLM 裁判）**：`total = 0.3·format + 0.4·content + 0.3·closure`；
+  `multi_turn_constraint` 输出 `allowed` 之外 token → 三维全 0（total=0.0）；closure 零容忍（任何 JSON 代码块包裹或多余散文 = 0）。
+- **难度门收口（关键设计洞察）**：原"强锚点 ≤0.60 / 弱锚点 ≤0.35"绝对门槛在三维加权评分下**数学上不可达**——
+  任何合规结构化输出自带 **0.60 结构地板**（format 1.0 + closure 1.0），强模型只要遵循格式即 ≥0.60。
+  重定义为复合 `v2_composite` 口径：弱锚点（GLM-4-Flash）≤ **0.60 结构性地板** + 强弱分离 ≥ **0.30** + 强锚点不得满分（avg<1.0 且 单题违背≥1）。
+- **冻结锚点**：强锚点 = max(DeepSeek-V3, Qwen-Max)，弱锚点 = GLM-4-Flash（显式冻结，禁用"跑分最高模型"式漂移定义）。
+  `score.py` 顶部 `GATE_SPEC="v2_composite"` 关联注释，与冻结评分口径一并可溯源。
+- **真实数据验证（2026-08-17 复跑，PASS）**：DeepSeek-V3 0.936 / Qwen-Max 0.898 / GLM-4-Flash 0.525；
+  弱 gap −0.075（≤0.60 地板）、分离 0.411（≥0.30）、强锚点违背 4（≥1，非满分）。`gate: weak_ok=True sep_ok=True strong_discrim=True → PASS`。
+- 文档：`projects/instruction_following_bench/README.md`（复合门口径 + 锚点冻结段）、`difficulty_gate_report.md`（达标版含材料性质声明）。
+- 适配真实模型采集脚本 `projects/instruction_following_bench/models.py`（stdlib urllib 调 3 个国产模型，环境变量读 key）。
+
+### 实测（指令遵循基准，2026-08-17）
+- 漏分题收敛：v2 设计末次 6 题全模型 1.000 → 经任务升级（派生计算 / 规范化 / 反直觉外部知识 / 复合约束例外）后仅剩 ADV1 一题三模型均 1.0，复合口径下不影响门判定，已在报告 §2.1 记为已知边缘题。
+- 合规保护：材料为虚构 demo，`demo_note` 标注需核验的法规事实；绝不把虚构当真实排名 / 业绩。
+
+---
+
 ## v1.3 (2026-08-07) — 评测 ground truth 全文本落地 + 管线 10× 提速
 
 > 版本映射：`v1.3` 标签落在本次发布的 HEAD 提交上，涵盖 v1.2 之后的全部工作——
