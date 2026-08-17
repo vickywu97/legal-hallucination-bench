@@ -179,9 +179,9 @@ def main(argv=None):
     ap.add_argument("--tasks", default=TASKS_PATH)
     ap.add_argument("--out", default=LEADERBOARD_PATH)
     ap.add_argument("--include-hidden", action="store_true",
-                    help="also score the held-out hidden set (config/hidden/); "
-                         "used to prevent leaderboard gaming. The hidden tasks "
-                         "file is NOT published, so this only works where it exists.")
+                    help="also score the held-out hidden set (hidden_tasks.json at "
+                         "the project root, git-ignored and NOT published); used to "
+                         "prevent leaderboard gaming. Only works where that file exists.")
     args = ap.parse_args(argv)
 
     if args.score_answers:
