@@ -173,7 +173,7 @@ class OfflinePipelineTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             ans = os.path.join(d, "a.jsonl")
             with open(ans, "w", encoding="utf-8") as f:
-                f.write('{"task_id":"T1","model":"DemoModel","answer":"{\\"公司名称\\":\\"云岬智能装备股份有限公司\\",\\"合同金额\\":\\"1280000\\",\\"签订日期\\":\\"2026-07-15\\"}"}\n')
+                f.write('{"task_id":"T1","model":"DemoModel","answer":"{\\"客户\\":\\"瀚海精密机械有限公司\\",\\"应收净额\\":\\"2270000\\",\\"方向\\":\\"借\\"}"}\n')
             out = os.path.join(d, "lb.csv")
             rows = run.score_answers(ans, out_path=out)
             self.assertEqual(len(rows), 1)
@@ -224,7 +224,7 @@ class HiddenSetTests(unittest.TestCase):
             ans = os.path.join(d, "a.jsonl")
             # one public answer (T1 perfect) + one hidden answer (TH1 perfect)
             with open(ans, "w", encoding="utf-8") as f:
-                f.write('{"task_id":"T1","model":"M","answer":"{\\"公司名称\\":\\"云岬智能装备股份有限公司\\",\\"合同金额\\":\\"1280000\\",\\"签订日期\\":\\"2026-07-15\\"}"}\n')
+                f.write('{"task_id":"T1","model":"M","answer":"{\\"客户\\":\\"瀚海精密机械有限公司\\",\\"应收净额\\":\\"2270000\\",\\"方向\\":\\"借\\"}"}\n')
                 f.write('{"task_id":"TH1","model":"M","answer":"{\\"supplier\\":\\"瀚海精密机械有限公司\\",\\"quantity\\":\\"240\\",\\"result\\":\\"合格\\"}"}\n')
             out = os.path.join(d, "lb.csv")
             rows = run.score_answers(ans, out_path=out, hidden=True, hidden_path=hidden_path)

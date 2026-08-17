@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 """Rule-based scorer for the instruction-following benchmark.
 
+# 关联难度门版本：GATE_SPEC = "v2_composite" (见 difficulty_gate.py)。本 scorer 的三维
+# 加权口径（format0.3/content0.4/closure0.3，closure 对 ```json 围栏零容忍）与难度门
+# 冻结口径一并冻结，非经评审不得改动。
+
 Design guardrails
 -----------------
 * No LLM judge. Every dimension is computed by rules (regex / exact match),
