@@ -222,7 +222,60 @@
     "difficulty": "hard",
     "instruction": "只输出最终阿拉伯数字结果（保留两位小数，不要任何文字、单位、符号或解释）。示例：本金100万元、年利率4%、存一年利息多少万元 → 4.00。新输入：本金100万元、年利率5%、按季度复利存两年，利息多少万元 →",
     "input": "",
-    "expected": "10.45"
+      "expected": "10.45"
+  },
+  {
+    "id": "E1",
+    "type": "format_extraction",
+    "difficulty": "easy",
+    "instruction": "从以下文本提取“客户名称”，仅输出 JSON（不要解释、不要代码块包裹）：键名“客户名称”，值为下列文本中的客户名称原文。",
+    "input": "客户名称：北京晨光文具贸易有限公司。",
+    "expected": {
+      "客户名称": "北京晨光文具贸易有限公司"
+    }
+  },
+  {
+    "id": "E2",
+    "type": "format_extraction",
+    "difficulty": "easy",
+    "instruction": "从以下订单信息提取两项，仅输出 JSON（不要解释、不要代码块包裹）：键名“订单号”与“收货人”，值均照原文。",
+    "input": "订单号：PO-20260817-001；收货人：张敏。",
+    "expected": {
+      "订单号": "PO-20260817-001",
+      "收货人": "张敏"
+    }
+  },
+  {
+    "id": "E3",
+    "type": "format_extraction",
+    "difficulty": "easy",
+    "instruction": "从以下联系人信息提取两项，仅输出 JSON（不要解释、不要代码块包裹）：键名“邮箱”与“电话”，值均照原文。",
+    "input": "联系人邮箱：support@mingyuan.com；联系电话：010-88886666。",
+    "expected": {
+      "邮箱": "support@mingyuan.com",
+      "电话": "010-88886666"
+    }
+  },
+  {
+    "id": "E4",
+    "type": "format_extraction",
+    "difficulty": "easy",
+    "instruction": "从以下文本提取“签署日期”，仅输出 JSON（不要解释、不要代码块包裹）：键名“签署日期”，值为下列文本中的日期原文。",
+    "input": "合同签署日期：2026年5月20日。",
+    "expected": {
+      "签署日期": "2026年5月20日"
+    }
+  },
+  {
+    "id": "E5",
+    "type": "format_extraction",
+    "difficulty": "easy",
+    "instruction": "从以下付款信息提取两项，仅输出 JSON（不要解释、不要代码块包裹）：键名“付款方式”与“币种”，值均照原文。",
+    "input": "付款方式：电汇；币种：人民币。",
+    "expected": {
+      "付款方式": "电汇",
+      "币种": "人民币"
+    }
   },
   {
     "id": "FS1",

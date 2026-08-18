@@ -132,11 +132,19 @@ def build_prompt(task: dict) -> str:
     return f"{instr}\n{inp}" if inp else instr
 
 
-def generate_answers(tasks: list, models=None, out_path: str = "answers_ifb.jsonl") -> list:
+def generate_answers(tasks: list, models=None, out_path: str = "answers_ifb.jsonl",
+                     repeat: int = 1) -> list:
     """Call real models (requires API keys in env) and write answers jsonl.
 
-    Output record format (compatible with ``run.py --score-answers``)::
-        {"task_id": "T1", "model": "DeepSeek-V3", "answer": "..."}
+    Output record format (compatible with ``run.py --score-answers`` and
+    ``difficulty_gate``); with ``repeat > 1`` every request is issued N times
+    and all N raw outputs are kept so the gate can report a stability band::
+
+        {"task_id": "T1", "model": "DeepSeek-V3",
+         "answer": "<first output>", "outputs": ["<out 1>", ... "<out N>"]}
+
+    ``answer`` stays equal to ``outputs[0]`` for backward compatibility with
+    readers that score a single string.
     """
     selected = [m for m in MODELS if (models is None or m["label"] in models)]
     records = []
@@ -146,13 +154,18 @@ def generate_answers(tasks: list, models=None, out_path: str = "answers_ifb.json
             continue
         print(f"[run ] {m['label']}")
         for t in tasks:
-            rec = {"task_id": t["id"], "model": m["label"]}
+            outputs = []
+            err = None
             try:
-                rec["answer"] = call_model(m, build_prompt(t))
+                for _ in range(max(1, repeat)):
+                    outputs.append(call_model(m, build_prompt(t)))
             except Exception as e:  # never abort the whole run on one failure
-                rec["answer"] = ""
-                rec["_error"] = str(e)
+                err = str(e)
                 print(f"    [fail] {m['label']} {t['id']}: {e}")
+            rec = {"task_id": t["id"], "model": m["label"], "outputs": outputs}
+            if err is not None:
+                rec["_error"] = err
+            rec["answer"] = outputs[0] if outputs else ""
             records.append(rec)
             time.sleep(0.3)
     # Atomic write: stage to a .tmp file then replace, so an interrupted run
@@ -182,6 +195,10 @@ def main(argv=None):
     ap.add_argument("--models", nargs="*", default=None,
                     help="subset of model labels, e.g. DeepSeek-V3 GLM-4-Flash "
                          "(default: all models whose API key env var is set)")
+    ap.add_argument("--repeat", type=int, default=1,
+                    help="repeat each (model, task) call N times and store all "
+                         "outputs, so the gate can report a mean+/-std stability "
+                         "band (default: 1, i.e. a single call per task)")
     args = ap.parse_args(argv)
 
     loaded = load_dotenv_local()
@@ -191,7 +208,8 @@ def main(argv=None):
     tasks_path = args.tasks or os.path.join(
         os.path.dirname(os.path.abspath(__file__)), "config", "tasks.json")
     tasks = load_tasks(tasks_path)
-    generate_answers(tasks, models=args.models or None, out_path=args.out)
+    generate_answers(tasks, models=args.models or None, out_path=args.out,
+                     repeat=max(1, args.repeat))
     return 0
 
 

@@ -11,7 +11,7 @@ import os
 import tempfile
 import unittest
 
-from projects.instruction_following_bench import score, run, report, models
+from projects.instruction_following_bench import score, run, report, models, difficulty_gate
 
 
 # ---- fixtures (fictional demo data, mirrors config/tasks.json) ----
@@ -325,6 +325,131 @@ class HiddenTaskTests(unittest.TestCase):
                          "public tasks.json must not carry any hidden flag")
         ids = {t["id"] for t in public}
         self.assertNotIn("TH1", ids)  # a known hidden id must not appear publicly
+
+
+class ScoreOutputsTests(unittest.TestCase):
+    def test_scores_each_repeated_output(self):
+        task = {"id": "T1", "type": "format_extraction",
+                "expected": {"客户": "瀚海精密机械有限公司", "金额": "2270000"}}
+        outs = [
+            '{"客户":"瀚海精密机械有限公司","金额":"2270000"}',        # perfect -> 1.0
+            '{"客户":"WRONG_CLIENT","金额":"WRONG_AMT"}',             # all values wrong -> 0.6
+        ]
+        scored = score.score_outputs(task, outs)
+        self.assertEqual(len(scored), 2)
+        self.assertEqual(scored[0]["total"], 1.0)
+        self.assertAlmostEqual(scored[1]["total"], 0.6, places=4)
+
+    def test_single_output_list_ok(self):
+        task = {"id": "T1", "type": "format_extraction", "expected": {"a": "1"}}
+        scored = score.score_outputs(task, ['{"a":"1"}'])
+        self.assertEqual(scored[0]["total"], 1.0)
+
+
+class DiscriminationGateTests(unittest.TestCase):
+    """The gate was reframed (v3_discrimination) so that:
+
+    * separation on the discriminating subset (hard/medium) is DECISIVE,
+    * strong not-perfect is DECISIVE,
+    * weak <= 0.60 floor is DESCRIPTIVE (may be exceeded once easy tasks exist).
+    """
+    @staticmethod
+    def _tasks():
+        tasks = []
+        for i in range(21):  # 21 discriminating tasks (hard/medium)
+            tasks.append({
+                "id": f"T{i}", "type": "format_extraction",
+                "difficulty": "medium" if i >= 19 else "hard",
+                "expected": {"field": f"val{i}"},
+            })
+        for i in range(5):   # 5 easy calibration tasks
+            tasks.append({
+                "id": f"E{i}", "type": "format_extraction",
+                "difficulty": "easy", "expected": {"x": f"e{i}"},
+            })
+        return {t["id"]: t for t in tasks}
+
+    @staticmethod
+    def _out(task, mode):
+        exp = task["expected"]
+        if mode == "correct":
+            return json.dumps(exp, ensure_ascii=False)
+        wrong = {k: "WRONG_" + str(v) for k, v in exp.items()}
+        return json.dumps(wrong, ensure_ascii=False)
+
+    def _build(self, glm_disc_mode):
+        tasks = self._tasks()
+        disc_ids = [t["id"] for t in tasks.values() if t["difficulty"] in ("hard", "medium")]
+        easy_ids = [t["id"] for t in tasks.values() if t["difficulty"] == "easy"]
+        modes = {
+            "DeepSeek-V3": {tid: "wrong" for tid in ("T19", "T20")},  # 2 violations
+            "Qwen-Max": {tid: "wrong" for tid in ("T19", "T20")},
+            "GLM-4-Flash": {**{tid: glm_disc_mode for tid in disc_ids},
+                            **{tid: "correct" for tid in easy_ids}},
+        }
+        by_model = {}
+        for model, tm in modes.items():
+            recs = []
+            for t in tasks.values():
+                recs.append({"task_id": t["id"], "model": model,
+                             "outputs": [self._out(t, tm.get(t["id"], "correct"))]})
+            by_model[model] = recs
+        return by_model, tasks
+
+    def test_gate_passes_with_separation_and_strong_not_perfect(self):
+        by_model, tasks = self._build(glm_disc_mode="wrong")
+        R = difficulty_gate.compute_gate(by_model, tasks)
+        self.assertTrue(R["sep_ok"])
+        self.assertTrue(R["strong_discrim"])
+        self.assertTrue(R["gate_pass"])
+        self.assertGreaterEqual(R["sep_disc"], 0.30)
+        self.assertEqual(R["strong_violations"], 2)
+        # weak anchor rises above the 0.60 floor (easy tasks solved) -> DESCRIPTIVE
+        self.assertGreater(R["weakest"]["avg_total"], 0.60)
+        self.assertFalse(R["weak_ok"])  # descriptive flag, must NOT fail the gate
+        self.assertEqual(R["n_easy"], 5)
+
+    def test_gate_fails_when_no_separation(self):
+        # GLM also solves the discriminating subset -> separation collapses
+        by_model, tasks = self._build(glm_disc_mode="correct")
+        R = difficulty_gate.compute_gate(by_model, tasks)
+        self.assertLess(R["sep_disc"], 0.30)
+        self.assertFalse(R["sep_ok"])
+        self.assertFalse(R["gate_pass"])
+
+    def test_repeat_produces_std_band(self):
+        tasks = self._tasks()
+        t0 = next(iter(tasks.values()))
+        by_model = {
+            "DeepSeek-V3": [{"task_id": t0["id"], "model": "DeepSeek-V3",
+                             "outputs": [self._out(t0, "correct"),
+                                         self._out(t0, "wrong"),
+                                         self._out(t0, "correct")]}],
+        }
+        R = difficulty_gate.compute_gate(by_model, tasks)
+        row = next(r for r in R["model_rows"] if r["model"] == "DeepSeek-V3")
+        self.assertGreater(row["std_total"], 0.0)
+        self.assertEqual(R["repeat"], 3)
+
+
+class EasyTasksTests(unittest.TestCase):
+    """Validation of the easy calibration tasks added in P1 (v3_discrimination)."""
+    def test_easy_tasks_present_valid_and_gradient(self):
+        tasks = run.load_tasks()  # returns a list of task dicts
+        easy = [t for t in tasks if t.get("difficulty") == "easy"]
+        self.assertEqual(len(easy), 5)
+        for t in easy:
+            self.assertEqual(t["type"], "format_extraction")
+            self.assertTrue(t.get("expected"), f"{t['id']} missing expected")
+            self.assertIn("instruction", t)
+        # ids unique, E1-E5 used
+        ids = {t["id"] for t in tasks}
+        self.assertEqual(len(ids), len(tasks))
+        for eid in ("E1", "E2", "E3", "E4", "E5"):
+            self.assertIn(eid, ids)
+        # the difficulty label now spans a real gradient
+        labels = {t.get("difficulty") for t in tasks}
+        self.assertLessEqual(labels, {"easy", "medium", "hard"})
 
 
 if __name__ == "__main__":

@@ -40,6 +40,25 @@
 
 ---
 
+## 2026-08-18 — P1 严谨性：区分度门 + easy 校准题 + 方差
+
+> 延续 2026-08-17 的指令遵循基准。把难度门从"复合 v2_composite"**重框为区分度门 v3_discrimination**，
+> 并补 easy 校准题与 `--repeat N` 稳定性带。代码改动已落盘、34 单测全绿、沙箱端到端复跑 PASS；
+> **权威复跑数字待用户在 Mac 执行（`models --repeat N` + `difficulty_gate`）后确认**。
+
+### 改进（P1：难度门诚实化 + 校准梯度 + 稳定性）
+- **难度门重框为「区分度门」`v3_discrimination`**：原 `v2_composite` 的"弱锚点 ≤ 0.60 结构地板"因 0.60 是合规结构化输出的**结构地板**（format0.3+closure0.3，任何合规模型天然≥0.60），故对被测模型近乎恒真、几乎无区分力（测的是"是否合规"而非"任务是否难"）。
+  现明确：**两条决定性条件 = ① 区分型子集（标注 `hard`/`medium` 的题）上的分离度 ≥ 0.30；② 强锚点不得满分（avg<1.0 且单题违背≥1）**；**弱锚点 ≤ 0.60 降为【说明性】参考**（引入 easy 校准题后弱锚点自然升至地板之上，属预期，不影响门判定）。门的精神诚实陈述为"bench 能否区分模型 + 最强模型未触顶"，而非误导性的"弱模型被压到地板下"。
+- **新增 5 道 easy 校准题（E1–E5）**：纯照抄提取、无计算/无外部知识、格式简单；使 `difficulty` 标签呈真实梯度（easy/medium/hard 三级均有样本），并作为"本 bench 并非对所有模型都不可解"的校准基线。公开题量 21 → **26**（格式提取 13 / 条件规则 8 / Few-shot 2 / 多轮 3）。
+- **`--repeat N` 稳定性带**：`models.py` 支持每 (模型,题) 重复调用 N 次并保留全部输出；`difficulty_gate.py` 对 N 次输出评分后报告各模型 **mean±std**（std 为稳定性带，不作为独立判定项）；门按 mean 判定。`score.py` 新增 `score_outputs()` 复用单输出评分。
+- **`compute_gate()` 可测试化重构**：`difficulty_gate.py` 的 `main()` 拆为 `compute_gate()`（纯计算，返回结果 dict）+ `render_report()`（渲染 markdown），便于单测与离线自验；分离度在区分型子集上计算，easy 题显式排除。
+- **测试同步**：新增 `DiscriminationGateTests`（分离度决定性 / 强非满分决定性 / 弱≤0.60 说明性 / 无分离则门败 / `--repeat` 出 std 带）、`EasyTasksTests`（E1–E5 存在且合法、难度梯度）、`ScoreOutputsTests`；单测 **28 → 34 绿**。沙箱端到端（合成答案 + 真实 tasks.json）确认门 PASS、弱锚点 0.608（>0.60，说明性不致命）、分离 0.448、std 带渲染正常。
+
+### 待办（需 Mac 真实复跑）
+- 用户在 Mac 执行 `python3 -S -m projects.instruction_following_bench.models --repeat 3 --out answers_ifb.jsonl` 后跑 `difficulty_gate`，得 v3_discrimination 权威数字并刷新 `difficulty_gate_report.md`，再提交 + 推送（惯例：本地提交由 AI 做，push 由用户做）。
+
+---
+
 ## v1.3 (2026-08-07) — 评测 ground truth 全文本落地 + 管线 10× 提速
 
 > 版本映射：`v1.3` 标签落在本次发布的 HEAD 提交上，涵盖 v1.2 之后的全部工作——

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Rule-based scorer for the instruction-following benchmark.
 
-# 关联难度门版本：GATE_SPEC = "v2_composite" (见 difficulty_gate.py)。
+# 关联难度门版本：GATE_SPEC = "v3_discrimination" (见 difficulty_gate.py)。
 # 评分口径 v3（经用户评审授权更新）：三维加权 format0.3/content0.4/closure0.3 不变；
 # 其中 format_extraction 的 content 改为「值匹配（不卡键名）+ 数值容错」，
 # format 改为「输出合法 JSON 对象即合规」（结构维度），closure 仍对 ```json 围栏零容忍。
@@ -209,3 +209,14 @@ def score_task(task: dict, model_output: str) -> dict:
         "violation_rate": round(1 - total, 4),
         "notes": notes,
     }
+
+
+def score_outputs(task: dict, outputs: list) -> list:
+    """Score N repeated model outputs for one task.
+
+    Returns a list of score dicts (one per output). Used for stability /
+    variance reporting when the runner is invoked with ``--repeat N``.
+    Pure local rule scoring -- no API calls. The caller (difficulty_gate)
+    aggregates the per-output totals into mean +/- std.
+    """
+    return [score_task(task, o) for o in outputs]
