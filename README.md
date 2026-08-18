@@ -104,7 +104,7 @@ Verification (verdict / category / diff_level / score / candidate / ground_truth
 
 ```bash
 # 0) 仓库零依赖，直接用受管 Python 跑（-S 关闭 site-packages，纯标准库）
-python -S -m unittest discover -s tests        # 全量测试（当前 102 用例绿灯）
+python -S -m unittest discover -s tests        # 全量测试（当前 144 用例绿灯：benchmark 110 + 指令遵循基准 34）
 
 # 1) 开箱即用的离线评测（内置 good/bad/partial 三个玩具模型；写入独立目录，不碰真实报告）
 python -S -m benchmark.run --offline --out-dir sample_demo_reports
