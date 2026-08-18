@@ -186,8 +186,13 @@ def _name_pattern(law_map: dict) -> str:
 # law_map (its names feed the alternation), so it MUST be rebuilt for each
 # distinct map — a single global would keep the regex from the *first* map
 # seen (e.g. the real KB) and silently misfire for a later map (e.g. a test
-# fixture), causing under-recall. Keyed by id() so the cache is cheap and correct.
-_LAW_RE_CACHE: Dict[int, re.Pattern] = {}
+# fixture), causing under-recall.
+#
+# Keyed by the sorted tuple of law_map keys (a stable fingerprint), NOT by
+# id(law_map): CPython reuses object ids after GC, so an id-based cache could
+# return a stale regex built for a *different* law_map allocated at the same
+# recycled id — silently corrupting extraction.
+_LAW_RE_CACHE: Dict[tuple, re.Pattern] = {}
 
 _INTERP_RE = re.compile(r'法释〔?(\d{4})〕?\s*(\d+)\s*号')
 _GUIDING_RE = re.compile(r'指导?性?案例\s*第?\s*(\d+)\s*号')
@@ -196,7 +201,7 @@ _SUSPECT_TOKEN = re.compile(r'[条款项]')
 
 
 def _law_regex(law_map: dict) -> re.Pattern:
-    key = id(law_map)
+    key = tuple(sorted(law_map.keys()))
     cached = _LAW_RE_CACHE.get(key)
     if cached is None:
         pat = (

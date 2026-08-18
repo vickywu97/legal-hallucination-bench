@@ -122,7 +122,7 @@ _PUNCT_MAP = {
 }
 
 
-_NORM_CACHE: dict = {}
+_NORM_CACHE: Dict[str, str] = {}
 
 
 def normalize(text: str) -> str:
@@ -133,12 +133,21 @@ def normalize(text: str) -> str:
     verified articles for every citation, so caching per unique string object
     removes ~500k redundant regex passes per full run. Pure/cache-transparent:
     output is identical, only faster.
+
+    IMPORTANT: the cache is keyed by the string VALUE, never by ``id(text)``.
+    CPython reuses object ids after an object is garbage-collected, so an
+    id-based cache would return a stale normalized result for a *different*
+    string that happened to be allocated at the same (recycled) id. That
+    corrupted content_diff non-deterministically (e.g. identical ground-truth
+    and candidate scoring FABRICATED with cov=0, or false 张冠李戴 hits), and
+    only surfaced under heavy GC churn (the full test suite), not in isolation.
+    Strings are immutable and hashable, so keying by value is both correct and
+    safe.
     """
-    k = id(text)
-    v = _NORM_CACHE.get(k)
+    v = _NORM_CACHE.get(text)
     if v is None:
         v = _normalize_raw(text)
-        _NORM_CACHE[k] = v
+        _NORM_CACHE[text] = v
     return v
 
 
