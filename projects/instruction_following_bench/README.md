@@ -56,7 +56,7 @@ projects/instruction_following_bench/
 ```bash
 # 1) 离线 demo：用两个哑巴基线（随机 / 空输出）跑通整条 pipeline
 #    同时输出 leaderboard.csv 与 leaderboard.html（DEMO 脚手架，非真实排名）
-#    默认只包含公开 tasks.json（26 题），不含任何隐藏题。
+#    默认只包含公开 tasks.json（29 题），不含任何隐藏题。
 python -S -m projects.instruction_following_bench.run --offline
 
 # 1b) 含隐藏集：额外评分 hidden_tasks.json 中的题目（防刷分验证）。
@@ -101,10 +101,11 @@ python -S -m projects.instruction_following_bench.run \
 
 ## 任务规模与难度门
 
-当前 `config/tasks.json` 含 **公开 26 题**（格式提取 13 / 条件规则 8 / Few-shot 2 / 多轮 3），
-另有 **隐藏集 5 题**（`hidden_tasks.json`，不随仓库发布），合计本地可评 31 题。
+当前 `config/tasks.json` 含 **公开 29 题**（格式提取 13 / 条件规则 8 / Few-shot 5 / 多轮 3），
+另有 **隐藏集 15 题**（`hidden_tasks.json`，不随仓库发布），合计本地可评 44 题。
 v3 任务集已重设计：format 题强制规范化/派生计算/方向/年份推断、condition 题含反直觉外部知识记忆型（不给出规则），
 对抗/约束陷阱题升级为真实难度杠杆；并新增 5 道 **easy 校准题**（E1–E5，纯照抄提取）使难度成梯度。
+**P2/P3 已落地**：condition_rule 法律题由 8 道降至 3 道（其余 5 道改写为非法律 To B 规则：审批流路由 / SLA 升级 / 折扣审批 / 库存补货 / 数据导出合规）；Few-shot 由 2 扩至 5（新增 S4/FS2/FS3）；ADV1 加固为语义陷阱（弱模型误将「导出客户名单」判为外发而误拦，零漏分）；隐藏集由 5 扩至 15；排行榜新增 mean±std 稳定性带。
 **难度门已重框为区分度门 v3_discrimination（详见 `difficulty_gate_report.md` 与 `difficulty_gate.py`）**：
 - 【决定性】区分型子集（标注 `hard`/`medium` 的题）分离度 = strong_avg − weak_avg ≥ 0.30；
 - 【决定性】强锚点不得满分：avg_total < 1.0 且单题违背（total<0.85）≥ 1；
@@ -143,22 +144,22 @@ v3 任务集已重设计：format 题强制规范化/派生计算/方向/年份�
    - 修格式题伪影：5 道 `format_extraction` 的 `expected` 改为中文键名 + 照原文值，消除齐平 0.3 伪影。
    - 删 5 道漏分题（S2/S4/T3/M2/T4，全模型 ≥0.9）。
    - 扩 8 道 `condition_rule` 真·hard（CR1–CR8，自含规则、带 `demo_note` 需核验）。
-   - 当前 26 题（含 5 道 easy 校准题）；难度门已重框为区分度门 v3_discrimination（权威数字待 Mac 复跑确认）。
+   - 当前 29 题（含 5 道 easy 校准题）；难度门已重框为区分度门 v3_discrimination（权威数字见 `difficulty_gate_report.md`，区分度门 + 强非满分双决定性、弱锚点说明性）；P2/P3 已落地（condition 法律题降至 3、fewshot 扩至 5、ADV1 零漏分、隐藏集扩至 15、排行榜误差棒）。
 4. ~~输出 HTML 排行榜~~ ✅ 已完成（`report.py`，两种模式均产出 `leaderboard.html`）。
 5. ~~隐藏测试集~~ ✅ 已完成（防刷分机制）：
    - 隐藏题放在 `hidden_tasks.json`（项目根），与公开 `config/tasks.json` **物理隔离**，
      **已被 `.gitignore` 忽略，永不随仓库发布**。
-   - 默认 `run.py` 只加载公开 26 题；`leaderboard.csv / html` **均不含隐藏题**。
+   - 默认 `run.py` 只加载公开 29 题；`leaderboard.csv / html` **均不含隐藏题**；`--score-answers` 结合 `--repeat N` 时排行榜额外给出各模型 mean±std 稳定性带。
    - `--include-hidden` 才合并隐藏集（本地 26+5=31 题），且生成的报告标题旁加
      **`[含隐藏集]`** 标记，便于内部刷分监控；公开排行榜只展示各模型"隐藏集综合"得分，
      **绝不泄露隐藏题的 id 或内容**（HTML 中不含 `TH1…`）。
    - 真实评测时，隐藏集由评测方私存，模型训练方无法据此过拟合，从而保护排行榜公信力。
    - 已有 `HiddenTaskTests`（4 项）校验：隐藏题数 ≥5、四类至少三类、每题 `hidden:true`
      且不在公开集、默认加载不含隐藏题、`--include-hidden` 后合并数量正确。
-   - 注：当前 `hidden_tasks.json` 仅含 5 题本地样本用于验证 pipeline；正式发布前应扩充并加密保管。
+   - 注：当前 `hidden_tasks.json` 含 15 题本地样本（虚构演示）用于防刷分验证，git-ignored 不随仓库发布；正式发布前应再扩充并加密保管。
 6. ⬜ 待办：正式发布前扩充隐藏集、加密保管；对全部规则型 expected 做法规版本轴核验。
 
-7. ⬜ 待办（P1 已落地，待 Mac 复跑确认）：区分度门 `v3_discrimination` 已重框、新增 5 道 easy 校准题（E1–E5）、`--repeat N` 稳定性带已就绪；权威数字待接真实模型复跑 `models --repeat 3` + `difficulty_gate` 后刷新 `difficulty_gate_report.md` 并提交（惯例：本地提交由 AI 做，push 由用户做）。
+7. ✅ P1 已提交（`cf375d5`，区分度门 + easy 校准题 + `--repeat N`）；✅ P2/P3 代码已落地（condition 法律题降至 3、fewshot 扩至 5、ADV1 零漏分加固、隐藏集扩至 15、排行榜 mean±std 误差棒）：待 Mac 复跑 `models --repeat 3` + `difficulty_gate` 确认权威数字后刷新 `difficulty_gate_report.md` 并提交（惯例：本地提交由 AI 做，push 由用户做）。
 
 ## 隐藏测试集机制（防刷分）
 

@@ -75,18 +75,41 @@ def load_hidden(path: str = HIDDEN_PATH) -> list:
     return tasks
 
 
-def _score_pairs(pairs: list) -> dict:
+def _score_task_aggregate(t: dict, out) -> dict:
+    """Score one task output, or a list of repeated outputs (--repeat N).
+
+    Returns the per-dimension MEAN across the repeats (mirrors
+    difficulty_gate.py's aggregation so the leaderboard and the gate agree).
+    """
+    outs = out if isinstance(out, list) else [out]
     agg = {"format": 0.0, "content": 0.0, "closure": 0.0, "total": 0.0}
-    for t, out in pairs:
-        s = score_task(t, out)
+    for o in outs:
+        s = score_task(t, o)
         for k in agg:
             agg[k] += s[k]
-    n = max(len(pairs), 1)
-    return {k: round(agg[k] / n, 4) for k in agg}
+    n = max(len(outs), 1)
+    return {k: agg[k] / n for k in agg}
+
+
+def _pstdev(xs) -> float:
+    """Population standard deviation (stability band across tasks)."""
+    if len(xs) < 2:
+        return 0.0
+    m = sum(xs) / len(xs)
+    return (sum((x - m) ** 2 for x in xs) / len(xs)) ** 0.5
 
 
 def _row_from(model: str, public_pairs: list, hidden_pairs=None) -> dict:
-    pub = _score_pairs(public_pairs)
+    pub_task_totals = []
+    agg = {"format": 0.0, "content": 0.0, "closure": 0.0, "total": 0.0}
+    for t, out in public_pairs:
+        g = _score_task_aggregate(t, out)
+        for k in agg:
+            agg[k] += g[k]
+        pub_task_totals.append(g["total"])
+    n = max(len(public_pairs), 1)
+    pub = {k: round(agg[k] / n, 4) for k in agg}
+    std = round(_pstdev(pub_task_totals), 4)
     row = {
         "model": model,
         "tasks": len(public_pairs),
@@ -94,12 +117,22 @@ def _row_from(model: str, public_pairs: list, hidden_pairs=None) -> dict:
         "avg_content": pub["content"],
         "avg_closure": pub["closure"],
         "avg_total": pub["total"],
+        "avg_total_std": std,
         "instruction_violation_rate": round(1 - pub["total"], 4),
     }
     if hidden_pairs:
-        hid = _score_pairs(hidden_pairs)
+        hid_task_totals = []
+        ha = {"format": 0.0, "content": 0.0, "closure": 0.0, "total": 0.0}
+        for t, out in hidden_pairs:
+            g = _score_task_aggregate(t, out)
+            for k in ha:
+                ha[k] += g[k]
+            hid_task_totals.append(g["total"])
+        hn = max(len(hidden_pairs), 1)
+        hid = {k: round(ha[k] / hn, 4) for k in ha}
         row["hidden_tasks"] = len(hidden_pairs)
         row["hidden_total"] = hid["total"]
+        row["hidden_total_std"] = round(_pstdev(hid_task_totals), 4)
         row["hidden_violation"] = round(1 - hid["total"], 4)
     return row
 
@@ -141,10 +174,15 @@ def score_answers(answers_path: str, tasks_path: str = TASKS_PATH,
         pub_pairs, hid_pairs = [], []
         for r in recs:
             tid = r["task_id"]
+            # Prefer the repeated-outputs list (--repeat N); fall back to the
+            # single 'answer' for back-compat with older answers files.
+            out = r.get("outputs")
+            if not out:
+                out = r.get("answer", "")
             if tid in public_by_id:
-                pub_pairs.append((public_by_id[tid], r.get("answer", "")))
+                pub_pairs.append((public_by_id[tid], out))
             elif tid in hidden_by_id:
-                hid_pairs.append((hidden_by_id[tid], r.get("answer", "")))
+                hid_pairs.append((hidden_by_id[tid], out))
         rows.append(_row_from(model, pub_pairs, hid_pairs or None))
     rows.sort(key=lambda r: r["avg_total"], reverse=True)
     _write(rows, out_path)

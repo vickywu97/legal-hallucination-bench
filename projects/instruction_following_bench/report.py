@@ -33,10 +33,13 @@ def _esc(value) -> str:
 
 
 def _row_cells(r: dict, hidden_count: int = 0) -> str:
+    std = r.get("avg_total_std", 0.0)
+    total_cell = f"<b>{r['avg_total']:.3f}</b> <span class='std'>±{std:.3f}</span>"
     hidden_cell = ""
     if hidden_count > 0:
         if "hidden_total" in r:
-            hidden_cell = f"<td>{r['hidden_total']:.3f}</td>"
+            hstd = r.get("hidden_total_std", 0.0)
+            hidden_cell = f"<td>{r['hidden_total']:.3f} <span class='std'>±{hstd:.3f}</span></td>"
         else:
             hidden_cell = "<td>—</td>"
     return (
@@ -45,7 +48,8 @@ def _row_cells(r: dict, hidden_count: int = 0) -> str:
         f"<td>{r['avg_format']:.3f}</td>"
         f"<td>{r['avg_content']:.3f}</td>"
         f"<td>{r['avg_closure']:.3f}</td>"
-        f"<td><b>{r['avg_total']:.3f}</b></td>"
+        f"<td>{total_cell}</td>"
+        f"<td>{std:.3f}</td>"
         f"<td>{r['instruction_violation_rate']:.3f}</td>"
         f"{hidden_cell}"
     )
@@ -101,6 +105,7 @@ def build_html(rows: list, mode: str = "demo", hidden_count: int = 0,
   td:first-child {{ text-align: left; font-weight: 600; }}
   .bar-wrap {{ background: #eee; border-radius: 4px; min-width: 130px; }}
   .bar {{ color: #fff; font-size: .8rem; padding: 2px 4px; border-radius: 4px; text-align: right; white-space: nowrap; }}
+  .std {{ color: #888; font-size: .8rem; }}
   .disclaimer {{ margin-top: 1.5rem; font-size: .8rem; color: #777; border-top: 1px solid #eee; padding-top: .8rem; line-height: 1.5; }}
 </style>
 </head>
@@ -111,7 +116,7 @@ def build_html(rows: list, mode: str = "demo", hidden_count: int = 0,
 <table>
   <thead><tr>
     <th>模型</th><th>题数</th><th>格式(30%)</th><th>内容(40%)</th><th>封闭性(30%)</th>
-    <th>综合</th><th>指令违背率</th>
+    <th>综合</th><th>稳定性(std)</th><th>指令违背率</th>
     {hidden_th}
   </tr></thead>
   <tbody>

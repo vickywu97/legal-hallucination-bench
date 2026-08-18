@@ -7,22 +7,32 @@
 
 ## 1. 这是什么
 
-`hidden_tasks.json` 是与公开 `config/tasks.json`（21 题）**分离存放**的留底隐藏题集。
-当前含 **5 题**：
+`hidden_tasks.json` 是与公开 `config/tasks.json`（29 题）**分离存放**的留底隐藏题集。
+当前含 **15 题**（TH1–TH15）：
 
 | id | 类型 | 难度 |
 | --- | --- | --- |
 | TH1 | format_extraction（格式提取） | medium |
 | TH2 | format_extraction（格式提取） | hard |
-| TH3 | condition_rule（条件规则） | medium |
-| TH4 | condition_rule（条件规则） | hard |
+| TH3 | condition_rule（条件规则·法律） | medium |
+| TH4 | condition_rule（条件规则·法律） | hard |
 | TH5 | multi_turn_constraint（多轮约束） | hard |
+| TH6 | format_extraction（格式提取·计算） | hard |
+| TH7 | format_extraction（格式提取） | medium |
+| TH8 | condition_rule（条件规则·非法律） | medium |
+| TH9 | condition_rule（条件规则·非法律） | hard |
+| TH10 | condition_rule（条件规则·法律） | hard |
+| TH11 | fewshot_classify（小样本分类） | medium |
+| TH12 | fewshot_classify（小样本分类） | hard |
+| TH13 | multi_turn_constraint（多轮约束） | medium |
+| TH14 | multi_turn_constraint（多轮约束） | hard |
+| TH15 | format_extraction（格式提取·日期） | hard |
 
-每题带 `hidden: true` + `difficulty` + `demo_note`（虚构演示数据声明）。
+每题带 `hidden: true` + `difficulty` + `demo_note`（虚构演示数据声明）。类型覆盖四类，且含法律 / 非法律两种 condition_rule，与公开集同口径防过拟合。
 
 ## 2. 目的：防刷分（anti-gaming）
 
-公开排行榜只展示公开 21 题的得分。如果有人**针对公开题刷分 / 过拟合**，隐藏集能独立验证
+公开排行榜只展示公开 29 题的得分。如果有人**针对公开题刷分 / 过拟合**，隐藏集能独立验证
 其泛化能力——隐藏集的**逐题内容永不外泄**，对外页面只聚合展示各模型的 `hidden_total`
 （隐藏集综合得分）一列。这样即便公开题刷到满分，也藏不住真实水平。
 

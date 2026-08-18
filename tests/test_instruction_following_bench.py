@@ -297,7 +297,7 @@ class HiddenTaskTests(unittest.TestCase):
 
     def test_hidden_count_and_type_coverage(self):
         hidden = self._load()
-        self.assertGreaterEqual(len(hidden), 5)
+        self.assertGreaterEqual(len(hidden), 10)  # expanded 5 -> >=10 (P3)
         types = {t["type"] for t in hidden}
         self.assertGreaterEqual(len(types), 3)  # at least 3 of the 4 task types
 
@@ -450,6 +450,78 @@ class EasyTasksTests(unittest.TestCase):
         # the difficulty label now spans a real gradient
         labels = {t.get("difficulty") for t in tasks}
         self.assertLessEqual(labels, {"easy", "medium", "hard"})
+
+
+class P2ContentTests(unittest.TestCase):
+    """P2 task-set restructuring: fewshot expansion (2 -> 5), ADV1 semantic
+    trap, and condition_rule legal -> non-legal To B rules."""
+    def test_new_fewshot_tasks_present_and_score(self):
+        tasks = {t["id"]: t for t in run.load_tasks()}
+        for fid in ("S4", "FS2", "FS3"):
+            self.assertIn(fid, tasks, f"{fid} missing from public tasks")
+            self.assertEqual(tasks[fid]["type"], "fewshot_classify")
+        # a fewshot task scores 1.0 when the model emits exactly the expected label
+        r = score.score_task(tasks["S4"], "P2")
+        self.assertEqual(r["total"], 1.0)
+        r = score.score_task(tasks["FS2"], "质")
+        self.assertEqual(r["total"], 1.0)
+        r = score.score_task(tasks["FS3"], "中")
+        self.assertEqual(r["total"], 1.0)
+
+    def test_adv1_trap_correct_internal_passes_weak_over_trigger_fails(self):
+        tasks = {t["id"]: t for t in run.load_tasks()}
+        adv1 = tasks["ADV1"]
+        self.assertEqual(adv1["allowed"], ["可放行"])
+        # strong model: parses 'internal share drive' -> 可放行 -> full score
+        r = score.score_task(adv1, "可放行")
+        self.assertEqual(r["total"], 1.0)
+        # weak model: latches onto '导出客户名单' -> 已拦截 -> outside allowed -> 0
+        r2 = score.score_task(adv1, "已拦截")
+        self.assertEqual(r2["total"], 0.0)
+
+    def test_condition_rule_count_unchanged_after_legal_to_nonlegal(self):
+        cond = [t for t in run.load_tasks() if t["type"] == "condition_rule"]
+        self.assertEqual(len(cond), 8)  # legal subset shrank, total preserved
+
+
+class LeaderboardStdTests(unittest.TestCase):
+    """P3: leaderboard reports a mean +/- std stability band from --repeat N."""
+
+    def test_row_from_computes_std_across_tasks(self):
+        tA = {"id": "A", "type": "format_extraction", "expected": {"x": "1"}}
+        tB = {"id": "B", "type": "format_extraction", "expected": {"x": "1"}}
+        # two tasks with DIFFERENT per-task means -> std must be > 0
+        pairs = [
+            (tA, ["{\"x\":\"1\"}", "{\"x\":\"WRONG\"}"]),  # mean (1.0 + 0.6)/2 = 0.8
+            (tB, ["{\"x\":\"1\"}", ""]),                     # mean (1.0 + 0.3)/2 = 0.65
+        ]
+        row = run._row_from("M", pairs)
+        self.assertIn("avg_total_std", row)
+        self.assertGreater(row["avg_total_std"], 0.0)
+        self.assertAlmostEqual(row["avg_total"], 0.725, places=3)
+
+    def test_score_answers_emits_std_column(self):
+        with tempfile.TemporaryDirectory() as d:
+            ans = os.path.join(d, "a.jsonl")
+            rec = {"task_id": "T1", "model": "M",
+                   "outputs": ['{"客户":"瀚海精密机械有限公司","应收净额":"2270000","方向":"借"}',
+                               "{}"]}
+            with open(ans, "w", encoding="utf-8") as f:
+                f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+            out = os.path.join(d, "lb.csv")
+            rows = run.score_answers(ans, out_path=out)
+            self.assertEqual(len(rows), 1)
+            self.assertIn("avg_total_std", rows[0])
+
+    def test_html_renders_std_column(self):
+        rows = [{
+            "model": "M", "tasks": 3, "avg_format": 0.9, "avg_content": 0.8,
+            "avg_closure": 1.0, "avg_total": 0.89, "avg_total_std": 0.07,
+            "instruction_violation_rate": 0.11,
+        }]
+        h = report.build_html(rows, "real")
+        self.assertIn("稳定性(std)", h)
+        self.assertIn("±0.070", h)
 
 
 if __name__ == "__main__":
