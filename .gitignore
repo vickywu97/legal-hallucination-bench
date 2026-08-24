@@ -41,5 +41,10 @@ projects/instruction_following_bench/hidden_tasks.json
 projects/instruction_following_bench/.env
 # project C: real model answer files (generated, not committed)
 answers_ifb*.jsonl
+# project C: difficulty-gate report is a GENERATED artifact keyed to a specific
+# answers file (now carries a sha256 provenance header). A stale copy must never
+# be committed as if authoritative, so it is git-ignored; regenerate after any
+# answers change with `python -S difficulty_gate.py --answers <path>`.
+projects/instruction_following_bench/difficulty_gate_report.md
 # project C: local backup of original tasks.json (kept for rollback, not committed)
 projects/instruction_following_bench/config/tasks.json.bak*

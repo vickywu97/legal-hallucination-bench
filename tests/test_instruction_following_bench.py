@@ -111,6 +111,34 @@ class ScorerMultiTurnTests(unittest.TestCase):
         self.assertEqual(r["closure"], 0.0)
 
 
+class ScorerNumericComputeTests(unittest.TestCase):
+    _T = {"id": "ADV2", "type": "numeric_compute", "expected": "10.45"}
+
+    def test_exact_number_full_score(self):
+        r = score.score_task(self._T, "10.45")
+        self.assertEqual(r["format"], 1.0)
+        self.assertEqual(r["content"], 1.0)
+        self.assertEqual(r["closure"], 1.0)
+        self.assertEqual(r["total"], 1.0)
+
+    def test_trailing_whitespace_still_full(self):
+        # closure is exact-token: surrounding whitespace is stripped, so it's OK
+        r = score.score_task(self._T, "10.45\n")
+        self.assertEqual(r["total"], 1.0)
+
+    def test_wrong_number_content_zero(self):
+        r = score.score_task(self._T, "9.50")
+        self.assertEqual(r["content"], 0.0)
+        self.assertEqual(r["closure"], 1.0)  # exact number -> closure satisfied
+        self.assertEqual(r["total"], 0.60)  # 0.30*format + 0 + 0.30*closure
+
+    def test_extra_text_breaks_closure(self):
+        r = score.score_task(self._T, "利息为10.45")
+        self.assertEqual(r["closure"], 0.0)
+        self.assertEqual(r["content"], 1.0)  # numeric value still matches
+        self.assertAlmostEqual(r["total"], 0.70, places=4)
+
+
 class TasksFileTests(unittest.TestCase):
     def test_coverage_minimums(self):
         tasks = run.load_tasks()
@@ -118,7 +146,7 @@ class TasksFileTests(unittest.TestCase):
         types = {t["type"] for t in tasks}
         self.assertEqual(types, {
             "format_extraction", "condition_rule",
-            "fewshot_classify", "multi_turn_constraint",
+            "fewshot_classify", "multi_turn_constraint", "numeric_compute",
         })
         # every task must carry an explicit difficulty label
         for t in tasks:
@@ -297,7 +325,7 @@ class HiddenTaskTests(unittest.TestCase):
 
     def test_hidden_count_and_type_coverage(self):
         hidden = self._load()
-        self.assertGreaterEqual(len(hidden), 10)  # expanded 5 -> >=10 (P3)
+        self.assertGreaterEqual(len(hidden), 15)  # hidden set TH1-TH15 (P3 expanded from 5)
         types = {t["type"] for t in hidden}
         self.assertGreaterEqual(len(types), 3)  # at least 3 of the 4 task types
 
@@ -356,7 +384,9 @@ class DiscriminationGateTests(unittest.TestCase):
     @staticmethod
     def _tasks():
         tasks = []
-        for i in range(21):  # 21 discriminating tasks (hard/medium)
+        for i in range(21):  # SYNTHETIC FIXTURE: 21 discriminating + 5 easy
+                          # (NOT the live config count; the real public set has
+                          # 24 discriminating tasks: 20 hard + 4 medium)
             tasks.append({
                 "id": f"T{i}", "type": "format_extraction",
                 "difficulty": "medium" if i >= 19 else "hard",

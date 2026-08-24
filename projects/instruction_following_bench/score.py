@@ -15,7 +15,9 @@ Design guardrails
     format  (0.3): output matches the required STRUCTURE
                    (a non-empty JSON object emitted, or an exact allowed token)
     content (0.4): format_extraction -> values match by VALUE (key-name agnostic,
-                   numeric tolerance); condition_rule -> eligible boolean; else label
+                   numeric tolerance); condition_rule -> eligible boolean;
+                   numeric_compute -> numeric tolerance on an exact-number output;
+                   fewshot_classify / multi_turn_constraint -> exact label/token
     closure (0.3): NO extra explanatory text beyond the required output
 * total = 0.3*format + 0.4*content + 0.3*closure
 * violation_rate (per task) = 1 - total
@@ -186,7 +188,29 @@ def score_task(task: dict, model_output: str) -> dict:
         exact = core in allowed
         format_score = 1.0 if exact else 0.0
         content_score = 1.0 if core == str(expected).strip() else 0.0
-        closure_ok = exact and (core == out)
+        # closure requires the output to be EXACTLY the required token. `core`
+        # is already stripped above, so `closure_ok = exact` is the consistent
+        # rule with fewshot_classify / numeric_compute (which also strip before
+        # comparing). The old `exact and (core == out)` only passed when `out`
+        # had no surrounding whitespace — that branch was silently masked by
+        # models.py stripping outputs before storage, but the scorer contract
+        # was inconsistent and would regress if any caller skipped the strip.
+        closure_ok = exact
+        residual = "" if closure_ok else out
+        if not closure_ok:
+            notes.append("output is not exactly the required token")
+
+    elif ttype == "numeric_compute":
+        # Output must be EXACTLY one number (no prose); compared with numeric
+        # tolerance so "10.45" == "10.45" robustly. Used for compute-and-output
+        # tasks (e.g. compound-interest) that are NOT free-form JSON extractions
+        # and NOT single-label classifications.
+        s = out.strip()
+        m = re.search(r"-?\d+(?:\.\d+)?", s)
+        num = m.group(0) if m else ""
+        format_score = 1.0 if num else 0.0
+        content_score = 1.0 if (num and _values_equal(num, str(expected).strip())) else 0.0
+        closure_ok = (num != "" and s == num)
         residual = "" if closure_ok else out
         if not closure_ok:
             notes.append("output is not exactly the required token")

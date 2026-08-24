@@ -60,15 +60,26 @@ Run:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import statistics
 import sys
+import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
 
-from score import score_task, score_outputs  # noqa: E402
+# Allow BOTH invocation styles so the script stays usable as written in the
+# README/docstring (`python -S difficulty_gate.py ...`) and as a module
+# (`python -S -m projects.instruction_following_bench.difficulty_gate`):
+# prefer the relative import (module style) and fall back to a flat import
+# with a sys.path shim (script style). Do NOT unconditionally mutate sys.path
+# at import time, or the module-style import breaks.
+try:
+    from .score import score_task, score_outputs  # noqa: E402
+except ImportError:  # script invocation from its own directory
+    sys.path.insert(0, HERE)
+    from score import score_task, score_outputs  # noqa: E402
 
 # ---- discrimination gate (v3_discrimination) ----
 # 区分度门：不再把"弱≤0.60"作为决定性条件（0.60 是合规结构化输出的结构地板，
@@ -183,14 +194,18 @@ def compute_gate(by_model: dict, tasks: dict) -> dict:
             scored = score_outputs(tasks[tid], outs)
             task_scores[tid][model] = [s["total"] for s in scored]
 
-    # ---- artifact detection (flat-capped format tasks = no discrimination) ----
-    artifact_tasks = []
+    # ---- flat-floor detection (all models pinned at the 0.60 structural floor
+    #      => format=1.0 + closure=1.0 but content=0 for EVERY model: the task
+    #      separates NOBODY on content. This is a genuine weakness signal, unlike
+    #      the old `<=0.35` test which could never trigger under the v3 floor
+    #      (any compliant JSON already scores >=0.60) -- that test was vacuous.
+    flat_floor_tasks = []
     for tid, t in tasks.items():
         if t.get("type") != "format_extraction":
             continue
         vals = [_mean(task_scores[tid][m]) for m in models if m in task_scores[tid]]
-        if vals and max(vals) <= 0.35:  # flat-capped, no discrimination
-            artifact_tasks.append(tid)
+        if vals and all(abs(v - 0.60) < 1e-9 for v in vals):
+            flat_floor_tasks.append(tid)
 
     # ---- per-task aggregate (mean + std across repeats, per model) ----
     per_task = []
@@ -293,6 +308,23 @@ def compute_gate(by_model: dict, tasks: dict) -> dict:
     strong_discrim = not strong_perfect                 # DECISIVE
     gate_pass = sep_ok and strong_discrim
 
+    # ---- honest gate STATUS (coverage honesty, B1) ----
+    # `gate_pass` reflects only the decisive conditions (separation + strong
+    # not perfect). But if the answer-coverage gap lands inside the
+    # *discriminating* subset (hard/medium), the separation number was computed
+    # on a PARTIAL set and is NOT a complete benchmark result -> it must NOT be
+    # stamped as a full PASS. We downgrade to PRELIMINARY so an incomplete run
+    # can never masquerade as a clean PASS (the headliner used to print "达标 ✅"
+    # while coverage_ok was False, only muttering a caveat in a sub-line).
+    missing_in_disc = [tid for tid in missing_answer_ids
+                       if tasks.get(tid, {}).get("difficulty") in DISCRIMINATING_DIFFICULTIES]
+    if not gate_pass:
+        gate_status = "FAIL"
+    elif missing_in_disc:
+        gate_status = "PRELIMINARY"
+    else:
+        gate_status = "PASS"
+
     # ---- leaking tasks (all models >= 0.9 -> no discrimination) ----
     # Split into by-design easy calibration (excluded from gate) vs genuine edge sample.
     leaking_easy = [p["id"] for p in per_task
@@ -318,10 +350,12 @@ def compute_gate(by_model: dict, tasks: dict) -> dict:
         "strong_discrim": strong_discrim,
         "weak_ok": weak_ok,
         "gate_pass": gate_pass,
+        "gate_status": gate_status,
+        "missing_in_disc": missing_in_disc,
         "leaking": leaking,
         "leaking_easy": leaking_easy,
         "leaking_edge": leaking_edge,
-        "artifact_tasks": artifact_tasks,
+        "flat_floor_tasks": flat_floor_tasks,
         "empty_or_error": empty_or_error,
         "coverage_ok": coverage_ok,
         "missing_answer_ids": missing_answer_ids,
@@ -342,6 +376,28 @@ def render_report(R: dict, args) -> str:
     """Render the markdown report from a compute_gate result dict."""
     lines = []
     lines.append("# 项目 C — 难度门量化报告（区分度门 v3_discrimination）\n")
+    # ---- answers provenance: bind this report to the EXACT answers file used ----
+    # so a stale report can never be mistaken for the current run's conclusion.
+    ans_path = getattr(args, "answers", None)
+    if ans_path and os.path.exists(ans_path):
+        try:
+            h = hashlib.sha256()
+            with open(ans_path, "rb") as fh:
+                for chunk in iter(lambda: fh.read(65536), b""):
+                    h.update(chunk)
+            st = os.stat(ans_path)
+            mtime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st.st_mtime))
+            lines.append("> **答案血缘（provenance）**：本报告数值由以下答案文件计算得出，"
+                         "复现须使用同一文件。")
+            lines.append(f"> - 路径：`{ans_path}`")
+            lines.append(f"> - sha256：`{h.hexdigest()}`")
+            lines.append(f"> - 修改时间：{mtime}")
+        except OSError as e:
+            lines.append(f"> **答案血缘**：读取 `{ans_path}` 失败（{e}），无法溯源。")
+    else:
+        lines.append("> **答案血缘**：未提供 answers 路径或文件不存在，本报告无法溯源，"
+                     "请勿据此对外引用结论。")
+    lines.append("")
     if not R["coverage_ok"]:
         lines.append(f"> ⚠️ **覆盖率告警（PRELIMINARY）**：`tasks.json` 共 "
                      f"**{R['n_tasks']}** 题，本次答案仅覆盖 "
@@ -403,26 +459,49 @@ def render_report(R: dict, args) -> str:
     lines.append(f"- **分离度（区分型子集 hard/medium）**= {R['sep_disc']:.3f}"
                  f"（下限 {GATE_SEP_MIN:.2f}，{'达标 ✅' if R['sep_ok'] else '未达标 ❌'}）；"
                  f"全量分离度（含 easy）= {R['sep_all']:.3f}（仅作对照）。")
-    lines.append(f"- **结论：难度门{'达标 ✅' if R['gate_pass'] else '未达标 ❌'}**——"
+    # ---- honest headline: PASS / PRELIMINARY / FAIL (see compute_gate) ----
+    status = R["gate_status"]
+    _mark = {"PASS": "达标 ✅", "PRELIMINARY": "初步达标 ⚠️", "FAIL": "未达标 ❌"}
+    suffix = ""
+    if status == "PRELIMINARY":
+        suffix = ("（⚠️ 覆盖率缺口落在区分型子集(hard/medium)，分离度基于部分题计算，"
+                  "本报告不构成完整 PASS 结论；须补全缺失题答案并重跑本门复算）")
+    elif not R["coverage_ok"]:
+        suffix = "（⚠️ 数值基于不完整覆盖，仅供参考，须重跑复算）"
+    lines.append(f"- **结论：难度门{_mark[status]}**——"
                  f"分离度{'已' if R['sep_ok'] else '未'}≥{GATE_SEP_MIN:.2f}（决定性）；"
                  f"强锚点{'已' if R['strong_discrim'] else '未'}非满分"
                  f"（avg<1.0 且 违背≥{STRONG_VIOL_MIN}题）；"
                  f"弱锚点{R['weakest']['avg_total']:.3f} "
                  f"{'仍≤' if R['weak_ok'] else '已>'} {GATE_WEAK_FLOOR:.2f} 结构地板"
-                 f"（说明性，不影响判定）。"
-                 + ("" if R["coverage_ok"] else "（⚠️ 数值基于不完整覆盖，仅供参考，须重跑复算）"))
+                 f"（说明性，不影响判定）。{suffix}")
     lines.append("")
     lines.append("### 2.1 评分伪影状态 与 任务演进\n")
-    lines.append(f"- **伪影已修复**：`format_extraction` 的 `expected` 键名统一为中文、值照原文，"
-                 f"齐平 0.300 的伪影题已清零（artifact_tasks={len(R['artifact_tasks'])}）。")
+    lines.append(f"- **齐平地板题（flat-floor，content 全 0）**：{len(R['flat_floor_tasks'])} 题"
+                 f"（{', '.join(R['flat_floor_tasks']) or '无'}）。此类题所有模型均恰好落在 0.60 结构地板"
+                 f"（format=1.0 + closure=1.0、content=0），对内容维度零区分度，是比旧"
+                 f"「≤0.35 伪影检测」更有意义的信号（旧检测在 v3 结构地板下永不可触发，恒为空）。")
     lines.append("- **任务演进**：经修伪影、删漏分题、扩 condition_rule 外部知识题、格式题改派生计算、"
                  "ADV1 改复合约束+例外；并新增 5 道 **easy 校准题**（E1–E5，纯照抄提取、"
                  "无计算/无外部知识），使 `difficulty` 标签呈梯度（easy/medium/hard 均有样本），"
                  "并作为‘本 bench 并非对所有模型都不可解’的校准基线。")
-    lines.append(f"- **ADV1 已知边缘题**：当前为复合约束+例外题（含机密但不含外发→需审批），"
-                 f"三模型均输出正确 token（1.000），属已知漏分题；但在区分度门下不影响判定"
-                 f"（弱锚点 {R['weakest']['avg_total']:.3f} 仍明显低于强锚点、分离与强非满分均达标）。"
-                 f"保留为冻结版本边缘样本。")
+    # ---- ADV1 status derived from DATA, never hardcoded (prevents the old
+    #      self-contradiction where the narrative said 1.000 but the table said 0.000) ----
+    adv1 = next((p for p in R["per_task"] if p["id"] == "ADV1"), None)
+    if adv1 is not None:
+        adv1_scores = " / ".join(
+            f"{m}={adv1['scores'].get(m, '-'):.3f}" for m in R["models"])
+        adv1_leak = "（全模型满分，漏分边缘题）" if all(
+            v >= 0.9 for v in adv1["scores"].values()) else ""
+        lines.append(f"- **ADV1（数据派生，非硬编码）**：当前实测 {adv1_scores}{adv1_leak}。"
+                     f"该题已加固为语义陷阱（含机密但不含外发→需审批；含'仅限内部使用'→可放行；"
+                     f"弱模型误拦输出规则未定义 token→落在 allowed 之外得 0）。"
+                     f"区分度门下不影响判定（弱锚点 {R['weakest']['avg_total']:.3f} 仍明显低于强锚点、"
+                     f"分离与强非满分均达标）。保留为冻结版本边缘样本。"
+                     f"注：若本题数值来自修复题面前的旧答案，须重跑 `models --repeat N` + 本门复算。")
+    else:
+        lines.append("- **ADV1**：本次答案未覆盖（无 ADV1 实测数据），跳过状态派生。"
+                     "（题面须字面含'仅限内部使用'触发词方可解。）")
     lines.append(f"- **评分口径 v3**：format_extraction 的 content 已改为「值匹配（不卡键名）+ 数值容错」、"
                  f"format 改为「输出合法 JSON 对象即合规」；因此原「公平格式情景 B」诊断已无必要"
                  f"（主键名差异不再导致 content 被清零）。结构地板 0.60 仍由 format0.3+closure0.3 "
