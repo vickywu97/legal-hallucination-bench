@@ -36,8 +36,11 @@ We therefore REFRAME the gate honestly as a **discrimination gate**:
     "easy" tasks (which every model solves) are intentionally EXCLUDED from the
     separation computation so they don't dilute the discrimination signal.
   * DECISIVE (2): strong not-perfect -- strong_avg < 1.0 AND the strong anchor
-    violates (total < 0.85) on >= 1 task. The best model must not ace the bench;
-    but it is EXPECTED to sit high -- strong models SHOULD follow instructions.
+    violates (total < 0.85) on >= 1 task. The best model must not ace the bench
+    (i.e. it must trip on >=1 task, proving the bench is not trivially
+    full-score-able); but it is EXPECTED to sit high -- strong models SHOULD
+    follow instructions. The *real* discrimination power is DECISIVE (1)
+    (separation >= 0.30), not this violation count.
   * DESCRIPTIVE (not decisive): weak anchor avg_total vs the 0.60 structural
     floor. Reported as context. Once easy calibration tasks exist, the weak
     anchor will naturally rise ABOVE 0.60 (it solves the easy tasks), which is
@@ -94,7 +97,9 @@ GATE_SPEC = "v3_discrimination"
 GATE_WEAK_FLOOR = 0.60        # 结构地板（说明性参考，非决定性）
 GATE_SEP_MIN = 0.30           # 区分型子集上的强弱分离下限（决定性）
 STRONG_VIOL_THRESHOLD = 0.85  # 单题"强锚点违背"判定线
-STRONG_VIOL_MIN = 1           # 强锚点至少违背题数（不得满分）
+STRONG_VIOL_MIN = 1           # 强锚点至少违背题数（不得满分）。门槛=1：最强模型
+                       # 必须在≥1题上"绊倒"(total<0.85)，证明 bench 并非可被满分通关；
+                       # 区分力的真正决定性条件是下方 GATE_SEP_MIN(分离度)，而非此题数。
 WEAK_FLOOR_DESCRIPTIVE = True  # 弱≤0.60 为说明性而非决定性
 DISCRIMINATING_DIFFICULTIES = ("hard", "medium")  # 参与分离度计算的子集
 

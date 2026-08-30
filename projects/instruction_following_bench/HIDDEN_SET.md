@@ -7,7 +7,7 @@
 
 ## 1. 这是什么
 
-`hidden_tasks.json` 是与公开 `config/tasks.json`（29 题）**分离存放**的留底隐藏题集。
+`hidden_tasks.json` 是与公开 `config/tasks.json`（35 题）**分离存放**的留底隐藏题集。
 当前含 **15 题**（TH1–TH15）：
 
 | id | 类型 | 难度 |
@@ -32,7 +32,7 @@
 
 ## 2. 目的：防刷分（anti-gaming）
 
-公开排行榜只展示公开 29 题的得分。如果有人**针对公开题刷分 / 过拟合**，隐藏集能独立验证
+公开排行榜只展示公开 35 题的得分。如果有人**针对公开题刷分 / 过拟合**，隐藏集能独立验证
 其泛化能力——隐藏集的**逐题内容永不外泄**，对外页面只聚合展示各模型的 `hidden_total`
 （隐藏集综合得分）一列。这样即便公开题刷到满分，也藏不住真实水平。
 
@@ -50,6 +50,19 @@ python3 -S -m projects.instruction_following_bench.run --score-answers answers_i
 ```bash
 python3 -S -m projects.instruction_following_bench.run --offline --include-hidden
 ```
+
+> **生成本地隐藏集真实答案**：上面的 `--include-hidden` 评分依赖一份隐藏集答案文件
+>（`answers_ifb_hidden.jsonl`）。它**不会**随公开 `config/tasks.json` 自动生成——
+> 须用 `models.py --hidden` 显式生成（仅当你本地存有 `hidden_tasks.json` 时）：
+>
+> ```bash
+> python3 -S -m projects.instruction_following_bench.models --repeat 3 --out answers_ifb.jsonl --hidden
+> ```
+>
+> 该命令把公开 35 题写入 `answers_ifb.jsonl`、隐藏 15 题写入 `answers_ifb_hidden.jsonl`
+> （二者均被 `answers_ifb*.jsonl` 规则 gitignore）。再跑
+> `run.py --score-answers answers_ifb.jsonl --include-hidden` 即可让"隐藏集综合"列真正填充真实分数。
+> 若未生成隐藏答案直接 `--include-hidden`，排行榜仍正常产出，只是"隐藏集综合"列为空（会在日志中告警）。
 
 加上该旗标后，报告（`leaderboard.html`）会：
 

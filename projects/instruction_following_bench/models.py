@@ -132,21 +132,35 @@ def build_prompt(task: dict) -> str:
     return f"{instr}\n{inp}" if inp else instr
 
 
-def generate_answers(tasks: list, models=None, out_path: str = "answers_ifb.jsonl",
-                     repeat: int = 1) -> list:
-    """Call real models (requires API keys in env) and write answers jsonl.
+def _derive_hidden_out(out_path: str) -> str:
+    """Map a public answers path to its hidden counterpart.
 
-    Output record format (compatible with ``run.py --score-answers`` and
-    ``difficulty_gate``); with ``repeat > 1`` every request is issued N times
-    and all N raw outputs are kept so the gate can report a stability band::
-
-        {"task_id": "T1", "model": "DeepSeek-V3",
-         "answer": "<first output>", "outputs": ["<out 1>", ... "<out N>"]}
-
-    ``answer`` stays equal to ``outputs[0]`` for backward compatibility with
-    readers that score a single string.
+    e.g. ``answers_ifb.jsonl`` -> ``answers_ifb_hidden.jsonl``. The hidden file
+    is git-ignored (``answers_ifb*.jsonl``) and kept SEPARATE from the public
+    file so the difficulty gate (which reads the public file only) never sees
+    orphan hidden ids.
     """
-    selected = [m for m in MODELS if (models is None or m["label"] in models)]
+    if out_path.endswith(".jsonl"):
+        return out_path[:-len(".jsonl")] + "_hidden.jsonl"
+    return out_path + "_hidden"
+
+
+def _atomic_write(out_path: str, records: list) -> None:
+    """Write answer records atomically: stage to ``.tmp`` then replace.
+
+    An interrupted run leaves the previous good answers file intact instead of
+    truncating it.
+    """
+    tmp_path = out_path + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        for r in records:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    os.replace(tmp_path, out_path)
+    print(f"[done] {len(records)} records -> {out_path}")
+
+
+def _gen_for(selected: list, tasks: list, out_path: str, repeat: int) -> list:
+    """Generate answers for one task set and atomically write them."""
     records = []
     for m in selected:
         if not os.environ.get(m["key"], "").strip():
@@ -168,15 +182,39 @@ def generate_answers(tasks: list, models=None, out_path: str = "answers_ifb.json
             rec["answer"] = outputs[0] if outputs else ""
             records.append(rec)
             time.sleep(0.3)
-    # Atomic write: stage to a .tmp file then replace, so an interrupted run
-    # leaves the previous good answers_ifb.jsonl intact instead of truncating it.
-    tmp_path = out_path + ".tmp"
-    with open(tmp_path, "w", encoding="utf-8") as f:
-        for r in records:
-            f.write(json.dumps(r, ensure_ascii=False) + "\n")
-    os.replace(tmp_path, out_path)
-    print(f"[done] {len(records)} records -> {out_path}")
+    _atomic_write(out_path, records)
     return records
+
+
+def generate_answers(tasks: list, models=None, out_path: str = "answers_ifb.jsonl",
+                     repeat: int = 1, hidden_tasks=None,
+                     hidden_out_path=None) -> list:
+    """Call real models (requires API keys in env) and write answers jsonl.
+
+    Output record format (compatible with ``run.py --score-answers`` and
+    ``difficulty_gate``); with ``repeat > 1`` every request is issued N times
+    and all N raw outputs are kept so the gate can report a stability band::
+
+        {"task_id": "T1", "model": "DeepSeek-V3",
+         "answer": "<first output>", "outputs": ["<out 1>", ... "<out N>"]}
+
+    ``answer`` stays equal to ``outputs[0]`` for backward compatibility with
+    readers that score a single string.
+
+    When ``hidden_tasks`` is provided, the held-out set is ALSO generated and
+    written to ``hidden_out_path`` (default: ``<out_path>_hidden.jsonl``), kept
+    separate from the public file so the difficulty gate's coverage check never
+    flags hidden ids as orphans. This is what makes ``run.py --include-hidden``
+    actually populate the "隐藏集综合" anti-gaming column with real answers.
+    """
+    selected = [m for m in MODELS if (models is None or m["label"] in models)]
+    records = _gen_for(selected, tasks, out_path, repeat)
+    hidden_records = []
+    if hidden_tasks:
+        if hidden_out_path is None:
+            hidden_out_path = _derive_hidden_out(out_path)
+        hidden_records = _gen_for(selected, hidden_tasks, hidden_out_path, repeat)
+    return records + hidden_records
 
 
 def main(argv=None):
@@ -199,6 +237,12 @@ def main(argv=None):
                     help="repeat each (model, task) call N times and store all "
                          "outputs, so the gate can report a mean+/-std stability "
                          "band (default: 1, i.e. a single call per task)")
+    ap.add_argument("--hidden", action="store_true",
+                    help="also generate answers for the held-out hidden set "
+                         "(hidden_tasks.json, git-ignored, never published); "
+                         "written to <out>_hidden.jsonl so the public file stays "
+                         "clean for the difficulty gate. Enables run.py "
+                         "--include-hidden to populate the 防刷分 column.")
     args = ap.parse_args(argv)
 
     loaded = load_dotenv_local()
@@ -208,8 +252,20 @@ def main(argv=None):
     tasks_path = args.tasks or os.path.join(
         os.path.dirname(os.path.abspath(__file__)), "config", "tasks.json")
     tasks = load_tasks(tasks_path)
+
+    hidden_tasks = None
+    if args.hidden:
+        hp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hidden_tasks.json")
+        if os.path.exists(hp):
+            with open(hp, encoding="utf-8") as f:
+                data = json.load(f)
+            hidden_tasks = data if isinstance(data, list) else data.get("tasks", [])
+            print(f"[hidden] loaded {len(hidden_tasks)} hidden tasks from {hp}")
+        else:
+            print("[hidden] hidden_tasks.json not found; skipping hidden generation")
+
     generate_answers(tasks, models=args.models or None, out_path=args.out,
-                     repeat=max(1, args.repeat))
+                     repeat=max(1, args.repeat), hidden_tasks=hidden_tasks)
     return 0
 
 

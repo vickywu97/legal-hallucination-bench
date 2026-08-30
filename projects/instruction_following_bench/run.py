@@ -154,21 +154,40 @@ def run_offline(tasks_path: str = TASKS_PATH, out_path: str = LEADERBOARD_PATH,
     return rows
 
 
-def score_answers(answers_path: str, tasks_path: str = TASKS_PATH,
-                  out_path: str = LEADERBOARD_PATH, hidden: bool = False,
-                  hidden_path: str = HIDDEN_PATH) -> list:
-    public = load_tasks(tasks_path)
-    public_by_id = {t["id"]: t for t in public}
-    hidden_tasks = load_hidden(hidden_path) if hidden else []
-    hidden_by_id = {t["id"]: t for t in hidden_tasks}
+def _load_by_model(path: str) -> dict:
     by_model: dict = {}
-    with open(answers_path, encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:
                 continue
             r = json.loads(line)
             by_model.setdefault(r["model"], []).append(r)
+    return by_model
+
+
+def _derive_hidden_answers_path(answers_path: str) -> str:
+    """Map a public answers path to its hidden counterpart (mirrors
+    ``models._derive_hidden_out`` so the two modules agree on the filename)."""
+    if answers_path.endswith(".jsonl"):
+        return answers_path[:-len(".jsonl")] + "_hidden.jsonl"
+    return answers_path + "_hidden"
+
+
+def score_answers(answers_path: str, tasks_path: str = TASKS_PATH,
+                  out_path: str = LEADERBOARD_PATH, hidden: bool = False,
+                  hidden_path: str = HIDDEN_PATH,
+                  hidden_answers_path: str = None) -> list:
+    public = load_tasks(tasks_path)
+    public_by_id = {t["id"]: t for t in public}
+    hidden_tasks = load_hidden(hidden_path) if hidden else []
+    hidden_by_id = {t["id"]: t for t in hidden_tasks}
+    by_model = _load_by_model(answers_path)
+    # Merge the held-out hidden answers (if generated via models.py --hidden)
+    # so the 防刷分 "hidden_total" column is actually populated with real data.
+    if hidden_answers_path and os.path.exists(hidden_answers_path):
+        for model, recs in _load_by_model(hidden_answers_path).items():
+            by_model.setdefault(model, []).extend(recs)
     rows = []
     for model, recs in by_model.items():
         pub_pairs, hid_pairs = [], []
@@ -223,8 +242,18 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     if args.score_answers:
+        hidden_answers_path = None
+        if args.include_hidden:
+            hap = _derive_hidden_answers_path(args.score_answers)
+            if os.path.exists(hap):
+                hidden_answers_path = hap
+            else:
+                print(f"[warn] hidden answers not found at {hap}; run "
+                      f"`python -S -m projects.instruction_following_bench.models "
+                      f"--hidden` first to populate the 防刷分 column")
         rows = score_answers(args.score_answers, args.tasks, args.out,
-                             hidden=args.include_hidden)
+                             hidden=args.include_hidden,
+                             hidden_answers_path=hidden_answers_path)
         _print(rows, "REAL leaderboard from the provided answers file. "
                      "Scores are reproducible given the same answers.")
     else:

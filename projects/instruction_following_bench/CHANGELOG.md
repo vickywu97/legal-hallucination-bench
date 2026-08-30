@@ -10,6 +10,42 @@
 
 ---
 
+## 2026-08-27 — 稳健性改进（A2 防幻觉 / B2 强锚点牙齿 / 隐藏集真正可用 / 文档单一事实源）
+
+> 在 2026-08-24 冻结集基础上做"从头到尾彻底跑一遍"后的四项改进 + 全量重算。
+> **虚构示例 / 灵感草稿，非真实评测结论。**
+
+### 改进（均不移动任务集 / 不破冻结评分口径，纯增强与评价一致性）
+- **A2 · 防幻觉字段（score.py）**：`format_extraction` 的 content 评分原为"键名无关 + 值匹配"，但模型若在 JSON 中**捏造额外字段**（其值不在 expected 中）当时不扣分。新增 `_fabricated_values` 守卫：对匹配不到任何参考答案的"多余值"按比例扣减 content（surplus 值 = emitted/expected 之比）。键名重命名仍不算 fabricated，忠实答案不受影响。当前真实答案无模型捏造字段（实测从未触发），属防御性加固；新增单测锁定行为。
+- **B2（已评估并回退）· 强锚点牙齿（difficulty_gate.py）**：曾试将 `STRONG_VIOL_MIN` 由 1 提至 2（要求最强模型"持续"绊倒 ≥2 题才算不得满分）。但在**新鲜 repeat-1 公开答案**上强锚点(DeepSeek-V3)仅违背 1 题(avg 0.985)，min=2 导致门**假阴性 FAIL**——该门槛对被采样噪声过脆，且真正区分力在"分离度≥0.30"而非违背题数。故**回退到 1**：强锚点须在 ≥1 题上绊倒(证明 bench 非可满分通关)即为合理天花板；并将 0.60 结构地板的真实含义（测内容维度区分力、与任务难易无关）写入 README 说明性条目（E2 收口）。
+- **隐藏集真正可用（models.py + run.py）**：此前 `models.py` 只生成公开集答案，`run.py --include-hidden` 因无隐藏答案而"隐藏集综合"列**恒为空**，文档承诺的防刷分信号实际不可用。现新增 `models.py --hidden`：把本地 `hidden_tasks.json`（gitignored）也跑一遍，写入**独立**文件 `answers_ifb_hidden.jsonl`（与公开文件分离，避免难度门把隐藏 id 判为 orphan）。`run.py --score-answers ... --include-hidden` 现会合并该文件，使"隐藏集综合"列填充真实分数。README 步骤 2d 与 HIDDEN_SET.md 已补生成命令。
+- **文档单一事实源锁（tests）**：新增 `DocConsistencyTests`——直接解析 README.md / HIDDEN_SET.md 中声明的题量与类型分布，**必须等于** `config/tasks.json` + `hidden_tasks.json` 实际计数。根因是此前"代码改了文档没改"反复漂移；此测试让任一侧漂移立即 fail，杜绝历史重演。另增 `ModelsHiddenPathTests`、`HiddenAnswerMergeTests`、`A2` 两个回归用例。
+
+### 验证
+- **离线单测 50 项全绿**（repo root `python3 -S -m unittest tests.test_instruction_following_bench`）。
+- **难度门复算（公开集）**：当前 `answers_ifb.jsonl` 为**新鲜 repeat-1 公开答案**（35 题 × 3 锚点模型，0 错误，由 `models.py --hidden` 一并重生）。`difficulty_gate` 复算 **PASS ✅**（分离度 0.344 ≥ 0.30，强锚点违背 1 题 ≥1，弱锚点 0.690 为说明性）；`STRONG_VIOL_MIN=1`（B2 评估后回退，门槛=2 会在新鲜样本上假阴性）。
+- **隐藏集重生（新能力验证）**：`models.py --hidden` 单独重生隐藏 15 题 × 3 锚点模型（repeat 1）写入 `answers_ifb_hidden.jsonl`（0 错误）；`run.py --score-answers ... --include-hidden` 现合并该文件，产出含真实"隐藏集综合"列的排行榜。
+- 产物（answers_ifb*.jsonl / leaderboard.* / difficulty_gate_report.md）仍 gitignored，不入库；答案文件 sha256 血缘见报告头。
+
+### 待用户执行
+- 本地提交由 AI 完成；push 由用户执行（Mac）。SSH-over-443 或 `http.version=HTTP/1.1` 应对 GitHub 限速。
+
+---
+
+## 2026-08-24 — 答案补齐 + 区分度门强化（FS2 加难 / 新增 6 道 condition_rule）
+
+> 基于真实模型调用补齐答案并实测得分离度（非虚构假设）。**虚构示例 / 灵感草稿，非真实评测结论。**
+
+### 改动
+- **答案补齐（C1）**：沙箱 `.env` 三个锚点 key 实测有效，对外科式补齐 FS2/FS3/S4（fewshot，原缺答案导致门 PRELIMINARY）与重算 ADV1（修复题面后三模型均输出"可放行"）；27 题→29 题全量覆盖，门由 `PRELIMINARY` 升为 `PASS ✅`。ADV1 修复后失去陷阱区分力，沦为边缘样本（与 S4 同列）。
+- **FS2 加难**：原题"褪色严重"太直白，改为 near-miss 陷阱（吊牌未拆/想留着→暗示七天无理由，洗标成分虚标→根因质量）。实测 GLM-4-Flash 现答"其"（0.6），强锚点仍答"质"（1.0）。
+- **新增 6 道 condition_rule（N2/N4/P1/P2/P3/P4）**：沿"condition_rule To B 复合/或条件阈值"这一已证区分维度扩充。先造 12 个候选变体用 `models --repeat 1` 真实生成 + 本地 `score.py` 打分，仅采纳"强锚点=1.0 且 弱锚点<1.0"的干净变体（GLM 误读复合条件或加多余散文）；其余歧义/失败变体丢弃，避免触碰冻结集的公平口径。公开 condition_rule 由 8 → **14**，公开题量 29 → **35**，本地合计 35+15=50。
+- **S4 / ADV1 保留冻结**：两轮共 9 个加难变体实测 GLM-4-Flash 全部正确解出，能逼其翻车的变体同时拖垮强锚点（降级门），属歧义不可取。leaking(edge) 仅剩 S4、ADV1 两项，符合"允许少量边缘样本"设计。
+- **门复算**：区分型子集分离度 **0.334 → 0.351+**（新增 6 题进一步抬升），`gate_status` 仍为 **PASS ✅**；DeepSeek-V3 / Qwen-Max / GLM-4-Flash 表现稳定。
+- **文档同步**：README 题量/类型分布/难度分布/覆盖率告警全部更新为 35/14/26-hard/全覆盖；测试 `test_condition_rule_count` 断言 8 → 14。
+
+---
+
 ## 2026-08-19 — 彻底复查整改（计数纠偏 / 报告硬化 / ADV1 修复 / 类型补完）
 
 > 基于 2026-08-18 全项目彻底复查报告落地修复。**虚构示例 / 灵感草稿，非真实评测结论。**

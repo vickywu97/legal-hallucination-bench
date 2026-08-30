@@ -10,6 +10,7 @@ import json
 import os
 import tempfile
 import unittest
+from collections import Counter
 
 from projects.instruction_following_bench import score, run, report, models, difficulty_gate
 
@@ -65,6 +66,26 @@ class ScorerFormatExtractionTests(unittest.TestCase):
         self.assertEqual(r["closure"], 0.0)  # closure violated by leading text
         self.assertAlmostEqual(r["total"], 0.7, places=4)
         self.assertIn("extra explanatory text beyond JSON", r["notes"])
+
+    def test_fabricated_extra_field_penalized(self):
+        # A2: correct values under expected keys PLUS a hallucinated extra
+        # field whose value is not part of the expected answer.
+        out = ('{"company_name":"云岬智能装备股份有限公司","amount":"1,280,000",'
+               '"date":"2026-07-15","note":"虚构补充字段"}')
+        r = score.score_task(_T_FORMAT, out)
+        self.assertEqual(r["format"], 1.0)     # still a valid JSON object
+        self.assertEqual(r["closure"], 1.0)    # no residual text outside JSON
+        # content must drop because of the fabricated value (3 expected / 4 emitted)
+        self.assertLess(r["content"], 1.0)
+        self.assertIn("fabricated", " ".join(r["notes"]))
+
+    def test_renamed_keys_not_flagged_as_fabricated(self):
+        # A faithful answer that renames keys (key-name agnostic) must NOT be
+        # penalized as "fabricated".
+        out = '{"c":"云岬智能装备股份有限公司","a":"1,280,000","d":"2026-07-15"}'
+        r = score.score_task(_T_FORMAT, out)
+        self.assertEqual(r["content"], 1.0)
+        self.assertNotIn("fabricated", " ".join(r["notes"]))
 
 
 class ScorerConditionRuleTests(unittest.TestCase):
@@ -509,9 +530,10 @@ class P2ContentTests(unittest.TestCase):
         r2 = score.score_task(adv1, "已拦截")
         self.assertEqual(r2["total"], 0.0)
 
-    def test_condition_rule_count_unchanged_after_legal_to_nonlegal(self):
+    def test_condition_rule_count_after_nonlegal_expansion(self):
         cond = [t for t in run.load_tasks() if t["type"] == "condition_rule"]
-        self.assertEqual(len(cond), 8)  # legal subset shrank, total preserved
+        # 8 original (3 legal + 5 To-B) + 6 added To-B discriminators (N2/N4/P1/P2/P3/P4)
+        self.assertEqual(len(cond), 14)  # total public tasks = 35
 
 
 class LeaderboardStdTests(unittest.TestCase):
@@ -552,6 +574,96 @@ class LeaderboardStdTests(unittest.TestCase):
         h = report.build_html(rows, "real")
         self.assertIn("稳定性(std)", h)
         self.assertIn("±0.070", h)
+
+
+class DocConsistencyTests(unittest.TestCase):
+    """Single-source-of-truth lock: documented counts in README.md and
+    HIDDEN_SET.md MUST equal the ACTUAL counts derived from config/tasks.json
+    and hidden_tasks.json. This directly prevents the recurring doc/config
+    drift bug (counts were silently edited in one place but not the other).
+    """
+    PROJECT_DIR = run.HERE
+    README = os.path.join(PROJECT_DIR, "README.md")
+    HIDDEN_MD = os.path.join(PROJECT_DIR, "HIDDEN_SET.md")
+
+    def _hidden(self):
+        hp = os.path.join(self.PROJECT_DIR, "hidden_tasks.json")
+        if not os.path.exists(hp):
+            self.skipTest("hidden_tasks.json absent (git-ignored local file)")
+        with open(hp, encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else data.get("tasks", [])
+
+    def _read(self, path):
+        with open(path, encoding="utf-8") as f:
+            return f.read()
+
+    def test_public_counts_match_docs(self):
+        pub = run.load_tasks()
+        by_type = Counter(t["type"] for t in pub)
+        expected = {"format_extraction": 13, "condition_rule": 14,
+                    "fewshot_classify": 4, "multi_turn_constraint": 3,
+                    "numeric_compute": 1}
+        self.assertEqual(dict(by_type), expected,
+                         "config/tasks.json type breakdown drifted from docs")
+        self.assertEqual(len(pub), 35, "public task count drifted from 35")
+        diff = Counter(t["difficulty"] for t in pub)
+        self.assertEqual(diff.get("easy"), 5)
+        self.assertEqual(diff.get("medium"), 4)
+        self.assertEqual(diff.get("hard"), 26)
+        readme = self._read(self.README)
+        self.assertIn("公开 35 题", readme)
+        self.assertIn("格式提取 13 / 条件规则 14 / Few-shot 4 / 数值计算 1 / 多轮 3", readme)
+        self.assertIn("5 easy / 4 medium / 26 hard", readme)
+
+    def test_hidden_counts_match_docs(self):
+        hid = self._hidden()
+        by_type = Counter(t["type"] for t in hid)
+        expected = {"format_extraction": 5, "condition_rule": 5,
+                    "multi_turn_constraint": 3, "fewshot_classify": 2}
+        self.assertEqual(dict(by_type), expected,
+                         "hidden_tasks.json type breakdown drifted from docs")
+        self.assertEqual(len(hid), 15, "hidden task count drifted from 15")
+        readme = self._read(self.README)
+        hidden_md = self._read(self.HIDDEN_MD)
+        self.assertIn("15 题", hidden_md)
+        self.assertIn("TH1–TH15", hidden_md)
+        self.assertIn("格式提取 5 / 条件规则 5 / 多轮 3 / Few-shot 2", readme)
+
+
+class ModelsHiddenPathTests(unittest.TestCase):
+    def test_derive_hidden_out(self):
+        self.assertEqual(models._derive_hidden_out("answers_ifb.jsonl"),
+                         "answers_ifb_hidden.jsonl")
+        self.assertEqual(models._derive_hidden_out("foo.jsonl"), "foo_hidden.jsonl")
+        self.assertEqual(models._derive_hidden_out("bar"), "bar_hidden")
+
+
+class HiddenAnswerMergeTests(unittest.TestCase):
+    def test_score_answers_merges_hidden_answers_file(self):
+        # The hidden answers live in a SEPARATE file (generated by
+        # models.py --hidden). score_answers must merge them so the 防刷分
+        # "hidden_total" column is populated with real data.
+        with tempfile.TemporaryDirectory() as d:
+            pub = os.path.join(d, "a.jsonl")
+            hid = os.path.join(d, "a_hidden.jsonl")
+            hidden_path = os.path.join(d, "tasks_hidden.json")
+            with open(pub, "w", encoding="utf-8") as f:
+                f.write('{"task_id":"T1","model":"M","answer":"{\\"客户\\":\\"瀚海精密机械有限公司\\",\\"应收净额\\":\\"2270000\\",\\"方向\\":\\"借\\"}"}\n')
+            with open(hid, "w", encoding="utf-8") as f:
+                f.write('{"task_id":"TH1","model":"M","answer":"{\\"supplier\\":\\"瀚海精密机械有限公司\\",\\"quantity\\":\\"240\\",\\"result\\":\\"合格\\"}"}\n')
+            with open(hidden_path, "w", encoding="utf-8") as f:
+                json.dump([{"id": "TH1", "type": "format_extraction",
+                            "expected": {"supplier": "瀚海精密机械有限公司",
+                                         "quantity": "240", "result": "合格"}}],
+                          f, ensure_ascii=False)
+            out = os.path.join(d, "lb.csv")
+            rows = run.score_answers(pub, out_path=out, hidden=True,
+                                     hidden_path=hidden_path,
+                                     hidden_answers_path=hid)
+            self.assertEqual(len(rows), 1)
+            self.assertIn("hidden_total", rows[0])
+            self.assertEqual(rows[0]["hidden_total"], 1.0)
 
 
 if __name__ == "__main__":

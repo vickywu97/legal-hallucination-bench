@@ -111,6 +111,37 @@ def _content_json_value_match(expected: dict, obj: dict) -> float:
     return matched / len(exp_vals)
 
 
+def _fabricated_values(expected: dict, obj: dict) -> list:
+    """Return obj VALUE strings that match NO expected reference value (A2 guard).
+
+    A model that pads the JSON with *extra fields whose values are not part of
+    the expected answer* is penalized, closing the "you may hallucinate extra
+    fields" loophole. Key NAMES are ignored (the scorer is key-name agnostic, so
+    a correct answer under renamed keys must never be flagged); only surplus
+    VALUES that match nothing in ``expected`` count as fabricated. Duplicate
+    expected values are also reserved (multiset), so re-stating a value under a
+    second key is treated as padding too.
+    """
+    exp_vals = [str(v).strip() for v in expected.values()]
+    got_vals = [str(v).strip() for v in obj.values()]
+    if not exp_vals or not got_vals:
+        return []
+    used_exp = set()
+    fab = []
+    for gv in got_vals:
+        hit = False
+        for i, ev in enumerate(exp_vals):
+            if i in used_exp:
+                continue
+            if _values_equal(gv, ev):
+                used_exp.add(i)
+                hit = True
+                break
+        if not hit:
+            fab.append(gv)
+    return fab
+
+
 def _content_json_condition(expected: dict, obj: dict, notes: list) -> float:
     exp_eligible = expected.get("eligible")
     got_eligible = obj.get("eligible")
@@ -150,6 +181,16 @@ def score_task(task: dict, model_output: str) -> dict:
             content_score = _content_json_value_match(expected, obj)
             if content_score < 1.0:
                 notes.append("some expected values missing or mismatched (key-name-agnostic)")
+            # A2 guard: penalize fabricated/hallucinated JSON values that match
+            # no expected reference. Key names are irrelevant; only surplus
+            # VALUES are flagged, so a faithful (possibly renamed-key) answer is
+            # never penalized. Surplus values scale content down by the ratio
+            # of expected fields to emitted fields.
+            fabricated = _fabricated_values(expected, obj)
+            if fabricated:
+                notes.append("fabricated/hallucinated value(s) beyond expected: "
+                             + ", ".join(repr(v) for v in fabricated)[:120])
+                content_score *= len(expected) / max(len(obj), len(expected))
             residual = _residual(out, s, e)
         closure_ok = not _closure_broken(residual)
         if not closure_ok:
