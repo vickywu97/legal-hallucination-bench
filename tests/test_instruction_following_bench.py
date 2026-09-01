@@ -160,6 +160,55 @@ class ScorerNumericComputeTests(unittest.TestCase):
         self.assertAlmostEqual(r["total"], 0.70, places=4)
 
 
+class ScorerLengthConstraintTests(unittest.TestCase):
+    """New 6th task type (length_constraint): the model must emit a fixed short
+    answer AND honor an explicit length bound. Closure = the length gate."""
+
+    def test_exact_len_satisfied_full_score(self):
+        t = {"id": "LC1", "type": "length_constraint",
+             "expected": "是", "exact_len": 1}
+        r = score.score_task(t, "是")
+        self.assertEqual(r["format"], 1.0)
+        self.assertEqual(r["content"], 1.0)
+        self.assertEqual(r["closure"], 1.0)
+        self.assertEqual(r["total"], 1.0)
+        self.assertEqual(r["violation_rate"], 0.0)
+
+    def test_exact_len_violated_breaks_closure(self):
+        # correct answer but a trailing period -> 2 chars != exact_len 1
+        t = {"id": "LC1", "type": "length_constraint",
+             "expected": "是", "exact_len": 1}
+        r = score.score_task(t, "是。")
+        self.assertEqual(r["content"], 0.0)  # core "是。" != "是"
+        self.assertEqual(r["closure"], 0.0)  # length 2 > 1
+        self.assertAlmostEqual(r["total"], 0.3, places=4)
+        self.assertIn("length constraint violated", r["notes"])
+
+    def test_max_len_satisfied_full_score(self):
+        t = {"id": "LC2", "type": "length_constraint",
+             "expected": "不能", "max_len": 3}
+        r = score.score_task(t, "不能")  # len 2 <= 3
+        self.assertEqual(r["total"], 1.0)
+
+    def test_max_len_violated_breaks_closure(self):
+        t = {"id": "LC3", "type": "length_constraint",
+             "expected": "95000", "max_len": 5}
+        r = score.score_task(t, "95000元")  # len 6 > 5
+        self.assertEqual(r["content"], 0.0)
+        self.assertEqual(r["closure"], 0.0)
+        self.assertIn("exceeds max_len", " ".join(r["notes"]))
+
+    def test_wrong_content_zero_content_closure_ok(self):
+        # wrong answer but within bound -> content 0, closure satisfied
+        t = {"id": "LC2", "type": "length_constraint",
+             "expected": "不能", "max_len": 3}
+        r = score.score_task(t, "能")  # len 1 <= 3, but wrong
+        self.assertEqual(r["content"], 0.0)
+        self.assertEqual(r["closure"], 1.0)
+        # total = 0.3*format(1) + 0.4*content(0) + 0.3*closure(1) = 0.6
+        self.assertAlmostEqual(r["total"], 0.6, places=4)
+
+
 class TasksFileTests(unittest.TestCase):
     def test_coverage_minimums(self):
         tasks = run.load_tasks()
@@ -168,6 +217,7 @@ class TasksFileTests(unittest.TestCase):
         self.assertEqual(types, {
             "format_extraction", "condition_rule",
             "fewshot_classify", "multi_turn_constraint", "numeric_compute",
+            "length_constraint",
         })
         # every task must carry an explicit difficulty label
         for t in tasks:
@@ -603,18 +653,18 @@ class DocConsistencyTests(unittest.TestCase):
         by_type = Counter(t["type"] for t in pub)
         expected = {"format_extraction": 13, "condition_rule": 14,
                     "fewshot_classify": 4, "multi_turn_constraint": 3,
-                    "numeric_compute": 1}
+                    "numeric_compute": 1, "length_constraint": 3}
         self.assertEqual(dict(by_type), expected,
                          "config/tasks.json type breakdown drifted from docs")
-        self.assertEqual(len(pub), 35, "public task count drifted from 35")
+        self.assertEqual(len(pub), 38, "public task count drifted from 38")
         diff = Counter(t["difficulty"] for t in pub)
         self.assertEqual(diff.get("easy"), 5)
-        self.assertEqual(diff.get("medium"), 4)
-        self.assertEqual(diff.get("hard"), 26)
+        self.assertEqual(diff.get("medium"), 5)
+        self.assertEqual(diff.get("hard"), 28)
         readme = self._read(self.README)
-        self.assertIn("公开 35 题", readme)
-        self.assertIn("格式提取 13 / 条件规则 14 / Few-shot 4 / 数值计算 1 / 多轮 3", readme)
-        self.assertIn("5 easy / 4 medium / 26 hard", readme)
+        self.assertIn("公开 38 题", readme)
+        self.assertIn("格式提取 13 / 条件规则 14 / Few-shot 4 / 数值计算 1 / 多轮 3 / 长度约束 3", readme)
+        self.assertIn("5 easy / 5 medium / 28 hard", readme)
 
     def test_hidden_counts_match_docs(self):
         hid = self._hidden()

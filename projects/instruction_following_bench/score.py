@@ -256,6 +256,37 @@ def score_task(task: dict, model_output: str) -> dict:
         if not closure_ok:
             notes.append("output is not exactly the required token")
 
+    elif ttype == "length_constraint":
+        # Length-constraint instruction following (IFEval "length constraints"
+        # category) -- previously uncovered by the 5 built-in types. The model
+        # must emit a fixed short answer AND honor an explicit length bound.
+        # Scoring stays fully deterministic (no LLM judge):
+        #   format  : a non-empty token/value was produced
+        #   content : the emitted core equals `expected` (short fixed value)
+        #   closure : the explicit length bound is honored
+        #             - exact_len given -> len(out) == exact_len
+        #             - max_len   given -> len(out) <= max_len
+        #             - neither         -> closure always satisfied
+        s = out.strip()
+        core = re.split(r"[\s（(]", s)[0].strip() if s else ""
+        format_score = 1.0 if core else 0.0
+        content_score = 1.0 if core == str(expected).strip() else 0.0
+        exact_len = task.get("exact_len")
+        max_len = task.get("max_len")
+        if exact_len is not None:
+            closure_ok = (len(s) == int(exact_len))
+            if not closure_ok:
+                notes.append(f"output length {len(s)} != required exact_len {exact_len}")
+        elif max_len is not None:
+            closure_ok = (len(s) <= int(max_len))
+            if not closure_ok:
+                notes.append(f"output length {len(s)} exceeds max_len {max_len}")
+        else:
+            closure_ok = True
+        residual = "" if closure_ok else out
+        if not closure_ok:
+            notes.append("length constraint violated")
+
     else:
         format_score = content_score = 0.0
         closure_ok = False

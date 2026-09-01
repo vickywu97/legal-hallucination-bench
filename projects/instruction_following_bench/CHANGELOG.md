@@ -10,6 +10,23 @@
 
 ---
 
+## 2026-09-01 — 新增任务类型 `length_constraint`（第 6 类，填补长度约束 IFEval 缺口）
+
+> 虚构示例 / 灵感草稿，非真实评测结论。
+
+### 新增
+- **第 6 类任务 `length_constraint`**：模型须在给出**固定短答案**的同时严格遵守**显式长度约束**（恰好 N 字 `exact_len` / 不超过 N 字 `max_len`）。此前 5 类任务均未覆盖 IFEval 的"length constraints"维度，且封闭性仅按"无额外文本"判定，无法显式量化"长度约束遵循"。
+- **`score.py` 新增评分分支**：三维仍确定性、无 LLM judge——`format`=产出非空 token；`content`=核心值精确匹配 `expected`；`closure`=长度门（`exact_len` 则 `len==exact_len`，`max_len` 则 `len<=max_len`，否则恒满足）。长度违反给出精确诊断 note（`length constraint violated` / `exceeds max_len` / `!= exact_len`）。
+- **`run.py` 哑巴基线**：`_random_baseline` 对 `length_constraint` 直接回传 `expected`，使离线 demo 在该类上可得确定性（哑）满分、pipeline 不报错。
+- **公开集新增 3 题**：`LC1`(medium, exact_len=1 关联方借款判断) / `LC2`(hard, max_len=3 进项税抵扣) / `LC3`(hard, max_len=5 直线法折旧计算)。公开集 35→**38 题**，类型分布含「长度约束 3」；难度 5 easy / **5** medium / **28** hard。均带 `demo_note` 标注"发布前须核验"。
+- **单测**：新增 `ScorerLengthConstraintTests`（5 例：exact/max 满足满分、长度越界破 closure、错误内容 content=0 但 closure 满足等）；`test_coverage_minimums` 类型集与 `DocConsistencyTests.test_public_counts_match_docs` 计数同步更新（38 题 / 长度约束 3 / 5-5-28）。
+
+### 验证
+- 全量单测 160 → **新增 5 + 同步 2** 仍全绿（`python3 -S -m unittest discover -s tests`，OK）。
+- `DocConsistencyTests` 锁：README/CHANGELOG 声明计数 == `config/tasks.json` 实际计数，任一侧漂移即 fail（已同步）。
+
+---
+
 ## 2026-08-27 — 稳健性改进（A2 防幻觉 / B2 强锚点牙齿 / 隐藏集真正可用 / 文档单一事实源）
 
 > 在 2026-08-24 冻结集基础上做"从头到尾彻底跑一遍"后的四项改进 + 全量重算。

@@ -42,6 +42,10 @@ def _random_baseline(task: dict) -> str:
         return random.choice(task.get("allowed", ["同意", "拒绝"]))
     if ttype == "fewshot_classify":
         return random.choice(["A", "B", "C", "D"])
+    if ttype == "length_constraint":
+        # Deterministic dummy: emit the expected short answer so the offline
+        # plumbing produces a (dummy) full score on length-constraint tasks.
+        return str(task.get("expected", "?"))
     return '{"result": "unknown", "note": "随机基线，无实际依据"}'
 
 
