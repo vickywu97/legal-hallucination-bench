@@ -670,15 +670,16 @@ class DocConsistencyTests(unittest.TestCase):
         hid = self._hidden()
         by_type = Counter(t["type"] for t in hid)
         expected = {"format_extraction": 5, "condition_rule": 5,
-                    "multi_turn_constraint": 3, "fewshot_classify": 2}
+                    "multi_turn_constraint": 3, "fewshot_classify": 2,
+                    "length_constraint": 3}
         self.assertEqual(dict(by_type), expected,
                          "hidden_tasks.json type breakdown drifted from docs")
-        self.assertEqual(len(hid), 15, "hidden task count drifted from 15")
+        self.assertEqual(len(hid), 18, "hidden task count drifted from 18")
         readme = self._read(self.README)
         hidden_md = self._read(self.HIDDEN_MD)
-        self.assertIn("15 题", hidden_md)
-        self.assertIn("TH1–TH15", hidden_md)
-        self.assertIn("格式提取 5 / 条件规则 5 / 多轮 3 / Few-shot 2", readme)
+        self.assertIn("18 题", hidden_md)
+        self.assertIn("TH1–TH18", hidden_md)
+        self.assertIn("格式提取 5 / 条件规则 5 / 多轮 3 / Few-shot 2 / 长度约束 3", readme)
 
 
 class ModelsHiddenPathTests(unittest.TestCase):

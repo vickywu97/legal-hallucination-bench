@@ -7,8 +7,8 @@
 
 ## 1. 这是什么
 
-`hidden_tasks.json` 是与公开 `config/tasks.json`（35 题）**分离存放**的留底隐藏题集。
-当前含 **15 题**（TH1–TH15）：
+`hidden_tasks.json` 是与公开 `config/tasks.json`（38 题）**分离存放**的留底隐藏题集。
+当前含 **18 题**（TH1–TH18）：
 
 | id | 类型 | 难度 |
 | --- | --- | --- |
@@ -27,12 +27,15 @@
 | TH13 | multi_turn_constraint（多轮约束） | medium |
 | TH14 | multi_turn_constraint（多轮约束） | hard |
 | TH15 | format_extraction（格式提取·日期） | hard |
+| TH16 | length_constraint（长度约束） | medium |
+| TH17 | length_constraint（长度约束） | hard |
+| TH18 | length_constraint（长度约束） | hard |
 
-每题带 `hidden: true` + `difficulty` + `demo_note`（虚构演示数据声明）。类型覆盖四类，且含法律 / 非法律两种 condition_rule，与公开集同口径防过拟合。
+每题带 `hidden: true` + `difficulty` + `demo_note`（虚构演示数据声明）。类型覆盖五类（format_extraction / condition_rule / multi_turn_constraint / fewshot_classify / length_constraint），且含法律 / 非法律两种 condition_rule，与公开集同口径防过拟合。
 
 ## 2. 目的：防刷分（anti-gaming）
 
-公开排行榜只展示公开 35 题的得分。如果有人**针对公开题刷分 / 过拟合**，隐藏集能独立验证
+公开排行榜只展示公开 38 题的得分。如果有人**针对公开题刷分 / 过拟合**，隐藏集能独立验证
 其泛化能力——隐藏集的**逐题内容永不外泄**，对外页面只聚合展示各模型的 `hidden_total`
 （隐藏集综合得分）一列。这样即便公开题刷到满分，也藏不住真实水平。
 
@@ -59,7 +62,7 @@ python3 -S -m projects.instruction_following_bench.run --offline --include-hidde
 > python3 -S -m projects.instruction_following_bench.models --repeat 3 --out answers_ifb.jsonl --hidden
 > ```
 >
-> 该命令把公开 35 题写入 `answers_ifb.jsonl`、隐藏 15 题写入 `answers_ifb_hidden.jsonl`
+> 该命令把公开 38 题写入 `answers_ifb.jsonl`、隐藏 18 题写入 `answers_ifb_hidden.jsonl`
 > （二者均被 `answers_ifb*.jsonl` 规则 gitignore）。再跑
 > `run.py --score-answers answers_ifb.jsonl --include-hidden` 即可让"隐藏集综合"列真正填充真实分数。
 > 若未生成隐藏答案直接 `--include-hidden`，排行榜仍正常产出，只是"隐藏集综合"列为空（会在日志中告警）。

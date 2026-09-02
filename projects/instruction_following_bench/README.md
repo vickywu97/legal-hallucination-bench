@@ -44,9 +44,9 @@ violation rate）双指标，离线零依赖。区别于 IFEval：聚焦**中文
 projects/instruction_following_bench/
 ├── README.md
 ├── __init__.py
-├── config/tasks.json          # 35 个公开任务（虚构演示数据，含 difficulty 字段；easy/medium/hard 三级）
+├── config/tasks.json          # 38 个公开任务（虚构演示数据，含 difficulty 字段；easy/medium/hard 三级）
 ├── hidden_tasks.json          # ⛨ 隐藏测试集（防刷分，已被 .gitignore 忽略，不随仓库发布）
-│                               #   15 个隐藏题（TH1–TH15），与公开集物理隔离，永不提交
+│                               #   18 个隐藏题（TH1–TH18），与公开集物理隔离，永不提交
 ├── score.py                   # 规则化评分（无 LLM judge）
 ├── report.py                  # 生成自包含 HTML 排行榜（离线、零依赖；含隐藏集综合列）
 ├── models.py                  # 真实模型适配层（复用 scripts/generate_answers.py 模式）
@@ -64,7 +64,7 @@ python -S -m projects.instruction_following_bench.run --offline
 
 # 1b) 含隐藏集：额外评分 hidden_tasks.json 中的题目（防刷分验证）。
 #     HTML 标题旁会出现 "[含隐藏集]" 标记，并多出"隐藏集综合"列，
-#     但绝不展示隐藏题的逐题内容（TH1… 不出现）。本地合并为 35+15=50 题。
+#     但绝不展示隐藏题的逐题内容（TH1… 不出现）。本地合并为 38+18=56 题。
 python -S -m projects.instruction_following_bench.run --offline --include-hidden
 
 # 2) 接真实模型（需设置环境变量 API key；未设置的模型自动跳过，不会中断运行）
@@ -112,7 +112,7 @@ python -S -m projects.instruction_following_bench.run \
 ## 任务规模与难度门
 
 当前 `config/tasks.json` 含 **公开 38 题**（格式提取 13 / 条件规则 14 / Few-shot 4 / 数值计算 1 / 多轮 3 / 长度约束 3），
-另有 **隐藏集 15 题**（`hidden_tasks.json`，不随仓库发布），合计本地可评 50 题。
+另有 **隐藏集 18 题**（`hidden_tasks.json`，不随仓库发布），合计本地可评 56 题。
 v3 任务集已重设计：format 题强制规范化/派生计算/方向/年份推断、condition 题含反直觉外部知识记忆型（不给出规则），
 对抗/约束陷阱题升级为真实难度杠杆；并新增 5 道 **easy 校准题**（E1–E5，纯照抄提取）使难度成梯度。
 **P2/P3 已落地**：condition_rule 法律题由 8 道降至 3 道（其余 5 道改写为非法律 To B 规则：审批流路由 / SLA 升级 / 折扣审批 / 库存补货 / 数据导出合规）；Few-shot 由 2 扩至 4（新增 S4/FS2/FS3），ADV2 后由 Few-shot 重分类为数值计算（现公开集 Few-shot 4 / 数值计算 1）；ADV1 加固为语义陷阱（弱模型误将「导出客户名单」判为外发而误拦，零漏分）；隐藏集由 5 扩至 15；排行榜新增 mean±std 稳定性带。**2026-08-24 扩充**：为抬高区分度门分离度，沿「condition_rule To B 规则」这一已证可区分维度新增 6 道 hard 题（N2/N4/P1/P2/P3/P4，均为复合条件/或条件阈值陷阱），公开 condition_rule 由 8 增至 14，公开题量 29→35；S4/ADV1 经实测 GLM-4-Flash 稳健、无干净陷阱，保留冻结为边缘样本。
@@ -156,19 +156,19 @@ v3 任务集已重设计：format 题强制规范化/派生计算/方向/年份�
    - 修格式题伪影：5 道 `format_extraction` 的 `expected` 改为中文键名 + 照原文值，消除齐平 0.3 伪影。
    - 删 4 道漏分题（S2/T3/M2/T4，全模型 ≥0.9）；原漏分清单中的 S4 在 Few-shot 扩类时重新纳入（见下条），故不计入删除。
    - 扩 8 道 `condition_rule` 真·hard（CR1–CR8，自含规则、带 `demo_note` 需核验）。
-   - 当前 38 题（含 5 道 easy 校准题）；难度门已重框为区分度门 v3_discrimination（权威数字见 `difficulty_gate_report.md`，区分度门 + 强非满分双决定性、弱锚点说明性）；P2/P3 已落地（condition 法律题降至 3、fewshot 4 + 数值计算 1（ADV2 重分类）、ADV1 零漏分、隐藏集扩至 15、排行榜误差棒）。
+   - 当前 38 题（含 5 道 easy 校准题）；难度门已重框为区分度门 v3_discrimination（权威数字见 `difficulty_gate_report.md`，区分度门 + 强非满分双决定性、弱锚点说明性）；P2/P3 已落地（condition 法律题降至 3、fewshot 4 + 数值计算 1（ADV2 重分类）、ADV1 零漏分、隐藏集扩至 18、排行榜误差棒）。
 4. ~~输出 HTML 排行榜~~ ✅ 已完成（`report.py`，两种模式均产出 `leaderboard.html`）。
 5. ~~隐藏测试集~~ ✅ 已完成（防刷分机制）：
    - 隐藏题放在 `hidden_tasks.json`（项目根），与公开 `config/tasks.json` **物理隔离**，
      **已被 `.gitignore` 忽略，永不随仓库发布**。
    - 默认 `run.py` 只加载公开 38 题；`leaderboard.csv / html` **均不含隐藏题**；`--score-answers` 结合 `--repeat N` 时排行榜额外给出各模型 mean±std 稳定性带。
-   - `--include-hidden` 才合并隐藏集（本地 35+15=50 题），且生成的报告标题旁加
+   - `--include-hidden` 才合并隐藏集（本地 38+18=56 题），且生成的报告标题旁加
      **`[含隐藏集]`** 标记，便于内部刷分监控；公开排行榜只展示各模型"隐藏集综合"得分，
      **绝不泄露隐藏题的 id 或内容**（HTML 中不含 `TH1…`）。
    - 真实评测时，隐藏集由评测方私存，模型训练方无法据此过拟合，从而保护排行榜公信力。
    - 已有 `HiddenTaskTests`（4 项）校验：隐藏题数 ≥5、四类至少三类、每题 `hidden:true`
      且不在公开集、默认加载不含隐藏题、`--include-hidden` 后合并数量正确。
-   - 注：当前 `hidden_tasks.json` 含 15 题本地样本（虚构演示）用于防刷分验证，git-ignored 不随仓库发布；正式发布前应再扩充并加密保管。
+   - 注：当前 `hidden_tasks.json` 含 18 题本地样本（虚构演示）用于防刷分验证，git-ignored 不随仓库发布；正式发布前应再扩充并加密保管。
 6. ⬜ 待办：正式发布前扩充隐藏集、加密保管；对全部规则型 expected 做法规版本轴核验。
 
 7. ✅ P1 已提交（`cf375d5`，区分度门 + easy 校准题 + `--repeat N`）；✅ P2/P3 代码已落地（condition 法律题降至 3、fewshot 扩至 4 + 数值计算 1（ADV2）、ADV1 零漏分加固、隐藏集扩至 15、排行榜 mean±std 误差棒）：待 Mac 复跑 `models --repeat 3` + `difficulty_gate` 确认权威数字后刷新 `difficulty_gate_report.md` 并提交（惯例：本地提交由 AI 做，push 由用户做）。
@@ -178,8 +178,8 @@ v3 任务集已重设计：format 题强制规范化/派生计算/方向/年份�
 | 维度 | 公开集 `config/tasks.json` | 隐藏集 `hidden_tasks.json` |
 |------|---------------------------|----------------------------|
 | 是否随仓库发布 | 是 | **否**（gitignore，物理隔离） |
-| 题量（当前） | 35 | 15（本地样本，TH1–TH15） |
-| 类型分布 | 格式提取 13 / 条件规则 14 / Few-shot 4 / 数值计算 1 / 多轮 3 / 长度约束 3 | 格式提取 5 / 条件规则 5 / 多轮 3 / Few-shot 2 |
+| 题量（当前） | 38 | 18（本地样本，TH1–TH18） |
+| 类型分布 | 格式提取 13 / 条件规则 14 / Few-shot 4 / 数值计算 1 / 多轮 3 / 长度约束 3 | 格式提取 5 / 条件规则 5 / 多轮 3 / Few-shot 2 / 长度约束 3 |
 | 用途 | 练习 / 公开可复现 | 防过拟合、验证榜单公信力 |
 | 对外可见内容 | 全公开 | 仅"隐藏集综合"聚合分，不展示逐题 |
 
