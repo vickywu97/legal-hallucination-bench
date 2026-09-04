@@ -13,22 +13,30 @@ jobs:
       matrix:
         python-version: ["3.8", "3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Upgrade pip
-        run: pip install --upgrade pip
 
-      - name: Install (editable, zero runtime deps)
+      - name: Install package (editable, zero runtime deps)
+        # dependencies = [] in pyproject; this only installs the `benchmark`
+        # package so the test suite can `from benchmark.verify import ...`.
         run: |
           python -m pip install --upgrade pip
           pip install -e .
 
-      - name: Run test suite (python -S, pure stdlib)
-        run: python -S -m unittest discover -s tests -p "test_*.py"
+      - name: Run test suite (unittest, stdlib-only)
+        # NOTE: do NOT use `python -S` here. The editable install lands in
+        # site-packages; `-S` would hide it and every `import benchmark.*`
+        # would fail with ModuleNotFoundError.
+        run: python -m unittest discover -s tests -v
 
-      - name: Offline pipeline smoke (--offline SAMPLE demo)
-        run: python -S -m benchmark.run --offline --out-dir sample_demo_reports
+      - name: Offline pipeline smoke (score committed answers, no API)
+        # `--offline` runs the verifier with zero API calls; `--input
+        # answers.jsonl` scores the REAL committed model answers (skips the
+        # SAMPLE-mode guard that refuses to clobber real reports). Exercises
+        # extract/verify/score/pipeline end-to-end.
+        run: python -m benchmark.run --offline --input answers.jsonl
