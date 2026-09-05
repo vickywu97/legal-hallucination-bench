@@ -324,6 +324,8 @@ DeepSeek-V3 / GLM-4-Flash（45.0%）几近持平——**主流法律 AI 在"引�
 本项目是**双仓库作品集**的地基部分。配套产品 [`compliance-triangle`](https://github.com/vickywu97/compliance-triangle)
 复用本仓库的 `statutes.jsonl` 与 `benchmark/verify.py` 校验引擎，把"量化幻觉"升级为"实时拦截每条 AI 引注的 🟢🟡🔴 章"。
 
+- 🧭 **作品集总览 / 电梯演讲**：[`vickywu97-profile`](https://github.com/vickywu97/vickywu97-profile)（串联地基基准 legal-hallucination-bench、产品 compliance-triangle、公开榜单 legal-ai-watch 三部分）。
+
 ![作品集架构](docs/portfolio_architecture.svg)
 
 - 🖼️ 产品侧预览（合规三角仪表盘）：![合规三角仪表盘](https://raw.githubusercontent.com/vickywu97/compliance-triangle/master/docs/dashboard_preview.png)
