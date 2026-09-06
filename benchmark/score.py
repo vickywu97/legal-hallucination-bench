@@ -82,6 +82,13 @@ def _bootstrap_ci(flags: List[int], n: int = 1000, seed: int = 42) -> tuple:
 # paraphrases it must NOT inflate the existence/temporal hallucination rate.
 _HVI_CATEGORIES = frozenset({"NOT_FOUND", "TEMPORAL_DEPRECATED"})
 
+# Answer-level trap-dimension categories (hardness=="answer"; never enter HVI).
+# Mirrored as string literals in benchmark/answer_checks.py.
+_CAT_FABRICATED_CASE = "FABRICATED_CASE"
+_CAT_CASE_OK = "CASE_OK"
+_CAT_CIRCULAR = "CIRCULAR_CITATION"
+_CAT_SELF_CONTRA = "SELF_CONTRADICTION"
+
 
 def score(verifications: List) -> ScoreReport:
     """Aggregate a list of Verification records into HR metrics.
@@ -137,6 +144,24 @@ def score(verifications: List) -> ScoreReport:
 
     n_unver = sum(1 for v in vs if v["verdict"] == "UNVERIFIABLE")
     metrics["rate_unverifiable"] = (n_unver / total) if total else 0.0
+
+    # --- answer-level trap dimensions (编造判例 / 循环引注 / 自相矛盾) --------
+    # These carry hardness=="answer" and are excluded from the statutory HVI by
+    # design; they get their own focused metrics below.
+    answer_vs = [v for v in vs if v["hardness"] == "answer"]
+    n_fc = sum(1 for v in answer_vs if v["category"] == _CAT_FABRICATED_CASE)
+    n_ck = sum(1 for v in answer_vs if v["category"] == _CAT_CASE_OK)
+    # hr_case: hard guiding-case hallucination rate (编造判例). Subset of
+    # answer-level findings that are guiding-case citations (OK vs FABRICATED).
+    metrics["hr_case"] = (n_fc / (n_fc + n_ck)) if (n_fc + n_ck) else 0.0
+    # rate_circular: circular-citation findings as a share of all answer-level
+    # findings (a per-answer reasoning-trap signal).
+    n_cc = sum(1 for v in answer_vs if v["category"] == _CAT_CIRCULAR)
+    metrics["rate_circular"] = (n_cc / len(answer_vs)) if answer_vs else 0.0
+    # flag_self_contradiction: diagnostic-only share (low precision; needs
+    # expert confirmation) — surfaced, never scored as a hallucination.
+    n_sc = sum(1 for v in answer_vs if v["category"] == _CAT_SELF_CONTRA)
+    metrics["flag_self_contradiction"] = (n_sc / total) if total else 0.0
 
     # per-domain HVI (consistent with hr_statutory)
     per_domain: Dict[str, float] = {}

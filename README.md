@@ -16,7 +16,7 @@
 > - **Offline & zero-dependency**: scores how faithfully LLMs quote Chinese statute text — `python -S`, no `pip install`.
 > - **Expert-verified KB**: every article signed against the official `flk.npc.gov.cn` source — 100% current-law, 0 unverified nodes.
 > - **Strict binary evaluator**: verbatim = 1.0, anything else = 0.0; plus a **repealed-law trap** (citing a repealed statute = automatic fail).
-> - **Real-model results**: 5 domestic LLMs on 23 traps across 8 laws — 33.3–54.2% citation hallucination (HVI) even on the most forgiving metric; on China's new **VAT Law (2026-01-01)**, 42 citations, **0 verbatim-correct (EXACT 0%)**.
+> - **Real-model results**: 5 domestic LLMs on 23 trap questions (v1.3 adds 3 answer-level trap dimensions → 26 total) across 8 laws — 33.3–54.2% citation hallucination (HVI) even on the most forgiving metric; on China's new **VAT Law (2026-01-01)**, 42 citations, **0 verbatim-correct (EXACT 0%)**.
 > - Reproducible with no API keys: `python -S -m benchmark.run --offline --out-dir sample_demo_reports`.
 
 ---
@@ -77,6 +77,22 @@
 - 提取器按名称**最长优先**匹配，确保"旧公司法"逐字命中而非被"公司法"子串吞掉（防假阴性）。
 - 模型即便把旧法条文**一字不差**地复述成现行法内容，仍判 `TEMPORAL_DEPRECATED`——零误判、零漏判。
 
+### 4. 答案级陷阱维度（v1.3 新增：编造判例 / 循环引注 / 自相矛盾）
+
+> 前三点（KB / 二元评测 / 旧法陷阱）聚焦**单条引注**级幻觉。v1.3 在 `benchmark/answer_checks.py`
+> 新增**整答案级**陷阱检测，覆盖"引用行为本身"的三种危险模式。它们统一返回 `hardness="answer"`，
+> **绝不污染条文级 HVI**（HVI 只计 `hardness=="hard"` 的法条引注），仅作为独立指标报告。
+
+| 维度 | 含义 | 引擎判定 | 指标 |
+| --- | --- | --- | --- |
+| **编造判例** | 引注具体指导案例号不在 `knowledge_base/cases.json` 已核验基准 | `FABRICATED_CASE`（硬幻觉） | `hr_case` |
+| **循环引注** | 被引条文互为援引成闭环、无任何独立权威依据 | `CIRCULAR_CITATION`（硬幻觉） | `rate_circular` |
+| **自相矛盾** | 同一答案内对同义务作相反断言（诊断信号，待专家确认） | `SELF_CONTRADICTION`（诊断，不计分） | `flag_self_contradiction` |
+
+- **基准政策（编造判例）**：指导案例号不在 `cases.json` → `FABRICATED_CASE`（硬幻觉，计入 `hr_case`）；个案案号（`（YYYY）……号`）因事实敏感、体量巨大不维护基准，一律判 `UNVERIFIABLE_CASE`（透明、不计分，与条文级 provenance gate 同构）。专家可扩 `cases.json` 收录更多已核验指导案例以降低假阴性。
+- **循环引注**：在被引法条子集上建有向图（A 条文正文引 B 条且 B 亦被引 → 边 A→B），存在环即判 `CIRCULAR_CITATION`。真实法条是 DAG，故该检测高精度、为潜伏陷阱维度。
+- **自相矛盾**：低精度启发式诊断信号（`verdict=OK`，永不判幻觉），主要靠**陷阱题设计 + 专家标注**捕捉，自动化结果仅作提示、需专家确认。
+
 ---
 
 ## 架构与设计原则
@@ -104,7 +120,7 @@ Verification (verdict / category / diff_level / score / candidate / ground_truth
 
 ```bash
 # 0) 仓库零依赖，直接用受管 Python 跑（-S 关闭 site-packages，纯标准库）
-python -S -m unittest discover -s tests        # 全量测试（当前 144 用例绿灯：benchmark 110 + 指令遵循基准 34）
+python -S -m unittest discover -s tests        # 全量测试（当前 178 用例绿灯：benchmark + 指令遵循基准）
 
 # 1) 开箱即用的离线评测（内置 good/bad/partial 三个玩具模型；写入独立目录，不碰真实报告）
 python -S -m benchmark.run --offline --out-dir sample_demo_reports
@@ -186,7 +202,7 @@ python -S demo/run_eval.py        # 启发式 vs 严格 双跑对比，落到 de
 > 任务上，依然会犯严重、危险的错误。测试集是一份严谨的法律交叉审查备忘录：
 > 有体系、有陷阱、有对照、无死角。
 
-### 1. 测试集 `questions.json`（23 题）
+### 1. 测试集 `questions.json`（26 题，含 v1.3 新增 3 道答案级陷阱维度题）
 
 覆盖 8 部现行法（含增值税法、企业所得税法、个人所得税法），四类陷阱（详见 `questions.json` 的 `_meta.trap_taxonomy`）：
 
@@ -197,6 +213,9 @@ python -S demo/run_eval.py        # 启发式 vs 严格 双跑对比，落到 de
 | **新法序号未更新** | 2024 新《公司法》重排条文序号，仍引旧序号 | `NOT_FOUND` | Q4 担保旧16→新15 |
 | **硬幻觉** | 引用不存在的法律/法条号 | `NOT_FOUND` | Q8 虚构法、Q12 第9999条 |
 | **张冠李戴** | 条号对、内容错（同法/跨法） | `MISATTRIBUTED` | Q5/Q9/Q10/Q13/Q14/Q15 |
+| **编造判例** | 引注具体指导案例号不在已核验基准 | `FABRICATED_CASE`（计入 hr_case） | Q24 |
+| **循环引注** | 被引条文互为援引成闭环、无独立依据 | `CIRCULAR_CITATION`（计入 rate_circular） | Q25 |
+| **自相矛盾** | 同一答案内对同义务作相反断言（诊断信号，不计分） | `SELF_CONTRADICTION` | Q26 |
 
 `questions.json` 只作为**测试设计规格**与采集脚本的输入；评测引擎并不读取它，
 所有判定都只来自模型答案文本本身（因此结论无可辩驳）。
@@ -253,6 +272,8 @@ python -S -m benchmark.run --offline --input answers.jsonl
 ### 5. 实测结果（Real-Model Results，2026-08-07 复刷，v1.3 / 方案B 后）
 
 23 题 × 5 个国产模型 = 115 条有效回答。评分完全离线、零依赖、可复现。
+
+> **口径说明（v1.3 答案级维度）**：本节排行榜基于 23 题原始测试集复刷；v1.3 新增的 3 道答案级陷阱维度题（Q24–Q26：编造判例 / 循环引注 / 自相矛盾）为本期新增，尚未纳入真实模型复跑，将在下一轮采集中并入 `hr_case` / `rate_circular` / `flag_self_contradiction` 指标。
 
 | 排名 | 模型 | 引注幻觉率(HVI) | 引注数 | v1.2→v1.3 |
 | --- | --- | --- | --- | --- |

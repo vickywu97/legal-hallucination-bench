@@ -5,6 +5,26 @@
 
 ---
 
+## 2026-09-06 — v1.3：新增 3 个答案级陷阱维度（编造判例 / 循环引注 / 自相矛盾）
+
+> 在 `benchmark/answer_checks.py` 新增整答案级幻觉检测，覆盖"引用行为本身"的三种危险模式；
+> 三者均返回 `hardness="answer"`，**不污染条文级 HVI**（HVI 只计 `hardness=="hard"` 的法条引注）。
+> 同时 `knowledge_base/cases.json` 收录 4 个已核验指导案例作为"编造判例"维度唯一基准。
+
+### 新增（答案级陷阱维度）
+- **编造判例（FABRICATED_CASE / hr_case）**：引注具体指导案例号不在 `knowledge_base/cases.json` 已核验基准 → 硬幻觉，计入 `hr_case`；个案案号因事实敏感不维护基准，判 `UNVERIFIABLE_CASE`（透明、不计分，与条文级 provenance gate 同构）。专家可扩 `cases.json` 降假阴性。
+- **循环引注（CIRCULAR_CITATION / rate_circular）**：在被引法条子集上建"正文引 B 条"有向图，存在环即判 `CIRCULAR_CITATION`（硬幻觉）。真实法条为 DAG，高精度、潜伏陷阱维度。
+- **自相矛盾（SELF_CONTRADICTION / flag_self_contradiction）**：低精度启发式诊断信号（`verdict=OK`，永不判幻觉），主要靠陷阱题设计 + 专家标注捕捉；自动化结果仅作提示、需专家确认。
+
+### 工程改动
+- `benchmark/pipeline.py`：`run_answer` 仅对 `cit_type=="law"` 的法条引注跑 `verify_citation`（指导案例/案号/司法解释改由 `run_answer_checks` 处理），修复 guiding_case 被误判 `NOT_FOUND` 并错误抬高 `n_citations` 的缺陷；答案级检测接入 `audit`/`score`，新增 `hr_case` / `rate_circular` / `flag_self_contradiction` 三指标与排行榜列。
+- `benchmark/score.py`：新增上述三指标（答案级 findings 不进入条文级 HVI 分母）。
+- `benchmark/extract.py`：`_CASE_RE` 支持全角括号 `（）`，与半角 `()` 同构解析个案案号。
+- `questions.json`：新增 Q24–Q26 三道答案级陷阱维度题，`_meta.trap_taxonomy` / `answer_level_dimensions` 同步；版本升至 1.3（26 题）。
+- `tests/test_trap_dimensions.py`：13 个单测覆盖三维度 + 管线集成（hr_case）；全量 **178** 用例绿灯。
+
+---
+
 ## 2026-08-17 — 新增子项目：中文 To B 指令遵循评测基准（难度门收口）
 
 > 模块位置：`projects/instruction_following_bench/`，与主 `benchmark/` 法条幻觉引擎并列，

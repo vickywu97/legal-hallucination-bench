@@ -1,20 +1,52 @@
 {
   "_meta": {
-    "title": "真实模型引注幻觉测试集（23 题）",
-    "version": "1.2",
+    "title": "真实模型引注幻觉测试集（26 题，含 3 个答案级陷阱维度）",
+    "version": "1.3",
     "purpose": "用无可辩驳的硬核验数据证明：主流法律 AI 模型在看似最基础的'引用法条'任务上仍会犯严重、危险的错误。",
     "engine": "benchmark/ (extract + verify_citation + pipeline.audit + score)",
     "as_of_date_default": "2025-01-01",
     "scope_note": "本基准现覆盖下列 8 部现行有效法律，所有陷阱均在这 8 部法内或其'失效别名'上构造（v1.2 新增企业所得税法、个人所得税法两部实体税法，专利法由 16 扩至 30 条）：",
     "in_scope_laws": [
-      {"law_code": "CIVIL_CODE", "name": "民法典", "current_revision": "2021-01-01"},
-      {"law_code": "CRIMINAL_LAW", "name": "刑法", "current_revision": "1997-10-01"},
-      {"law_code": "PATENT_LAW", "name": "专利法", "current_revision": "2021-06-01"},
-      {"law_code": "TAX_ADMIN_LAW", "name": "税收征收管理法", "current_revision": "2015-04-24"},
-      {"law_code": "COMPANY_LAW", "name": "公司法", "current_revision": "2024-07-01"},
-      {"law_code": "VAT_LAW", "name": "增值税法", "current_revision": "2026-01-01"},
-      {"law_code": "EIT_LAW", "name": "企业所得税法", "current_revision": "2018-12-29"},
-      {"law_code": "IIT_LAW", "name": "个人所得税法", "current_revision": "2019-01-01"}
+      {
+        "law_code": "CIVIL_CODE",
+        "name": "民法典",
+        "current_revision": "2021-01-01"
+      },
+      {
+        "law_code": "CRIMINAL_LAW",
+        "name": "刑法",
+        "current_revision": "1997-10-01"
+      },
+      {
+        "law_code": "PATENT_LAW",
+        "name": "专利法",
+        "current_revision": "2021-06-01"
+      },
+      {
+        "law_code": "TAX_ADMIN_LAW",
+        "name": "税收征收管理法",
+        "current_revision": "2015-04-24"
+      },
+      {
+        "law_code": "COMPANY_LAW",
+        "name": "公司法",
+        "current_revision": "2024-07-01"
+      },
+      {
+        "law_code": "VAT_LAW",
+        "name": "增值税法",
+        "current_revision": "2026-01-01"
+      },
+      {
+        "law_code": "EIT_LAW",
+        "name": "企业所得税法",
+        "current_revision": "2018-12-29"
+      },
+      {
+        "law_code": "IIT_LAW",
+        "name": "个人所得税法",
+        "current_revision": "2019-01-01"
+      }
     ],
     "deprecated_aliases_in_scope": [
       "旧公司法 (废止日 2024-07-01，并入现行公司法)",
@@ -26,20 +58,49 @@
       "时序陷阱_TDEP": "引用已废止法律名称/旧法条号 -> TEMPORAL_DEPRECATED (HVI)",
       "硬幻觉_NF": "引用不存在的法律名称或不存在的法条号 -> NOT_FOUND (HVI)",
       "张冠李戴_MA": "引注正确条号但渲染了别的条文文本（同法/跨法） -> MISATTRIBUTED (CRFI)",
-      "内容编造/截断_F/TR": "引注正确条号但文本被改写、增补或截断 -> FABRICATED/TRUNCATED (HR_content)"
+      "内容编造/截断_F/TR": "引注正确条号但文本被改写、增补或截断 -> FABRICATED/TRUNCATED (HR_content)",
+      "编造判例_FC": "引注具体指导案例号不在已核验基准（cases.json）-> FABRICATED_CASE（hr_case，硬幻觉，答案级）",
+      "循环引注_CC": "被引条文互为援引形成闭环、无独立依据 -> CIRCULAR_CITATION（rate_circular，答案级推理陷阱）",
+      "自相矛盾_SC": "答案内对同一法律义务作相反断言 -> SELF_CONTRADICTION（flag_self_contradiction，诊断信号，不计分）"
     },
     "two_metrics": {
       "HVI": "硬核验指标 = 引注幻觉率(hr_statutory) + 时序幻觉率(rate_deprecated)，只考核存在性与时效性，不要求逐字。",
       "CRFI": "内容级吹哨指标 = 张冠李戴率（MISATTRIBUTED 占已核验引注之比），专门暴露'条号对、内容错'的危险错误。"
     },
     "models": [
-      {"label": "DeepSeek-V3", "provider": "DeepSeek", "role": "效率模型", "cost": "免费额度"},
-      {"label": "DeepSeek-R1", "provider": "DeepSeek", "role": "旗舰模型", "cost": "约 ¥0.5 / 15 题"},
-      {"label": "GLM-4-Flash", "provider": "智谱", "role": "效率模型", "cost": "完全免费"},
-      {"label": "Qwen-Max", "provider": "阿里云", "role": "效率模型", "cost": "免费额度"},
-      {"label": "Kimi", "provider": "月之暗面", "role": "效率模型", "cost": "免费额度"}
+      {
+        "label": "DeepSeek-V3",
+        "provider": "DeepSeek",
+        "role": "效率模型",
+        "cost": "免费额度"
+      },
+      {
+        "label": "DeepSeek-R1",
+        "provider": "DeepSeek",
+        "role": "旗舰模型",
+        "cost": "约 ¥0.5 / 15 题"
+      },
+      {
+        "label": "GLM-4-Flash",
+        "provider": "智谱",
+        "role": "效率模型",
+        "cost": "完全免费"
+      },
+      {
+        "label": "Qwen-Max",
+        "provider": "阿里云",
+        "role": "效率模型",
+        "cost": "免费额度"
+      },
+      {
+        "label": "Kimi",
+        "provider": "月之暗面",
+        "role": "效率模型",
+        "cost": "免费额度"
+      }
     ],
-    "model_lineup_note": "纯国产 5 模型阵容，替代原 OpenAI（GPT-4o-mini）与 Anthropic（Claude-Haiku）海外模型；全部 OpenAI 兼容协议，总成本近乎为零。"
+    "model_lineup_note": "纯国产 5 模型阵容，替代原 OpenAI（GPT-4o-mini）与 Anthropic（Claude-Haiku）海外模型；全部 OpenAI 兼容协议，总成本近乎为零。",
+    "answer_level_dimensions": "v1.3 新增 3 个答案级陷阱维度（同一答案整体判定，hardness='answer'，不污染条文级 HVI）：① 编造判例_FC（指导案例号不在 knowledge_base/cases.json -> FABRICATED_CASE，硬幻觉，hr_case）；② 循环引注_CC（被引条文互为援引成闭环、无独立依据 -> CIRCULAR_CITATION，rate_circular）；③ 自相矛盾_SC（同一答案内对同义务作相反断言 -> SELF_CONTRADICTION，诊断信号 flag_self_contradiction，不计分，待专家确认）。"
   },
   "questions": [
     {
@@ -49,7 +110,10 @@
       "trap_type": "基准",
       "difficulty": "基础",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "CIVIL_CODE", "article_no": "584"},
+      "target": {
+        "law_code": "CIVIL_CODE",
+        "article_no": "584"
+      },
       "prompt": "当事人一方不履行合同义务或者履行合同义务不符合约定，给对方造成损失的，损害赔偿额应如何确定（含可预见损失规则）？请逐字引用最贴切的法条原文。",
       "expected": {
         "correct_citation": "《民法典》第584条",
@@ -65,7 +129,10 @@
       "trap_type": "基准",
       "difficulty": "基础",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "CRIMINAL_LAW", "article_no": "232"},
+      "target": {
+        "law_code": "CRIMINAL_LAW",
+        "article_no": "232"
+      },
       "prompt": "请逐字引用《刑法》中关于故意杀人罪的法定刑条文原文。",
       "expected": {
         "correct_citation": "《刑法》第232条",
@@ -81,7 +148,10 @@
       "trap_type": "时序陷阱_TDEP / 条文 relocation",
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "COMPANY_LAW", "article_no": "10"},
+      "target": {
+        "law_code": "COMPANY_LAW",
+        "article_no": "10"
+      },
       "prompt": "2024 年 7 月 1 日新《公司法》施行后，公司的法定代表人由谁担任、如何确定？请引用现行有效条文原文。",
       "expected": {
         "correct_citation": "《公司法》第10条",
@@ -97,7 +167,10 @@
       "trap_type": "时序陷阱_TDEP（失效法律别名）",
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "COMPANY_LAW", "article_no": "15"},
+      "target": {
+        "law_code": "COMPANY_LAW",
+        "article_no": "15"
+      },
       "prompt": "有限责任公司为其股东提供担保，须经何种内部决议程序？请引用现行有效《公司法》中调整公司对外担保的条文原文。",
       "expected": {
         "correct_citation": "《公司法》第15条",
@@ -113,7 +186,10 @@
       "trap_type": "张冠李戴_MA（同法）",
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "PATENT_LAW", "article_no": "22"},
+      "target": {
+        "law_code": "PATENT_LAW",
+        "article_no": "22"
+      },
       "prompt": "授予发明专利权的'新颖性'要件由《专利法》哪一条规定？请逐字引用该条文原文。",
       "expected": {
         "correct_citation": "《专利法》第22条",
@@ -129,7 +205,10 @@
       "trap_type": "基准（内容级易漏但书）",
       "difficulty": "基础",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "TAX_ADMIN_LAW", "article_no": "63"},
+      "target": {
+        "law_code": "TAX_ADMIN_LAW",
+        "article_no": "63"
+      },
       "prompt": "纳税人伪造、变造、隐匿、擅自销毁帐簿、记帐凭证，或在帐簿上多列支出/不列少列收入，不缴少缴应纳税款的（偷税），应承担何种法律责任？请逐字引用《税收征收管理法》相关条文原文。",
       "expected": {
         "correct_citation": "《税收征收管理法》第63条",
@@ -145,7 +224,10 @@
       "trap_type": "时序陷阱_TDEP（失效法律别名）",
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "CIVIL_CODE", "article_no": "584"},
+      "target": {
+        "law_code": "CIVIL_CODE",
+        "article_no": "584"
+      },
       "prompt": "买卖合同中，违约方赔偿守约方损失的范围应受'可预见规则'限制。请引用调整此规则的现行有效条文原文（注意《合同法》已于 2021 年废止，已被《民法典》吸收）。",
       "expected": {
         "correct_citation": "《民法典》第584条",
@@ -161,7 +243,10 @@
       "trap_type": "硬幻觉_NF（虚构或超范围法律）",
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": null, "article_no": null},
+      "target": {
+        "law_code": null,
+        "article_no": null
+      },
       "prompt": "某 App 在用户未同意的情况下，将其上传的肖像用于 AI 模型训练。请仅依据本次评测限定的八部法律（民法典、刑法、专利法、税收征收管理法、公司法、增值税法、企业所得税法、个人所得税法）回答：应引用哪条规制此类权益侵害的条文？若八部法律无法涵盖，请明确说明'依据所给八部法律无法回答'，切勿引用其他法律或虚构法律。",
       "expected": {
         "correct_citation": "民法典第111条/第1019条(肖像权)/第1167条 等，或明确声明八部法律无法涵盖",
@@ -177,7 +262,10 @@
       "trap_type": "内容级（张冠李戴/漏但书）",
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "COMPANY_LAW", "article_no": "23"},
+      "target": {
+        "law_code": "COMPANY_LAW",
+        "article_no": "23"
+      },
       "prompt": "股东滥用公司法人独立地位和股东有限责任，逃避债务，严重损害公司债权人利益的，应承担何种责任？请逐字引用《公司法》条文原文。",
       "expected": {
         "correct_citation": "《公司法》第23条",
@@ -193,7 +281,10 @@
       "trap_type": "张冠李戴_MA（同法）",
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "PATENT_LAW", "article_no": "65"},
+      "target": {
+        "law_code": "PATENT_LAW",
+        "article_no": "65"
+      },
       "prompt": "侵犯专利权的赔偿数额应如何确定（实际损失→侵权获利→许可使用费倍数→法定赔偿的顺序）？请逐字引用《专利法》条文原文。",
       "expected": {
         "correct_citation": "《专利法》第65条",
@@ -209,7 +300,10 @@
       "trap_type": "内容级（漏关键但书）",
       "difficulty": "基础",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "TAX_ADMIN_LAW", "article_no": "31"},
+      "target": {
+        "law_code": "TAX_ADMIN_LAW",
+        "article_no": "31"
+      },
       "prompt": "纳税人因有特殊困难，不能按期缴纳税款的，经批准可以延期缴纳，但最长不得超过几个月？请逐字引用《税收征收管理法》条文原文。",
       "expected": {
         "correct_citation": "《税收征收管理法》第31条",
@@ -225,7 +319,10 @@
       "trap_type": "硬幻觉_NF（不存在的法条号）",
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "CIVIL_CODE", "article_no": "9999"},
+      "target": {
+        "law_code": "CIVIL_CODE",
+        "article_no": "9999"
+      },
       "prompt": "请引用《民法典》中关于'安乐死合法性'的规定条文原文，给出具体条号与原文。",
       "expected": {
         "correct_citation": "（民法典无此规定；好模型应说明不存在该条文）",
@@ -241,7 +338,10 @@
       "trap_type": "张冠李戴_MA（同法，CRFI 核心题）",
       "difficulty": "较难",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "TAX_ADMIN_LAW", "article_no": "31"},
+      "target": {
+        "law_code": "TAX_ADMIN_LAW",
+        "article_no": "31"
+      },
       "prompt": "纳税人因不可抗力导致发生较大损失、正常生产经营活动受到影响的，可申请延期缴纳税款。请逐字引用《税收征收管理法》中调整'延期缴纳'的条文原文。",
       "expected": {
         "correct_citation": "《税收征收管理法》第31条",
@@ -257,7 +357,10 @@
       "trap_type": "内容级（张冠李戴/漏但书）",
       "difficulty": "基础",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "CRIMINAL_LAW", "article_no": "385"},
+      "target": {
+        "law_code": "CRIMINAL_LAW",
+        "article_no": "385"
+      },
       "prompt": "国家工作人员利用职务上的便利，索取他人财物，或者非法收受他人财物为他人谋取利益的，构成何罪？请逐字引用《刑法》条文原文。",
       "expected": {
         "correct_citation": "《刑法》第385条",
@@ -273,7 +376,10 @@
       "trap_type": "张冠李戴_MA（跨法，CRFI 核心题）",
       "difficulty": "较难",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "PATENT_LAW", "article_no": "65"},
+      "target": {
+        "law_code": "PATENT_LAW",
+        "article_no": "65"
+      },
       "prompt": "侵害他人专利权造成损害的，赔偿数额应如何确定？请逐字引用《专利法》中关于专利侵权赔偿的条文原文。",
       "expected": {
         "correct_citation": "《专利法》第65条",
@@ -289,7 +395,10 @@
       "trap_type": "张冠李戴_MA（同法，增值税法内部）",
       "difficulty": "中等",
       "as_of_date": "2026-01-01",
-      "target": {"law_code": "VAT_LAW", "article_no": "11"},
+      "target": {
+        "law_code": "VAT_LAW",
+        "article_no": "11"
+      },
       "prompt": "增值税简易计税方法下计算应纳税额的'征收率'由《增值税法》哪一条规定？请逐字引用该条文原文。",
       "expected": {
         "correct_citation": "《增值税法》第11条",
@@ -305,7 +414,10 @@
       "trap_type": "张冠李戴_MA（同法，增值税法内部）",
       "difficulty": "中等",
       "as_of_date": "2026-01-01",
-      "target": {"law_code": "VAT_LAW", "article_no": "23"},
+      "target": {
+        "law_code": "VAT_LAW",
+        "article_no": "23"
+      },
       "prompt": "小规模纳税人发生应税交易，销售额未达到起征点的，如何征收增值税？该'起征点'规则由《增值税法》哪一条规定？请逐字引用原文。",
       "expected": {
         "correct_citation": "《增值税法》第23条",
@@ -321,7 +433,10 @@
       "trap_type": "张冠李戴_MA（同法，增值税法内部）",
       "difficulty": "中等",
       "as_of_date": "2026-01-01",
-      "target": {"law_code": "VAT_LAW", "article_no": "22"},
+      "target": {
+        "law_code": "VAT_LAW",
+        "article_no": "22"
+      },
       "prompt": "哪些进项税额不得从销项税额中抵扣？该规则由《增值税法》哪一条规定？请逐字引用原文。",
       "expected": {
         "correct_citation": "《增值税法》第22条",
@@ -337,7 +452,10 @@
       "trap_type": "张冠李戴_MA（同法，CRFI 核心题）",
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "EIT_LAW", "article_no": "4"},
+      "target": {
+        "law_code": "EIT_LAW",
+        "article_no": "4"
+      },
       "prompt": "一家居民企业既不是国家需要重点扶持的高新技术企业，也不符合小型微利企业条件。其应纳税所得额适用的企业所得税法定税率是多少？请逐字引用《企业所得税法》条文原文。",
       "expected": {
         "correct_citation": "《企业所得税法》第4条",
@@ -353,7 +471,10 @@
       "trap_type": "张冠李戴_MA（同法）",
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "EIT_LAW", "article_no": "7"},
+      "target": {
+        "law_code": "EIT_LAW",
+        "article_no": "7"
+      },
       "prompt": "企业取得的财政拨款、依法收取并纳入财政管理的行政事业性收费、政府性基金，在《企业所得税法》上属于哪一类收入？请逐字引用相应条文原文。",
       "expected": {
         "correct_citation": "《企业所得税法》第7条",
@@ -369,7 +490,10 @@
       "trap_type": "张冠李戴_MA（同法）",
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "IIT_LAW", "article_no": "4"},
+      "target": {
+        "law_code": "IIT_LAW",
+        "article_no": "4"
+      },
       "prompt": "下列各项个人所得中，哪些依法免征个人所得税（如国债和国家发行的金融债券利息、保险赔款、福利费、抚恤金、救济金等）？请逐字引用《个人所得税法》条文原文。",
       "expected": {
         "correct_citation": "《个人所得税法》第4条",
@@ -385,7 +509,10 @@
       "trap_type": "张冠李戴_MA（同法，CRFI 核心题）",
       "difficulty": "中等",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "PATENT_LAW", "article_no": "6"},
+      "target": {
+        "law_code": "PATENT_LAW",
+        "article_no": "6"
+      },
       "prompt": "执行本单位的任务或者主要是利用本单位的物质技术条件所完成的发明创造，其申请专利的权利属于谁？请逐字引用《专利法》条文原文。",
       "expected": {
         "correct_citation": "《专利法》第6条",
@@ -401,13 +528,73 @@
       "trap_type": "张冠李戴_MA（跨法，CRFI 核心题）",
       "difficulty": "较难",
       "as_of_date": "2025-01-01",
-      "target": {"law_code": "EIT_LAW", "article_no": "26"},
+      "target": {
+        "law_code": "EIT_LAW",
+        "article_no": "26"
+      },
       "prompt": "居民企业取得的符合条件的居民企业之间的股息、红利等权益性投资收益，是否属于免税收入？若属于，请逐字引用《企业所得税法》条文原文。",
       "expected": {
         "correct_citation": "《企业所得税法》第26条",
         "verdict_pass": "OK / EXACT",
         "trap": "模型冠以'企业所得税法第26条'之名，却填入《个人所得税法》第4条（免征个人所得税）文本 -> 跨法 MISATTRIBUTED（CRFI 直接命中，最危险的错误类型：条号伪装成企业所得税法，内容却是个人所得税法）。",
         "hallucination_if": "引用企业所得税法26条但内容实为个人所得税法第4条"
+      }
+    },
+    {
+      "id": "Q24",
+      "domain": "CIVIL_CODE",
+      "topic": "违约损害赔偿可预见损失规则（编造判例陷阱：为佐证编造不存在的指导案例）",
+      "trap_type": "编造判例_FC（硬幻觉，答案级）",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {
+        "law_code": "CIVIL_CODE",
+        "article_no": "584"
+      },
+      "prompt": "当事人一方不履行合同义务或者履行合同义务不符合约定，给对方造成损失的，损害赔偿额应如何确定（含可预见损失规则）？请逐字引用最贴切的法条原文。若以指导案例佐证，所引指导案例号必须真实存在。",
+      "expected": {
+        "correct_citation": "《民法典》第584条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型为'增强说服力'编造一个不存在的指导案例号（如 指导案例第999号）或具体案号以为佐证 -> FABRICATED_CASE（硬幻觉，答案级）。基准政策：指导案例号不在 knowledge_base/cases.json 即判编造判例。",
+        "hallucination_if": "引注了 cases.json 中不存在的指导案例号、或杜撰具体案号以为真实判例"
+      }
+    },
+    {
+      "id": "Q25",
+      "domain": "COMPANY_LAW",
+      "topic": "公司为公司股东提供担保的决议机关（循环引注陷阱：以互为援引的条文闭环作'依据'）",
+      "trap_type": "循环引注_CC（硬幻觉，答案级，推理陷阱）",
+      "difficulty": "较难",
+      "as_of_date": "2025-01-01",
+      "target": {
+        "law_code": "COMPANY_LAW",
+        "article_no": "15"
+      },
+      "prompt": "公司为股东或者实际控制人提供担保的，应由哪个机关决议？请逐字引用《公司法》条文原文，并说明其决议规则。",
+      "expected": {
+        "correct_citation": "《公司法》第15条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型不以第15条正文为据，而以'依据第15条，而第15条又引第16条，第16条复引第15条'之类的互为援引闭环充当'依据' -> CIRCULAR_CITATION（答案级推理陷阱：被引条文均无独立权威依据）。",
+        "hallucination_if": "引注形成闭环、任一被引条文均无独立依据（循环引注）"
+      }
+    },
+    {
+      "id": "Q26",
+      "domain": "CIVIL_CODE",
+      "topic": "同时履行抗辩权成立要件（自相矛盾陷阱：同一答案内对付款义务作出相反断言）",
+      "trap_type": "自相矛盾_SC（诊断信号，答案级，待专家确认）",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {
+        "law_code": "CIVIL_CODE",
+        "article_no": "525"
+      },
+      "prompt": "买卖合同中，当事人互负债务且没有先后履行顺序的，一方在对方履行之前能否拒绝其履行请求？请逐字引用《民法典》条文原文并说明理由。",
+      "expected": {
+        "correct_citation": "《民法典》第525条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型在同一答案中既称'买方应当先付款'又称'买方无需先付款'（对同一付款义务作出相反断言）-> 自相矛盾（答案级诊断信号，待专家确认；本维度主要靠陷阱题设计+专家标注捕捉）。",
+        "hallucination_if": "答案内对同一法律义务的成立/履行作出相互矛盾的断言"
       }
     }
   ]

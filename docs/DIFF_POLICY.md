@@ -173,6 +173,29 @@ per_domain[code] = 该 law_code 的 HR_statutory
 
 ---
 
+## 十、答案级陷阱维度（v1.3 新增，hardness="answer"）
+
+v1.3 在 `benchmark/answer_checks.py` 引入**整答案级**检测，覆盖"引用行为本身"的三种危险模式，
+与 §四/§五 的**单条引注级**判定正交、互补：
+
+| 维度 | category | verdict | hardness | 计入 HVI？ | 指标 |
+| --- | --- | --- | --- | --- | --- |
+| 编造判例 | `FABRICATED_CASE` / `CASE_OK` / `UNVERIFIABLE_CASE` | HALLUCINATION / OK / UNVERIFIABLE | answer | 否（独立 `hr_case`） | `hr_case` |
+| 循环引注 | `CIRCULAR_CITATION` | HALLUCINATION | answer | 否（独立 `rate_circular`） | `rate_circular` |
+| 自相矛盾 | `SELF_CONTRADICTION` | OK（仅诊断） | answer | 否 | `flag_self_contradiction` |
+
+- **关键隔离原则**：三者统一 `hardness="answer"`，`score.py` 计 HVI 时仅取 `hardness=="hard"` 的法条引注，
+  故答案级 findings **绝不污染条文级 HVI / HVI_content / CRFI**。它们以独立指标报告，定位"引用行为"层面的幻觉。
+- **编造判例基准政策**：`knowledge_base/cases.json` 为唯一可核验基准（当前含 4 个已核验指导案例）；
+  指导案例号不在其中 → `FABRICATED_CASE`（硬幻觉，计入 `hr_case`）；个案案号（`（YYYY）……号`）事实敏感、体量巨大，
+  不维护基准，一律 `UNVERIFIABLE_CASE`（透明、不计分，与条文级 provenance gate 同构）。扩表仅需追加 `cases` 数组条目。
+- **循环引注**：被引法条子集上建"正文引 B 条"有向图（A 条文正文出现「第B条」且 B 亦被引 → 边 A→B），
+  DFS 检测到环即判 `CIRCULAR_CITATION`。真实法条为 DAG，该维度高精度、为潜伏陷阱。
+- **自相矛盾（诊断信号）**：低精度启发式（同主语 + 相反谓词 / 显式转折无消解），`verdict` 恒为 `OK`，
+  **永不判幻觉**，仅作提示、需专家确认；该维度主要靠**陷阱题设计（Q26）+ 专家标注**承载。
+
+---
+
 ## 九、与 METHODOLOGY 的关系
 
 本文件实现 METHODOLOGY §二 所承诺的"二元内容 diff"与 §五.9 的"废止法名

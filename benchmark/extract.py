@@ -196,7 +196,7 @@ _LAW_RE_CACHE: Dict[tuple, re.Pattern] = {}
 
 _INTERP_RE = re.compile(r'法释〔?(\d{4})〕?\s*(\d+)\s*号')
 _GUIDING_RE = re.compile(r'指导?性?案例\s*第?\s*(\d+)\s*号')
-_CASE_RE = re.compile(r'\((\d{4})\)([^()]{2,20}?)(?:民|刑|行|赔|执|再|终|初)\w*?\d+号')
+_CASE_RE = re.compile(r'[（(](\d{4})[）)]([^()（）]{2,20}?)(?:民|刑|行|赔|执|再|终|初)\w*?\d+号')
 _SUSPECT_TOKEN = re.compile(r'[条款项]')
 
 

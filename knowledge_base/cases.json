@@ -1,0 +1,36 @@
+{
+  "_meta": {
+    "title": "已核验指导案例登记表（编造判例陷阱维度验证集）",
+    "purpose": "作为 '编造判例' 维度的唯一可核验基准。模型引注的具体指导案例号若不在本表，按基准政策判为 FABRICATED_CASE（硬幻觉）；专家可扩表以降低假阴性。",
+    "matching": "按 guide_no（'指导案例第N号' 的数字）精确匹配；命中 -> CASE_OK，未命中 -> FABRICATED_CASE。",
+    "case_no_policy": "（年份）……号 形式的个案案号不在本表维护范围内（事实敏感、体量巨大），一律判 UNVERIFIABLE_CASE（透明、不计分、待专家核验），与条文级 provenance gate 同构。",
+    "verification_status": "本表条目均为最高人民法院公开发布、可公开核验的指导案例，verification_status=verified。",
+    "curation_note": "当前仅收录 4 个最广为人知、案号/名称可稳定核验的指导案例；扩表仅需向 cases 数组追加条目，无需改动引擎。"
+  },
+  "cases": [
+    {
+      "guide_no": "1",
+      "name": "上海中原物业顾问有限公司诉陶德华居间合同纠纷案",
+      "topic": "居间合同 '跳单' 违约认定",
+      "verification_status": "verified"
+    },
+    {
+      "guide_no": "15",
+      "name": "徐工集团工程机械股份有限公司诉成都川交工贸有限责任公司等买卖合同纠纷案",
+      "topic": "关联公司人格混同、纵向与横向人格否认",
+      "verification_status": "verified"
+    },
+    {
+      "guide_no": "24",
+      "name": "荣宝英诉王阳、永诚财产保险股份有限公司江阴支公司机动车交通事故责任纠纷案",
+      "topic": "因果关系 '蛋壳脑袋规则' 适用",
+      "verification_status": "verified"
+    },
+    {
+      "guide_no": "67",
+      "name": "汤长龙诉周士海股权转让纠纷案",
+      "topic": "股权转让分期付款参照买卖合同解除规则",
+      "verification_status": "verified"
+    }
+  ]
+}

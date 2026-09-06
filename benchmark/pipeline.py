@@ -33,6 +33,7 @@ from typing import Dict, List, Optional
 from knowledge_base.loader import load_laws, normalize_as_of
 from benchmark.extract import extract
 from benchmark.verify import verify_citation
+from benchmark.answer_checks import run_answer_checks
 from benchmark.score import score, ScoreReport
 
 
@@ -109,6 +110,13 @@ def run_answer(answer: str, as_of_date: str,
     out = []
     gc = gold_candidates or {}
     for i, c in enumerate(citations):
+        # Non-statutory citations (guiding_case / case_no / interpretation) are
+        # verified by the answer-level checks in run_answer_checks, NOT by the
+        # statutory verify_citation (which would mislabel them NOT_FOUND and
+        # wrongly inflate n_citations). Only run strict content-diff on real law
+        # articles.
+        if c.cit_type != "law":
+            continue
         cand = gc.get(str(i)) or gc.get(i)
         if cand is None and c.span:
             cand = candidate_window(answer, c.span)
@@ -116,6 +124,9 @@ def run_answer(answer: str, as_of_date: str,
                             candidate_text=cand or None)
         v.question_id = question_id
         out.append(v)
+    # answer-level trap dimensions (编造判例 / 循环引注 / 自相矛盾) — hardness="answer"
+    out.extend(run_answer_checks(answer, citations, as_of_date, laws=laws,
+                                 question_id=question_id))
     return out
 
 
@@ -148,7 +159,10 @@ def audit(records: List[dict], laws: Optional[Dict] = None) -> Dict:
         if model not in result:
             result[model] = {"verifications": [], "n_citations": 0}
         result[model]["verifications"].extend(vs)
-        result[model]["n_citations"] += len(vs)
+        # n_citations counts only statutory (hardness=="hard") citations so the
+        # answer-level trap findings (hardness=="answer") don't inflate it.
+        result[model]["n_citations"] += sum(
+            1 for v in vs if getattr(v, "hardness", None) == "hard")
     for model, d in result.items():
         d["report"] = score(d["verifications"])
     return result
@@ -173,6 +187,9 @@ def _write_model_md(model: str, data: dict, out_dir: str) -> str:
     lines.append(f"- 内容级幻觉率 HR_content：{m.get('hr_content', 0):.1%}（仅逐字 diff 子集；反映是否照抄法条）")
     lines.append(f"- 张冠李戴率 CRFI：{m.get('crfi', 0):.1%}（逐字 diff 子集中 MISATTRIBUTED 占比；专抓'条号对、内容错'）")
     lines.append(f"- 时序幻觉率 rate_deprecated：{m.get('rate_deprecated', 0):.1%}")
+    lines.append(f"- 编造判例率 hr_case：{m.get('hr_case', 0):.1%}（指导案例号不在已核验基准占比；硬幻觉）")
+    lines.append(f"- 循环引注率 rate_circular：{m.get('rate_circular', 0):.1%}（答案级推理陷阱占比）")
+    lines.append(f"- 自相矛盾标记 flag_self_contradiction：{m.get('flag_self_contradiction', 0):.1%}（诊断信号，待专家确认，不计分）")
     lines.append(f"- 不可验率 rate_unverifiable：{m.get('rate_unverifiable', 0):.1%}")
     if rep.per_domain:
         lines.append("- 分域 HR：")
@@ -213,8 +230,8 @@ def _write_leaderboard(per_model: dict, out_dir: str) -> str:
     json_path = os.path.join(out_dir, "leaderboard.json")
     lines = ["# 法律引注幻觉排行榜 (Leaderboard)", "",
              "| 排名 | 模型 | 引注幻觉率(HVI) | 内容级幻觉率 | 张冠李戴率(CRFI) | "
-             "时序幻觉率 | 不可验率 | 引注数 |",
-             "| --- | --- | --- | --- | --- | --- | --- | --- |"]
+             "编造判例率 | 循环引注率 | 不可验率 | 引注数 |",
+             "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     board = []
     for rank, (model, d) in enumerate(ranked, 1):
         m = d["metrics"]
@@ -222,7 +239,7 @@ def _write_leaderboard(per_model: dict, out_dir: str) -> str:
         lines.append(
             f"| {rank} | {disp} | {m.get('hr_statutory', 0):.1%} | "
             f"{m.get('hr_content', 0):.1%} | {m.get('crfi', 0):.1%} | "
-            f"{m.get('rate_deprecated', 0):.1%} | "
+            f"{m.get('hr_case', 0):.1%} | {m.get('rate_circular', 0):.1%} | "
             f"{m.get('rate_unverifiable', 0):.1%} | {d['n_citations']} |")
         board.append({"rank": rank, "model": model, "metrics": m,
                       "n_citations": d["n_citations"]})
@@ -236,6 +253,8 @@ def _write_leaderboard(per_model: dict, out_dir: str) -> str:
 _CAT_ABBR = {
     "TEMPORAL_DEPRECATED": "T", "NOT_FOUND": "NF", "MISATTRIBUTED": "MA",
     "FABRICATED_GENERIC": "F", "TRUNCATED": "TR", "UNVERIFIED_GT": "UG",
+    "FABRICATED_CASE": "FC", "CASE_OK": "CK", "UNVERIFIABLE_CASE": "UC",
+    "CIRCULAR_CITATION": "CC", "SELF_CONTRADICTION": "SC",
 }
 
 
@@ -286,7 +305,9 @@ def _write_question_matrix(flat: List[dict], per_model: dict, out_dir: str) -> s
         lines.append("| " + " | ".join(row) + " |")
     lines.append("")
     lines.append("子类缩写：T=时序幻觉 NF=条文不存在 MA=张冠李戴 "
-                 "F=内容编造 TR=截断 UG=未核验基准")
+                 "F=内容编造 TR=截断 UG=未核验基准 "
+                 "FC=编造判例 CK=真实指导案例 UC=个案案号待核验 "
+                 "CC=循环引注 SC=自相矛盾(诊断)")
     md_path = os.path.join(out_dir, "leaderboard.md")
     with open(md_path, "a", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
