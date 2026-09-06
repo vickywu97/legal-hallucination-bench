@@ -54,6 +54,15 @@ _NEXT_CITATION = re.compile(r"《[^》]{1,20}》\s*第[一二三四五六七八�
 _TRAIL_CONNECTIVE = re.compile(
     r"(?<=[。；;！？\n])\s*(根据|依据|另[，, ]?|见|参见|以及|并且|同时|此外|又|而)\s*$")
 
+# When the statute quote is the LAST citation in the answer (no following
+# 《…》第X条 to bound the window), the window otherwise absorbs a trailing
+# cross-reference / case-law pointer ("。另可参见指导案例第999号佐证。") as if it
+# were statute text, producing a false PARTIAL/TRUNCATED on a verbatim-correct
+# quote. Those openers are never part of a statute article's own text, so strip
+# any trailing sentence that begins with one after a sentence boundary.
+_TRAIL_TAIL = re.compile(
+    r"(?<=[。；;！？\n])\s*(另|另见|另参见|见|参见|以及|并且|同时|此外|又|而|综上|因此|所以|例如|比如)\S*$")
+
 
 def candidate_window(text: str, span: tuple, max_chars: int = 500) -> str:
     """Extract the model's rendered statute text following a citation.
@@ -87,6 +96,8 @@ def candidate_window(text: str, span: tuple, max_chars: int = 500) -> str:
     raw = text[start:end]
     # strip a trailing connective that bridges into the next citation mention
     raw = _TRAIL_CONNECTIVE.sub("", raw)
+    # strip a trailing cross-reference / case-law pointer sentence
+    raw = _TRAIL_TAIL.sub("", raw)
     return raw.strip()
 
 

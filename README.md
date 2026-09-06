@@ -120,7 +120,7 @@ Verification (verdict / category / diff_level / score / candidate / ground_truth
 
 ```bash
 # 0) 仓库零依赖，直接用受管 Python 跑（-S 关闭 site-packages，纯标准库）
-python -S -m unittest discover -s tests        # 全量测试（当前 178 用例绿灯：benchmark + 指令遵循基准）
+python -S -m unittest discover -s tests        # 全量测试（当前 183 用例绿灯：benchmark + 指令遵循基准）
 
 # 1) 开箱即用的离线评测（内置 good/bad/partial 三个玩具模型；写入独立目录，不碰真实报告）
 python -S -m benchmark.run --offline --out-dir sample_demo_reports
@@ -142,6 +142,35 @@ python -S -m benchmark.run --input answers.jsonl --candidates candidates.jsonl
 ```
 
 `demo/` 目录内置一套可复现的端到端示例（见下）。
+
+---
+
+## 离线答案检查器（scripts/check_answer.py）
+
+v1.3 的三个答案级陷阱维度（编造判例 / 循环引注 / 自相矛盾）与条文级引擎，
+除单元测试外，另提供一个**零 API、纯离线**的产品化入口：把任意模型的答案文本
+喂进去，即得一份人读的诊断报告。**无需配置任何 API key、不调用任何 LLM**，
+几秒内跑完。
+
+```bash
+# 单题：直接贴答案文本（自动取 questions.json 的 as_of_date 与题面上下文）
+python scripts/check_answer.py --question Q24 \
+  --answer "根据《民法典》第584条，当事人一方不履行合同义务……另可参见指导案例第999号佐证。"
+
+# 单题：答案从文件读入；输出 JSON；落盘到文件
+python scripts/check_answer.py --question Q24 --answer-file ans.txt --format json --out q24.json
+
+# 批量：每行一条 {"question_id","answer","model"?,"as_of_date"?}，生成完整审计报告
+python scripts/check_answer.py --batch answers.jsonl --out report/
+```
+
+报告同时覆盖**条文级**（存在性 / 时序 / 内容 / 张冠李戴）与**答案级**三维度
+（`hr_case` / `rate_circular` / `flag_self_contradiction`），逐条给出符号
+（✓ 通过 / ✗ 幻觉 / ? 不可验 / ⚠ 诊断）与 `category`。退出码恒为 0（诊断工具，
+非测试运行器），可用打印标记或 JSON 在你的 CI 中自行设门禁。
+
+> 说明：单题模式的内容级 diff 采用内置候选窗口（启发式，约 500 字上限；如答案仅引一条且其后无另一条《…》第X条，窗口会截至句末）。要严格逐字判分，请用
+> `benchmark.run --input answers.jsonl --candidates candidates.jsonl`（专家标注闭环）。
 
 ---
 

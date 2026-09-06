@@ -25,6 +25,21 @@
 
 ---
 
+## 2026-09-07 — v1.3 收口：离线答案检查器 CLI + 无模型金标准回归护栏
+
+> v1.3 的检测器此前仅由单元测试覆盖。本变更将其产品化、并加一道**零模型**的端到端回归护栏，使三维度在真实输入上可用、可复现、可防回归。
+
+### 新增（功能收口）
+- **`scripts/check_answer.py`**：零 API、纯离线答案检查器（单题 / 批量两种模式）。单题支持 `--question/--answer/--answer-file/--format json/--out`；批量读 `answers.jsonl` 并生成完整审计报告（`audit_<model>.md` + `leaderboard.md/json` + `verifications.jsonl`）。同一份引擎同时输出条文级（存在性/时序/内容/张冠李戴）与答案级三维度（`hr_case`/`rate_circular`/`flag_self_contradiction`）。退出码恒 0（诊断工具，非测试运行器），可用打印标记/JSON 在自有 CI 设门禁。
+- **`tests/test_gold_answers.py`**：无模型金标准回归护栏。对 `questions.json` 每题用**已核验 KB** 逐字构造金标准答案（目标条文 verbatim + 作为 candidate 传入内容 diff），断言：① 金标准不被误判条文级幻觉；② 至少一条条文级 OK；③ 高精度的 `FABRICATED_CASE`/`CIRCULAR_CITATION` 在干净金标准上静默；④ 每题目标条文在已核验 KB 中可解析（KB 覆盖门禁，含对 Q12「第9999条」等**刻意不存在法条**陷阱的识别跳过）。该护栏端到端演练 extract+verify+answer_checks+score，**不调用任何 LLM**，是全引擎的快确定性 CI 守卫。
+- **`tests/test_check_answer_cli.py`**：CLI 端到端测试（导入核心 `check_single` + 真实子进程 `--question/--answer/--format json`），确认 v1.3 检测器经产品面可达。
+
+### 工程改动
+- `benchmark/pipeline.py`：`candidate_window` 新增 `_TRAIL_TAIL` 规则——当 statute 引文是答案中最后一条（无后继《…》第X条界定窗口）时，剔除尾部跨引/判例指针句（如"。另可参见指导案例第999号佐证。"），避免把跨引散文误并入法条候选导致**正确逐字引用被误判 PARTIAL/TRUNCATED**。该启发式仅在句界后接跨引开启词时生效，绝不裁掉法条自身尾部。
+- 全量测试 **183** 用例绿灯（benchmark + 指令遵循基准）。
+
+---
+
 ## 2026-08-17 — 新增子项目：中文 To B 指令遵循评测基准（难度门收口）
 
 > 模块位置：`projects/instruction_following_bench/`，与主 `benchmark/` 法条幻觉引擎并列，
