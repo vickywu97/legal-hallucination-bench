@@ -80,10 +80,12 @@ def _pipeline_demo(input_path: str = None, candidates_path: str = None,
     With --candidates <candidates.jsonl> (from benchmark.annotate) the gold
     candidate texts are merged in for STRICT content-level evaluation.
 
-    SAFETY: SAMPLE mode (no --input) refuses to run when real benchmark reports
-    already exist in out_dir, because it would silently clobber the real
-    collected reports (e.g. the 90-record real collection). Pass --force to
-    overwrite anyway, or --input to score real answers.
+    SAFETY: refuses to run when real benchmark reports already exist in out_dir
+    AND this run would produce nothing, because that would silently clobber the
+    real collected reports (e.g. the 203-record real collection). Covers both
+    (a) SAMPLE mode (no --input) and (b) an empty `--input` (missing/empty
+    answers.jsonl) or an audit() that scored 0 models. Pass --force to
+    overwrite anyway; a normal --input with real answers is unaffected.
     """
     from benchmark.pipeline import audit, build_report
 
@@ -112,6 +114,21 @@ def _pipeline_demo(input_path: str = None, candidates_path: str = None,
         print(f"[pipeline] no --input given; running built-in SAMPLE "
               f"({len(records)} model-answer records)")
 
+    # SAFETY: an empty run (e.g. --input pointed at a missing/empty
+    # answers.jsonl) would silently overwrite the REAL collected reports with
+    # zero records. Refuse unless --force. Complements the SAMPLE-mode guard.
+    if not records and _real_reports_exist(out_dir) and not force:
+        sys.stderr.write(
+            "[pipeline] REFUSED: this run produced 0 model-answer records, but "
+            "REAL benchmark reports already exist in\n"
+            f"           {out_dir}\n"
+            "           Writing now would silently wipe the real collected "
+            "results.\n"
+            "           -> check that --input points at a non-empty "
+            "answers.jsonl, or\n"
+            "           -> add `--force` to overwrite the reports anyway.\n")
+        return 1
+
     if candidates_path:
         file_cands: dict = {}
         for line in open(candidates_path, encoding="utf-8"):
@@ -130,6 +147,15 @@ def _pipeline_demo(input_path: str = None, candidates_path: str = None,
               f"({len(file_cands)} model(s))")
 
     result = audit(records)
+    # SAFETY: a run that scored nothing must not wipe real reports either.
+    if not result and _real_reports_exist(out_dir) and not force:
+        sys.stderr.write(
+            "[pipeline] REFUSED: audit() scored 0 models, but REAL benchmark "
+            "reports already exist in\n"
+            f"           {out_dir}\n"
+            "           -> check the --input records, or add `--force` to "
+            "overwrite the reports anyway.\n")
+        return 1
     build_report(result, out_dir)
 
     print(f"[pipeline] wrote reports to {out_dir}")

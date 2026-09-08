@@ -270,7 +270,7 @@ python -S demo/run_eval.py        # 启发式 vs 严格 双跑对比，落到 de
 # 设置 API Key（均为国产平台；缺哪个就跳过哪个模型，不报错）
 export DEEPSEEK_API_KEY=... ZHIPU_API_KEY=... DASHSCOPE_API_KEY=... MOONSHOT_API_KEY=...
 
-# 跑全部 5 个模型 × 23 题（也可 --models / --only 指定子集）
+# 跑全部 5 个模型 × 29 题（也可 --models / --only 指定子集）
 python -S scripts/generate_answers.py --out answers.jsonl
 
 # 内置 5 个纯国产模型：DeepSeek-V3、DeepSeek-R1(付费旗舰)、GLM-4-Flash(免费)、

@@ -75,6 +75,28 @@ class OfflineGuardTests(unittest.TestCase):
             self.assertEqual(rc, 0)
             self.assertTrue(os.path.exists(os.path.join(d, "leaderboard.json")))
 
+    def test_empty_input_refuses_when_real_reports_present(self):
+        # Root-cause regression: an `--input` pointing at an empty/missing
+        # answers.jsonl must NOT silently wipe the real collected reports.
+        with tempfile.TemporaryDirectory() as d:
+            _seed_real_reports(d)  # real reports present
+            empty = os.path.join(d, "answers_empty.jsonl")
+            open(empty, "w", encoding="utf-8").close()  # 0 records
+            rc = run_mod._pipeline_demo(input_path=empty, out_dir=d)
+            self.assertEqual(rc, 1)
+            # real reports must survive untouched
+            with open(os.path.join(d, "verifications.jsonl"), encoding="utf-8") as f:
+                self.assertEqual(f.read().strip(),
+                                 json.dumps({"model": "DeepSeek-R1", "domain": "刑法"}))
+
+    def test_empty_input_proceeds_with_force(self):
+        with tempfile.TemporaryDirectory() as d:
+            _seed_real_reports(d)
+            empty = os.path.join(d, "answers_empty.jsonl")
+            open(empty, "w", encoding="utf-8").close()
+            rc = run_mod._pipeline_demo(input_path=empty, force=True, out_dir=d)
+            self.assertEqual(rc, 0)
+
     def test_out_dir_keeps_real_reports_untouched(self):
         # default reports dir holds real data; --out-dir points the SAMPLE demo
         # elsewhere, so the guard never triggers and real data is preserved.
