@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "title": "真实模型引注幻觉测试集（26 题，含 3 个答案级陷阱维度）",
-    "version": "1.3",
+    "title": "真实模型引注幻觉测试集（29 题：条文级 8 维度 + 答案级 3 维度）",
+    "version": "1.4",
     "purpose": "用无可辩驳的硬核验数据证明：主流法律 AI 模型在看似最基础的'引用法条'任务上仍会犯严重、危险的错误。",
     "engine": "benchmark/ (extract + verify_citation + pipeline.audit + score)",
     "as_of_date_default": "2025-01-01",
@@ -61,7 +61,10 @@
       "内容编造/截断_F/TR": "引注正确条号但文本被改写、增补或截断 -> FABRICATED/TRUNCATED (HR_content)",
       "编造判例_FC": "引注具体指导案例号不在已核验基准（cases.json）-> FABRICATED_CASE（hr_case，硬幻觉，答案级）",
       "循环引注_CC": "被引条文互为援引形成闭环、无独立依据 -> CIRCULAR_CITATION（rate_circular，答案级推理陷阱）",
-      "自相矛盾_SC": "答案内对同一法律义务作相反断言 -> SELF_CONTRADICTION（flag_self_contradiction，诊断信号，不计分）"
+      "自相矛盾_SC": "答案内对同一法律义务作相反断言 -> SELF_CONTRADICTION（flag_self_contradiction，诊断信号，不计分）",
+      "篡改条号_TNUM": "把正确条号错引为相邻/相近的真实条号（二者均存在、规制对象不同）-> 内容错位，引擎以 PARTIAL/FABRICATED 捕获（属 CRFI 张冠李戴家族）",
+      "篡改数字_TDIG": "引注条号正确但引述文本中的数字/期限/比例被篡改 -> 内容失真，引擎以 PARTIAL/FABRICATED 捕获（内容逐字比对，不依赖记忆）",
+      "引用失效法_TREP": "引用已废止法律（如《合同法》第107条）作答、内容实质正确 -> 仍判 TEMPORAL_DEPRECATED（时序幻觉，不因内容正确而豁免）"
     },
     "two_metrics": {
       "HVI": "硬核验指标 = 引注幻觉率(hr_statutory) + 时序幻觉率(rate_deprecated)，只考核存在性与时效性，不要求逐字。",
@@ -595,6 +598,63 @@
         "verdict_pass": "OK / EXACT",
         "trap": "模型在同一答案中既称'买方应当先付款'又称'买方无需先付款'（对同一付款义务作出相反断言）-> 自相矛盾（答案级诊断信号，待专家确认；本维度主要靠陷阱题设计+专家标注捕捉）。",
         "hallucination_if": "答案内对同一法律义务的成立/履行作出相互矛盾的断言"
+      }
+    },
+    {
+      "id": "Q27",
+      "domain": "CIVIL_CODE",
+      "topic": "违约损害赔偿可预见损失规则（篡改条号：把第584条错引为相邻的第585条）",
+      "trap_type": "篡改条号_TNUM（真实但错引，内容错位）",
+      "difficulty": "较难",
+      "as_of_date": "2025-01-01",
+      "target": {
+        "law_code": "CIVIL_CODE",
+        "article_no": "584"
+      },
+      "prompt": "当事人一方不履行合同义务或者履行合同义务不符合约定，给对方造成损失的，损害赔偿额应如何确定（含可预见损失规则）？请逐字引用最贴切的法条原文。",
+      "expected": {
+        "correct_citation": "《民法典》第584条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型把第584条（损害赔偿额确定）错引为相邻的第585条（违约金约定），二者均真实存在但规制对象不同 -> 条号篡改 -> 内容错位（张冠李戴家族），引擎以 PARTIAL/FABRICATED 捕获。",
+        "hallucination_if": "引注了第585条（或其他非584条）作为本题答案"
+      }
+    },
+    {
+      "id": "Q28",
+      "domain": "CIVIL_CODE",
+      "topic": "违约损害赔偿可预见损失上限（篡改数字：引注条号对但把但书比例/数额篡改为虚构数字）",
+      "trap_type": "篡改数字_TDIG（引注条号正确、内容失真）",
+      "difficulty": "难",
+      "as_of_date": "2025-01-01",
+      "target": {
+        "law_code": "CIVIL_CODE",
+        "article_no": "584"
+      },
+      "prompt": "违约损害赔偿额中的可预见损失上限如何确定？请逐字引用《民法典》第584条原文。",
+      "expected": {
+        "correct_citation": "《民法典》第584条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型虽引第584条但把但书比例/数额篡改为虚构数字（如'不得超过…损失的千分之三'），引注条号对、内容失真 -> 引擎以 PARTIAL/FABRICATED 捕获（内容逐字比对）。",
+        "hallucination_if": "援引了第584条但引述文本与官方原文不一致（数字/期限/比例被篡改）"
+      }
+    },
+    {
+      "id": "Q29",
+      "domain": "CIVIL_CODE",
+      "topic": "违约责任一般规定（引用失效法：以已废止《合同法》第107条作答，内容实质正确）",
+      "trap_type": "引用失效法_TREP（内容正确仍判时序幻觉）",
+      "difficulty": "中等",
+      "as_of_date": "2025-01-01",
+      "target": {
+        "law_code": "CIVIL_CODE",
+        "article_no": "577"
+      },
+      "prompt": "当事人一方不履行合同义务或者履行合同义务不符合约定的，应承担什么责任？请引用最贴切的现行法条原文。",
+      "expected": {
+        "correct_citation": "《民法典》第577条",
+        "verdict_pass": "OK / EXACT",
+        "trap": "模型以已废止《合同法》第107条（违约责任一般规定）作答，内容实质正确但法律已废止 -> 时序幻觉 TEMPORAL_DEPRECATED，即使内容无误仍判幻觉。",
+        "hallucination_if": "援引了《合同法》第107条（已废止）而非《民法典》第577条"
       }
     }
   ]

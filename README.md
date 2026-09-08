@@ -16,7 +16,7 @@
 > - **Offline & zero-dependency**: scores how faithfully LLMs quote Chinese statute text — `python -S`, no `pip install`.
 > - **Expert-verified KB**: every article signed against the official `flk.npc.gov.cn` source — 100% current-law, 0 unverified nodes.
 > - **Strict binary evaluator**: verbatim = 1.0, anything else = 0.0; plus a **repealed-law trap** (citing a repealed statute = automatic fail).
-> - **Real-model results**: 5 domestic LLMs on 23 trap questions (v1.3 adds 3 answer-level trap dimensions → 26 total) across 8 laws — 33.3–54.2% citation hallucination (HVI) even on the most forgiving metric; on China's new **VAT Law (2026-01-01)**, 42 citations, **0 verbatim-correct (EXACT 0%)**.
+> - **Real-model results**: 5 domestic LLMs on 29 trap questions (v1.3 三道答案级 + v1.4 三道条文级扩展维度) across 8 laws — 33.3–54.2% citation hallucination (HVI) even on the most forgiving metric; on China's new **VAT Law (2026-01-01)**, 42 citations, **0 verbatim-correct (EXACT 0%)**.
 > - Reproducible with no API keys: `python -S -m benchmark.run --offline --out-dir sample_demo_reports`.
 
 ---
@@ -231,9 +231,9 @@ python -S demo/run_eval.py        # 启发式 vs 严格 双跑对比，落到 de
 > 任务上，依然会犯严重、危险的错误。测试集是一份严谨的法律交叉审查备忘录：
 > 有体系、有陷阱、有对照、无死角。
 
-### 1. 测试集 `questions.json`（26 题，含 v1.3 新增 3 道答案级陷阱维度题）
+### 1. 测试集 `questions.json`（29 题，含 v1.3 三道答案级 + v1.4 三道条文级扩展陷阱维度题）
 
-覆盖 8 部现行法（含增值税法、企业所得税法、个人所得税法），四类陷阱（详见 `questions.json` 的 `_meta.trap_taxonomy`）：
+覆盖 8 部现行法（含增值税法、企业所得税法、个人所得税法），共 11 类陷阱（详见 `questions.json` 的 `_meta.trap_taxonomy`）：
 
 | 陷阱类别 | 含义 | 引擎判定 | 代表题 |
 | --- | --- | --- | --- |
@@ -242,6 +242,9 @@ python -S demo/run_eval.py        # 启发式 vs 严格 双跑对比，落到 de
 | **新法序号未更新** | 2024 新《公司法》重排条文序号，仍引旧序号 | `NOT_FOUND` | Q4 担保旧16→新15 |
 | **硬幻觉** | 引用不存在的法律/法条号 | `NOT_FOUND` | Q8 虚构法、Q12 第9999条 |
 | **张冠李戴** | 条号对、内容错（同法/跨法） | `MISATTRIBUTED` | Q5/Q9/Q10/Q13/Q14/Q15 |
+| **篡改条号**（v1.4） | 把正确条号错引为相邻/相近的真实条号（均存在、规制对象不同） | `PARTIAL / FABRICATED_GENERIC` | Q27 民法典584→585 |
+| **篡改数字**（v1.4） | 引注条号正确但引述文本中的数字/期限/比例被篡改 | `PARTIAL / FABRICATED_GENERIC` | Q28 民法典584 但书比例 |
+| **引用失效法**（v1.4） | 引用已废止法律、内容实质正确（仍判时序幻觉） | `TEMPORAL_DEPRECATED` | Q29 合同法107→民法典577 |
 | **编造判例** | 引注具体指导案例号不在已核验基准 | `FABRICATED_CASE`（计入 hr_case） | Q24 |
 | **循环引注** | 被引条文互为援引成闭环、无独立依据 | `CIRCULAR_CITATION`（计入 rate_circular） | Q25 |
 | **自相矛盾** | 同一答案内对同义务作相反断言（诊断信号，不计分） | `SELF_CONTRADICTION` | Q26 |
