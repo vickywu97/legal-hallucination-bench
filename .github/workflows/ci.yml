@@ -36,7 +36,9 @@ jobs:
 
       - name: Offline pipeline smoke (score committed answers, no API)
         # `--offline` runs the verifier with zero API calls; `--input
-        # answers.jsonl` scores the REAL committed model answers (skips the
-        # SAMPLE-mode guard that refuses to clobber real reports). Exercises
-        # extract/verify/score/pipeline end-to-end.
-        run: python -m benchmark.run --offline --input answers.jsonl
+        # demo/answers.jsonl` scores the committed demo model answers (skips
+        # the SAMPLE-mode guard that refuses to clobber real reports). Exercises
+        # extract/verify/score/pipeline end-to-end. NOTE: the root-level
+        # answers.jsonl is git-ignored (per-user real-model output), so the
+        # smoke must use the tracked demo fixture instead.
+        run: python -m benchmark.run --offline --input demo/answers.jsonl
