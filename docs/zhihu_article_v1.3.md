@@ -98,7 +98,7 @@ python -S -m benchmark.run --offline --input answers.jsonl
 
 仓库里已附 115 条真实采集结果（temperature=0，可复现），无需 API key 即可刷新排行榜。
 
-- 评测基准：https://github.com/vickywu97/legal-hallucination-bench （MIT 开源）
+- 评测基准：https://github.com/vickywu97/legal-hallucination-bench （私有仓库 · 需授权访问 · Private — license: MIT）
 - 合规三角产品：https://github.com/vickywu97/compliance-triangle
 - 作品集主页：https://github.com/vickywu97
 
